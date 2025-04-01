@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@vue/cli-plugin-babel": "^5.0.8"
+  },
+  "dependencies": {
+    "vue-router": "^4.5.0"
+  }
+}
