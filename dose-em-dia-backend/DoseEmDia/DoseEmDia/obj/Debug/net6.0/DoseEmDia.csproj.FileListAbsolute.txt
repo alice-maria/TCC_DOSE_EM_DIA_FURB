@@ -1,0 +1,8 @@
+C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.csproj.AssemblyReference.cache
+C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.AssemblyInfoInputs.cache
+C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.AssemblyInfo.cs
+C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.csproj.CoreCompileInputs.cache
+C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.RazorAssemblyInfo.cache
+C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.RazorAssemblyInfo.cs
