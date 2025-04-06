@@ -5,6 +5,7 @@ namespace DoseEmDia.Models
 {
     public class Usuario
     {
+        public int Id { get; set; }
         public string Nome { get; set; }
         public DateTime DataNascimento { get; set; }
         public string Email { get; set; }
@@ -12,6 +13,9 @@ namespace DoseEmDia.Models
         public string CPF { get; set; }
         public string SenhaHash{ get; set; }
         public Endereco Endereco { get; set; }
+        public int? EnderecoId { get; set; }
+        public string? TokenRedefinicaoSenha { get; set; }
+        public DateTime? TokenExpiracao { get; set; }
 
         public Usuario(string nome, DateTime dataNascimento, string email, string telefone, string cpf, string senha, Endereco endereco)
         {
@@ -29,7 +33,7 @@ namespace DoseEmDia.Models
             return SenhaHash == GerarHashSHA256(senha);
         }
 
-        private string GerarHashSHA256(string senha)
+        public string GerarHashSHA256(string senha)
         {
             using (SHA256 sha256 = SHA256.Create())
             {
