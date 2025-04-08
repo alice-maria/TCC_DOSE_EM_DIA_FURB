@@ -15,7 +15,9 @@ namespace DoseEmDia.Models.db
         // DbSet representa as tabelas no banco de dados
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Endereco> Enderecos { get; set; }
+        public DbSet<Vacina> Vacinas { get; set; }
 
+        // Mapear o enum como string (opcional)
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -25,6 +27,12 @@ namespace DoseEmDia.Models.db
                 .HasOne(u => u.Endereco)
                 .WithOne()
                 .HasForeignKey<Usuario>(u => u.EnderecoId);
+
+            // Mapear o enum StatusVacina como string
+            modelBuilder.Entity<Vacina>()
+                .Property(v => v.Status)
+                .HasConversion<string>();
         }
+
     }
 }

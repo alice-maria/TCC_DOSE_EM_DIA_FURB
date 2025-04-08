@@ -1,5 +1,7 @@
-﻿using DoseEmDia.Models;
+﻿using DoseEmDia.Models.db;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace DoseEmDia.Controllers
 {
@@ -7,17 +9,31 @@ namespace DoseEmDia.Controllers
     {
         [ApiController]
         [Route("api/[controller]")]
+
         public class VacinasController : ControllerBase
         {
-            [HttpGet("{usuarioId}")]
-            public IActionResult GetVacinas(string usuarioId)
+            private readonly ApplicationDbContext _context;
+
+            public VacinasController(ApplicationDbContext context)
             {
-                
+                _context = context;
             }
+
+            [HttpGet("{usuarioId}")]
+            public async Task<IActionResult> GetVacinas(int usuarioId)
+            {
+                var vacinas = await _context.Vacinas
+                    .Where(v => v.UsuarioId == usuarioId)
+                    .ToListAsync();
+
+                return Ok(vacinas);
+            }
+
+            ///Verificar tempo de cada vacina
 
             public string ObterStatus(DateTime dataAplicacao)
             {
-                if (dataAplicacao < DateTime.Today)
+                /*if (dataAplicacao < DateTime.Today)
                     return "Aplicada";
 
                 var diasRestantes = (dataAplicacao - DateTime.Today).TotalDays;
@@ -25,7 +41,9 @@ namespace DoseEmDia.Controllers
                 if (diasRestantes <= 7)
                     return "A vencer";
 
-                return "Em atraso"; // se a data passou ou não foi aplicada
+                return "Em atraso";*/
+
+                return null;
             }
         }
 
