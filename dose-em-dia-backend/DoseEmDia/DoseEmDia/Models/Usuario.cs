@@ -28,6 +28,8 @@ namespace DoseEmDia.Models
             Endereco = endereco;
         }
 
+        public Usuario () {}
+
         public bool ValidarSenha(string senha)
         {
             return SenhaHash == GerarHashSHA256(senha);

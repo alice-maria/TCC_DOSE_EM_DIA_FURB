@@ -21,5 +21,7 @@ namespace DoseEmDia.Models
             DataAplicacao = dataAplicacao;
             Status = status;
         }
+
+        public Vacina() { }
     }
 }
