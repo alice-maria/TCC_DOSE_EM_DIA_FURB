@@ -4,6 +4,8 @@
     "@vue/cli-plugin-babel": "^5.0.8"
   },
   "dependencies": {
-    "vue-router": "^4.5.0"
+    "axios": "^1.8.4",
+    "vue-router": "^4.5.0",
+    "vue-the-mask": "^0.11.1"
   }
 }
