@@ -13,11 +13,12 @@
         <p class="text-center w-75">
           Proteja sua saúde! Crie sua conta e mantenha sua vacinação em dia.
         </p>
-        <button
-          class="btn btn-light text-orange fw-bold px-4 py-2 rounded-pill shadow mt-3"
+        <router-link
+          to="/criar-conta"
+          class="btn btn-light text-orange fw-bold px-4 py-2 rounded-pill shadow mt-3 text-decoration-none"
         >
           Criar conta
-        </button>
+        </router-link>
       </div>
 
       <!-- Coluna Direita -->

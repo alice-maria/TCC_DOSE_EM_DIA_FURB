@@ -18,6 +18,8 @@ namespace DoseEmDia.Models
             Email = email;
         }
 
+        public Notificacao() { }
+
         public void Enviar()
         {
             try

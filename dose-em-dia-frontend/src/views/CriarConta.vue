@@ -71,6 +71,22 @@
             required
           />
 
+          <label class="form-label mt-3">Estado*</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.endereco.estado"
+            required
+          />
+
+          <label class="form-label mt-3">País*</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.endereco.pais"
+            required
+          />
+
           <label class="form-label mt-3">Cidade*</label>
           <input
             type="text"
@@ -153,6 +169,9 @@ export default {
           logradouro: "",
           bairro: "",
           cidade: "",
+          estado: "",
+          cep: "",
+          pais: "",
         },
       },
     };
@@ -193,6 +212,9 @@ export default {
           logradouro: this.form.endereco.logradouro,
           bairro: this.form.endereco.bairro,
           cidade: this.form.endereco.cidade,
+          estado: this.form.endereco.estado,
+          cep: this.form.endereco.cep,
+          pais: this.form.endereco.pais
         },
       };
 

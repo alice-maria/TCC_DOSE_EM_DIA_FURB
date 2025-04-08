@@ -16,5 +16,7 @@
             Telefone = telefone;
             HorarioFuncionamento = horarioFuncionamento;
         }
+
+        public PostoVacinacao() { }
     }
 }

@@ -14,5 +14,7 @@
             NumeroDoses = numeroDoses;
             IntervaloEntreDoses = intervaloEntreDoses;
         }
+
+        public Vacina() { }
     }
 }
