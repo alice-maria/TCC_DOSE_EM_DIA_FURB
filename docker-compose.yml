@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: dose_sql
+    environment:
+      - SA_PASSWORD=Strong!Pass123
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    networks:
+      - dose-network
+
+  backend:
+    build: ./dose-em-dia-backend/DoseEmDia
+    container_name: dose_backend
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=DoseEmDiaDB;User=sa;Password=Strong!Pass123
+    ports:
+      - "5054:80"
+    depends_on:
+      - sqlserver
+    networks:
+      - dose-network
+
+  frontend:
+    build: ./dose-em-dia-frontend
+    container_name: dose_frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    networks:
+      - dose-network
+
+networks:
+  dose-network:
+    driver: bridge
