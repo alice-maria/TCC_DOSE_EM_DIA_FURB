@@ -23,7 +23,7 @@ cd dose_em_dia
 
 ---
 
-## Como rodar o projeto?
+## 🖥️​ Como rodar o projeto com o Docker?
 
 1) Após realizar o clone do projeto na sua máquina, abra um terminal dentro da pasta do projeto, exemplo:
 
@@ -38,7 +38,7 @@ cd dose_em_dia
 
 ---
 
-## Acessando os serviços:
+## 🔓​ Acessando os serviços:
 
 🔹 Frontend (Vue): http://localhost:8080
 
