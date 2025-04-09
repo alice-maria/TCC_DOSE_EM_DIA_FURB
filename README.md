@@ -35,7 +35,6 @@ cd dose_em_dia
 
 - docker-compose up --build
 
-
 ---
 
 ## 🔓​ Acessando os serviços:
@@ -52,6 +51,6 @@ cd dose_em_dia
 
 ---
 
-## Testes no Postman:
+## 🦗​ Testes no Postman:
 
 - Acesse nossa coleção: https://.postman.co/workspace/My-Workspace~afab16b2-821e-4af1-83d6-077f44a6939b/collection/36853191-c15cba2c-4b1a-4165-ab40-36482a142cdc?action=share&creator=36853191
