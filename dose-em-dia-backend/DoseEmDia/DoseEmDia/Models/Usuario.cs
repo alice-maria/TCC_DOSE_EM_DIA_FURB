@@ -1,10 +1,12 @@
-﻿using System.Security.Cryptography;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace DoseEmDia.Models
 {
     public class Usuario
     {
+        [Key]
         public int Id { get; set; }
         public string Nome { get; set; }
         public DateTime DataNascimento { get; set; }
@@ -14,6 +16,7 @@ namespace DoseEmDia.Models
         public string SenhaHash{ get; set; }
         public Endereco Endereco { get; set; }
         public int? EnderecoId { get; set; }
+        public List<Vacina> Vacinas { get; set; }
         public string? TokenRedefinicaoSenha { get; set; }
         public DateTime? TokenExpiracao { get; set; }
 

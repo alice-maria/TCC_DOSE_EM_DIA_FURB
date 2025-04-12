@@ -19,13 +19,31 @@ public class UsuarioController : ControllerBase
 
     // 🔹 Criar Conta (POST)
     [HttpPost("criar")]
-    public async Task<IActionResult> CriarUsuario([FromBody] Usuario usuario)
+    public async Task<IActionResult> CriarUsuario([FromBody] Usuario request)
     {
-        if (_context.Usuarios.Any(u => u.Email == usuario.Email))
+        if (_context.Usuario.Any(u => u.Email == request.Email))
             return BadRequest("E-mail já cadastrado.");
 
-        usuario.SenhaHash = usuario.GerarHashSHA256(usuario.SenhaHash); // Hash da senha
-        _context.Usuarios.Add(usuario);
+        var endereco = new Endereco(
+         request.Endereco.Logradouro,
+         request.Endereco.Bairro,
+         request.Endereco.Cidade,
+         request.Endereco.Estado,
+         request.Endereco.CEP,
+         request.Endereco.Pais
+         );
+
+        var usuario = new Usuario(
+            request.Nome,
+            request.DataNascimento,
+            request.Email,
+            request.Telefone,
+            request.CPF,
+            request.SenhaHash,
+            endereco
+        );
+
+        _context.Usuario.Add(usuario);
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.Id }, usuario);
@@ -35,7 +53,7 @@ public class UsuarioController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email);
+        var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (usuario == null || !usuario.ValidarSenha(request.Senha))
             return Unauthorized("Usuário ou senha inválidos.");
@@ -47,7 +65,7 @@ public class UsuarioController : ControllerBase
     [HttpPost("esqueciSenha")]
     public async Task<IActionResult> EsqueciSenha([FromBody] EsqueciSenhaRequest request)
     {
-        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email);
+        var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Email == request.Email);
         if (usuario == null)
             return NotFound("E-mail não encontrado.");
 
@@ -55,7 +73,7 @@ public class UsuarioController : ControllerBase
         usuario.TokenRedefinicaoSenha = GerarToken();
         usuario.TokenExpiracao = DateTime.UtcNow.AddHours(1); // Token válido por 1 hora
 
-        _context.Usuarios.Update(usuario);
+        _context.Usuario.Update(usuario);
         await _context.SaveChangesAsync();
 
         // Enviar e-mail com o token
@@ -127,7 +145,7 @@ public class UsuarioController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> ObterUsuarioPorId(int id)
     {
-        var usuario = await _context.Usuarios.FindAsync(id);
+        var usuario = await _context.Usuario.FindAsync(id);
         if (usuario == null)
             return NotFound("Usuário não encontrado.");
 

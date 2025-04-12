@@ -22,7 +22,7 @@ namespace DoseEmDia.Controllers
             [HttpGet("{usuarioId}")]
             public async Task<IActionResult> GetVacinas(int usuarioId)
             {
-                var vacinas = await _context.Vacinas
+                var vacinas = await _context.Vacina
                     .Where(v => v.UsuarioId == usuarioId)
                     .ToListAsync();
 

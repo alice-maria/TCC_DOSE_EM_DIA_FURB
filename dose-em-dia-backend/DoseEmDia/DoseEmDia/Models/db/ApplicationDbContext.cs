@@ -13,25 +13,56 @@ namespace DoseEmDia.Models.db
         }
 
         // DbSet representa as tabelas no banco de dados
-        public DbSet<Usuario> Usuarios { get; set; }
-        public DbSet<Endereco> Enderecos { get; set; }
-        public DbSet<Vacina> Vacinas { get; set; }
+        public DbSet<Usuario> Usuario { get; set; }
+        public DbSet<Endereco> Endereco { get; set; }
+        public DbSet<Vacina> Vacina { get; set; }
 
         // Mapear o enum como string (opcional)
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuração do relacionamento entre Usuário e Endereço
+            // 1:1 entre Usuario e Endereco
             modelBuilder.Entity<Usuario>()
                 .HasOne(u => u.Endereco)
                 .WithOne()
                 .HasForeignKey<Usuario>(u => u.EnderecoId);
 
-            // Mapear o enum StatusVacina como string
+            // 1:N entre Usuario e Vacinas
+            modelBuilder.Entity<Vacina>()
+                .HasOne(v => v.Usuario)
+                .WithMany(u => u.Vacinas)
+                .HasForeignKey(v => v.UsuarioId);
+
+            // Enum como string
             modelBuilder.Entity<Vacina>()
                 .Property(v => v.Status)
                 .HasConversion<string>();
+
+            modelBuilder.Entity<Usuario>().ToTable("Usuario");
+
+            modelBuilder.Entity<Usuario>()
+                .Property(u => u.Id)
+                .HasColumnName("IdUser");
+
+            modelBuilder.Entity<Usuario>()
+                .Property(u => u.SenhaHash)
+                .HasColumnName("Senha");
+
+            modelBuilder.Entity<Usuario>()
+                .Property(u => u.EnderecoId)
+                .HasColumnName("IdEndereco");
+
+            modelBuilder.Entity<Endereco>().ToTable("Endereco");
+
+            modelBuilder.Entity<Endereco>()
+                .Property(e => e.Id)
+                .HasColumnName("IdEndereco");
+
+            modelBuilder.Entity<Endereco>()
+                .Property(e => e.CEP)
+                .HasColumnName("Cep");
+
         }
 
     }
