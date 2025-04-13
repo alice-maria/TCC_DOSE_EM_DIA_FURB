@@ -21,33 +21,44 @@ public class UsuarioController : ControllerBase
     [HttpPost("criar")]
     public async Task<IActionResult> CriarUsuario([FromBody] Usuario request)
     {
-        if (_context.Usuario.Any(u => u.Email == request.Email))
-            return BadRequest("E-mail já cadastrado.");
+        try
+        {
+            if (_context.Usuario.Any(u => u.Email == request.Email))
+                return BadRequest("E-mail já cadastrado.");
 
-        var endereco = new Endereco(
-         request.Endereco.Logradouro,
-         request.Endereco.Bairro,
-         request.Endereco.Cidade,
-         request.Endereco.Estado,
-         request.Endereco.CEP,
-         request.Endereco.Pais
-         );
+            var endereco = new Endereco(
+                request.Endereco.Logradouro,
+                request.Endereco.Bairro,
+                request.Endereco.Cidade,
+                request.Endereco.Estado,
+                request.Endereco.CEP,
+                request.Endereco.Pais
+            );
 
-        var usuario = new Usuario(
-            request.Nome,
-            request.DataNascimento,
-            request.Email,
-            request.Telefone,
-            request.CPF,
-            request.SenhaHash,
-            endereco
-        );
+            _context.Endereco.Add( endereco );
 
-        _context.Usuario.Add(usuario);
-        await _context.SaveChangesAsync();
+            var usuario = new Usuario(
+                request.Nome,
+                request.DataNascimento,
+                request.Email,
+                request.Telefone,
+                request.CPF = request.CPF.Replace(".", "").Replace("-", ""),
+                request.SenhaHash,
+                endereco
+            );
 
-        return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.Id }, usuario);
+            _context.Usuario.Add(usuario);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.Id }, usuario);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao criar usuário: {ex.Message}");
+            return StatusCode(500, "Erro interno ao criar o usuário.");
+        }
     }
+
 
     // 🔹 Login (POST)
     [HttpPost("login")]
@@ -98,8 +109,8 @@ public class UsuarioController : ControllerBase
             // Obtém o servidor SMTP e a porta com base no domínio do e-mail
             var (smtpServidor, porta) = ObterServidorSmtp(email);
 
-            string remetente = "email@dominio.com"; // Seu e-mail de envio
-            string senha = "senha"; // A senha do seu e-mail de envio
+            string remetente = "notificadoseemdia@gmail.com"; // Seu e-mail de envio
+            string senha = "Doseemdia2025"; // A senha do seu e-mail de envio
 
             using (SmtpClient smtpClient = new SmtpClient(smtpServidor))
             {

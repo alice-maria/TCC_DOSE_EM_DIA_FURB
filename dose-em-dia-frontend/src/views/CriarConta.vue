@@ -9,124 +9,51 @@
         <!-- Coluna 1 -->
         <div class="col-md-6">
           <label class="form-label">Nome completo*</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.nome"
-            required
-          />
+          <input type="text" class="form-control" v-model="form.nome" required />
 
           <label class="form-label mt-3">E-mail*</label>
-          <input
-            type="email"
-            class="form-control"
-            v-model="form.email"
-            required
-          />
+          <input type="email" class="form-control" v-model="form.email" required />
 
           <label class="form-label mt-3">Telefone*</label>
-          <input
-            type="text"
-            class="form-control"
-            v-mask="'(##) #####-####'"
-            v-model="form.telefone"
-            required
-          />
+          <input type="text" class="form-control" v-mask="'(##) #####-####'" v-model="form.telefone" required />
 
           <label class="form-label mt-3">CPF*</label>
-          <input
-            type="text"
-            class="form-control"
-            v-mask="'###.###.###-##'"
-            v-model="form.cpf"
-            required
-          />
+          <input type="text" class="form-control" v-mask="'###.###.###-##'" v-model="form.cpf" required />
 
           <label class="form-label mt-3">Data de nascimento*</label>
-          <input
-            type="date"
-            class="form-control"
-            v-model="form.dataNascimento"
-            required
-          />
+          <input type="date" class="form-control" v-model="form.dataNascimento" required />
         </div>
 
         <!-- Coluna 2 -->
         <div class="col-md-6">
           <label class="form-label">CEP*</label>
-          <input
-            type="text"
-            class="form-control"
-            v-mask="'#####-###'"
-            v-model="form.cep"
-            @blur="buscarCep"
-            required
-          />
+          <input type="text" class="form-control" v-mask="'#####-###'" v-model="form.cep" @blur="buscarCep" required />
 
           <label class="form-label mt-3">Endereço*</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.endereco.logradouro"
-            required
-          />
+          <input type="text" class="form-control" v-model="form.endereco.logradouro" required />
 
           <label class="form-label mt-3">Estado*</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.endereco.estado"
-            required
-          />
+          <input type="text" class="form-control" v-model="form.endereco.estado" required />
 
           <label class="form-label mt-3">País*</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.endereco.pais"
-            required
-          />
+          <input type="text" class="form-control" v-model="form.endereco.pais" required />
 
           <label class="form-label mt-3">Cidade*</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.endereco.cidade"
-            required
-          />
+          <input type="text" class="form-control" v-model="form.endereco.cidade" required />
 
           <label class="form-label mt-3">Bairro*</label>
-          <input
-            type="text"
-            class="form-control"
-            v-model="form.endereco.bairro"
-            required
-          />
+          <input type="text" class="form-control" v-model="form.endereco.bairro" required />
 
           <label class="form-label mt-3">Senha*</label>
-          <input
-            type="password"
-            class="form-control"
-            v-model="form.senha"
-            required
-          />
+          <input type="password" class="form-control" v-model="form.senha" required />
 
           <label class="form-label mt-3">Confirme sua senha*</label>
-          <input
-            type="password"
-            class="form-control"
-            v-model="form.confirmarSenha"
-            required
-          />
+          <input type="password" class="form-control" v-model="form.confirmarSenha" required />
         </div>
       </div>
 
       <div class="d-flex justify-content-end mt-4">
-        <button
-          type="button"
-          class="btn btn-outline-orange me-2"
-          @click="$router.push('/')"
-        >
+        <button type="button" class="btn btn-outline-orange me-2" @click="$router.push('/')">
           Entrar
         </button>
         <button type="submit" class="btn btn-orange">Criar</button>
@@ -223,9 +150,19 @@ export default {
         const response = await axios.post("http://localhost:5054/api/usuario/criar", payload);
         console.log("Usuário criado:", response.data);
         alert("Conta criada com sucesso!");
-      this.$router.push("/");
+        this.$router.push("/");
       } catch (err) {
-        alert("Erro ao criar conta: " + (err.response?.data || err.message));
+        // 👇 Novo tratamento de erro com mais clareza
+        if (err.response && err.response.data) {
+          console.error("Erro do servidor:", err.response.data);
+          const erroMensagem = typeof err.response.data === 'string'
+            ? err.response.data
+            : JSON.stringify(err.response.data);
+          alert("Erro ao criar conta: " + erroMensagem);
+        } else {
+          console.error("Erro inesperado:", err);
+          alert("Erro desconhecido ao criar conta.");
+        }
       } finally {
         this.carregando = false;
       }
@@ -239,22 +176,27 @@ export default {
 .text-orange {
   color: #f46c20;
 }
+
 .btn-orange {
   background-color: #f46c20;
   color: white;
   border: none;
 }
+
 .btn-orange:hover {
   background-color: #d85c1a;
 }
+
 .btn-outline-orange {
   border: 1px solid #f46c20;
   color: #f46c20;
 }
+
 .btn-outline-orange:hover {
   background-color: #f46c20;
   color: white;
 }
+
 /* estilização do modal */
 .modal-loading {
   position: fixed;
@@ -262,7 +204,8 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* fundo escuro translúcido */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* fundo escuro translúcido */
   display: flex;
   justify-content: center;
   align-items: center;

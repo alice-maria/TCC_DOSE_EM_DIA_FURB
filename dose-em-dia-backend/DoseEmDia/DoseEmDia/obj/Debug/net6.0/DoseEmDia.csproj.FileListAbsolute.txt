@@ -146,9 +146,9 @@ C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\Do
 C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\staticwebassets.build.json
 C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\staticwebassets.development.json
 C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\scopedcss\bundle\DoseEmDia.styles.css
-C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.csproj.CopyComplete
 C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.dll
 C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\refint\DoseEmDia.dll
 C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.pdb
 C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.genruntimeconfig.cache
 C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\ref\DoseEmDia.dll
+C:\Users\mriaa\Downloads\TCC1\DESENVOLVIMENTO\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\obj\Debug\net6.0\DoseEmDia.csproj.CopyComplete

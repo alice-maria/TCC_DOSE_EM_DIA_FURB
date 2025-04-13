@@ -17,7 +17,6 @@ namespace DoseEmDia.Models.db
         public DbSet<Endereco> Endereco { get; set; }
         public DbSet<Vacina> Vacina { get; set; }
 
-        // Mapear o enum como string (opcional)
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

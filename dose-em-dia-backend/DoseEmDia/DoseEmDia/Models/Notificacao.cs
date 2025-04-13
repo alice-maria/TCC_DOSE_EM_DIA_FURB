@@ -26,8 +26,8 @@ namespace DoseEmDia.Models
             {
                 var (smtpServidor, porta) = ObterServidorSmtp(Email);
 
-                string remetente = "email@.com"; // vamos precisar criar um email e uma senha para o projeto
-                string senha = "senha";
+                string remetente = "notificadoseemdia@gmail.com";
+                string senha = "Doseemdia2025";
 
                 using (SmtpClient smtpClient = new SmtpClient(smtpServidor))
                 {
