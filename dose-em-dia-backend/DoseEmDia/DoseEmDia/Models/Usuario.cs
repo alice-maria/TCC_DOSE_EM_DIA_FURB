@@ -1,4 +1,5 @@
-﻿using DoseEmDia.Models;
+﻿using DoseEmDia.Controllers.Seguranca;
+using DoseEmDia.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,13 +13,11 @@ public class Usuario
     public string Email { get; set; }
     public string Telefone { get; set; }
     public string CPF { get; set; }
-    public string SenhaHash { get; set; }
-
+    public string? Senha { get; set; }
+    public string? Salt { get; set; }
     public Endereco Endereco { get; set; }
     public int? EnderecoId { get; set; }
-
     public List<Vacina> Vacinas { get; set; } = new List<Vacina>();
-
     public string? TokenRedefinicaoSenha { get; set; }
     public DateTime? TokenExpiracao { get; set; }
 
@@ -29,24 +28,12 @@ public class Usuario
         Email = email;
         Telefone = telefone;
         CPF = cpf;
-        SenhaHash = GerarHashSHA256(senha);
+        var salt = CriptografiaHelper.GerarSalt();
+        Senha = senha;
+        Salt = salt;
         Endereco = endereco;
     }
 
     public Usuario() { }
 
-    public bool ValidarSenha(string senha)
-    {
-        return SenhaHash == GerarHashSHA256(senha);
-    }
-
-    public string GerarHashSHA256(string senha)
-    {
-        using (SHA256 sha256 = SHA256.Create())
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes(senha);
-            byte[] hash = sha256.ComputeHash(bytes);
-            return Convert.ToBase64String(hash);
-        }
-    }
 }

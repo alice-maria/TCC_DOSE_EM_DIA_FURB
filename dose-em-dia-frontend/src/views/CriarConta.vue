@@ -134,7 +134,7 @@ export default {
         telefone: this.form.telefone,
         cpf: this.form.cpf,
         dataNascimento: this.form.dataNascimento,
-        senhaHash: this.form.senha,
+        senha: this.form.senha,
         endereco: {
           logradouro: this.form.endereco.logradouro,
           bairro: this.form.endereco.bairro,

@@ -12,10 +12,10 @@ namespace DoseEmDia.Models.db
         {
         }
 
-        // DbSet representa as tabelas no banco de dados
         public DbSet<Usuario> Usuario { get; set; }
         public DbSet<Endereco> Endereco { get; set; }
         public DbSet<Vacina> Vacina { get; set; }
+        public DbSet<Pais> Paises { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,7 +45,7 @@ namespace DoseEmDia.Models.db
                 .HasColumnName("IdUser");
 
             modelBuilder.Entity<Usuario>()
-                .Property(u => u.SenhaHash)
+                .Property(u => u.Senha)
                 .HasColumnName("Senha");
 
             modelBuilder.Entity<Usuario>()

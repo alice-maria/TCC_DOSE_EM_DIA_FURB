@@ -5,6 +5,7 @@ using DoseEmDia.Models.db;
 using System.Net.Mail;
 using System.Net;
 using System.Security.Cryptography;
+using DoseEmDia.Controllers.Seguranca;
 
 [Route("api/usuario")]
 [ApiController]
@@ -37,15 +38,19 @@ public class UsuarioController : ControllerBase
 
             _context.Endereco.Add( endereco );
 
-            var usuario = new Usuario(
-                request.Nome,
-                request.DataNascimento,
-                request.Email,
-                request.Telefone,
-                request.CPF = request.CPF.Replace(".", "").Replace("-", ""),
-                request.SenhaHash,
-                endereco
-            );
+            var salt = CriptografiaHelper.GerarSalt();
+
+            var usuario = new Usuario
+            {
+                Nome = request.Nome,
+                DataNascimento = request.DataNascimento,
+                Email = request.Email,
+                Telefone = request.Telefone,
+                CPF = request.CPF.Replace(".", "").Replace("-", ""),
+                Senha = CriptografiaHelper.GerarHash(request.Senha, salt),
+                Salt = salt,
+                Endereco = endereco
+            };
 
             _context.Usuario.Add(usuario);
             await _context.SaveChangesAsync();
@@ -54,7 +59,6 @@ public class UsuarioController : ControllerBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao criar usuário: {ex.Message}");
             return StatusCode(500, "Erro interno ao criar o usuário.");
         }
     }
@@ -65,8 +69,9 @@ public class UsuarioController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Email == request.Email);
+        bool senhaValida = CriptografiaHelper.VerificarSenha(request.Senha, usuario.Senha, usuario.Salt);
 
-        if (usuario == null || !usuario.ValidarSenha(request.Senha))
+        if (usuario == null || !senhaValida)
             return Unauthorized("Usuário ou senha inválidos.");
 
         return Ok(new { mensagem = "Login realizado com sucesso." });
@@ -80,11 +85,9 @@ public class UsuarioController : ControllerBase
         if (usuario == null)
             return NotFound("E-mail não encontrado.");
 
-        // Gerando um token de redefinição de senha
         usuario.TokenRedefinicaoSenha = GerarToken();
         usuario.TokenExpiracao = DateTime.UtcNow.AddHours(1); // Token válido por 1 hora
 
-        _context.Usuario.Update(usuario);
         await _context.SaveChangesAsync();
 
         // Enviar e-mail com o token
@@ -92,6 +95,30 @@ public class UsuarioController : ControllerBase
 
         return Ok("Se o e-mail estiver cadastrado, um link de redefinição será enviado.");
     }
+
+    [HttpPost("redefinir-senha")]
+    public async Task<IActionResult> RedefinirSenha([FromBody] RedefinirSenhaRequest request)
+    {
+        var usuario = await _context.Usuario
+            .FirstOrDefaultAsync(u => u.TokenRedefinicaoSenha == request.Token && u.TokenExpiracao > DateTime.UtcNow);
+
+        if (usuario == null)
+            return BadRequest("Token inválido ou expirado.");
+
+        var novoSalt = CriptografiaHelper.GerarSalt();
+        var novoHash = CriptografiaHelper.GerarHash(request.NovaSenha, novoSalt);
+
+        usuario.Senha = novoHash;
+        usuario.Salt = novoSalt;
+
+        usuario.TokenRedefinicaoSenha = null;
+        usuario.TokenExpiracao = null;
+
+        await _context.SaveChangesAsync();
+
+        return Ok("Senha redefinida com sucesso.");
+    }
+
 
     private string GerarToken()
     {
@@ -122,19 +149,22 @@ public class UsuarioController : ControllerBase
                 {
                     From = new MailAddress(remetente),
                     Subject = "Redefinição de Senha",
-                    Body = $"Clique no link para redefinir sua senha: https://seusite.com/redefinir-senha?token={token}",
+                    Body = $"Clique no link para redefinir sua senha: https://doseemdia.com/redefinir-senha?token={token}",
                     IsBodyHtml = true
                 };
                 mailMessage.To.Add(email);
 
                 // Envia o e-mail
                 smtpClient.Send(mailMessage);
-                Console.WriteLine("E-mail enviado com sucesso!");
             }
+        }
+        catch(SmtpException smtpEx)
+        {
+            throw new Exception("Falha ao enviar o e-mail. Verifique as configurações de SMTP.", smtpEx);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao enviar e-mail: {ex.Message}");
+            throw new Exception("Ocorreu um erro inesperado ao tentar enviar o e-mail de redefinição de senha.", ex);
         }
     }
     public static (string servidor, int porta) ObterServidorSmtp(string email)
@@ -175,3 +205,10 @@ public class EsqueciSenhaRequest
 {
     public string Email { get; set; }
 }
+
+public class RedefinirSenhaRequest
+{
+    public string Token { get; set; }
+    public string NovaSenha { get; set; }
+}
+
