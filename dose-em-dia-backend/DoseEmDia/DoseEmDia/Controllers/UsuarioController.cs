@@ -4,6 +4,7 @@ using DoseEmDia.Models;
 using DoseEmDia.Models.db;
 using DoseEmDia.Controllers.Helpers;
 using DoseEmDia.Helpers;
+using DoseEmDia.Models.Exceptions;
 
 [Route("api/usuario")]
 [ApiController]
@@ -18,7 +19,7 @@ public class UsuarioController : ControllerBase
         _envioEmail = envioEmail;
     }
 
-    [HttpPost("criar")]
+    [HttpPost("criar")] 
     public async Task<IActionResult> CriarUsuario([FromBody] Usuario request)
     {
         try
@@ -56,7 +57,11 @@ public class UsuarioController : ControllerBase
 
             return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.Id }, usuario);
         }
-        catch (Exception ex)
+        catch (UsuarioException.EmailJaCadastradoException ex)
+        {
+            return Conflict(ex.Message); // 409
+        }
+        catch (Exception)
         {
             return StatusCode(500, "Erro interno ao criar o usuário.");
         }
@@ -86,7 +91,6 @@ public class UsuarioController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        // Agora usa o serviço
         await _envioEmail.EnviarEmailRedefinicaoSenhaAsync(usuario.Email, usuario.TokenRedefinicaoSenha);
 
         return Ok("Se o e-mail estiver cadastrado, um link de redefinição será enviado.");

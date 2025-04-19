@@ -5,7 +5,6 @@ namespace DoseEmDia.Controllers.Helpers
 {
     public static class CriptografiaHelper
     {
-        // Gera apenas o salt aleatório (como string Base64)
         public static string GerarSalt()
         {
             var saltBytes = new byte[16];
@@ -14,7 +13,6 @@ namespace DoseEmDia.Controllers.Helpers
             return Convert.ToBase64String(saltBytes);
         }
 
-        // Gera o hash a partir da senha e do salt fornecido
         public static string GerarHash(string senha, string salt)
         {
             var senhaComSalt = senha + salt;
@@ -23,7 +21,6 @@ namespace DoseEmDia.Controllers.Helpers
             return Convert.ToBase64String(hashBytes);
         }
 
-        // Verifica se a senha digitada, combinada com o salt, gera o mesmo hash
         public static bool VerificarSenha(string senhaDigitada, string hashSalvo, string saltSalvo)
         {
             var hashDigitado = GerarHash(senhaDigitada, saltSalvo);

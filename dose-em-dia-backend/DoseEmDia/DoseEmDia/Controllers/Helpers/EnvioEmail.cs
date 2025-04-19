@@ -1,6 +1,7 @@
 ﻿using System.Net.Mail;
 using System.Net;
 using System.Security.Cryptography;
+using DoseEmDia.Models.Exceptions;
 
 namespace DoseEmDia.Helpers
 {
@@ -33,9 +34,13 @@ namespace DoseEmDia.Helpers
             {
                 await smtpClient.SendMailAsync(mailMessage);
             }
+            catch (SmtpException ex)
+            {
+                throw new EmailException("Falha ao enviar o e-mail. Verifique as configurações de SMTP ou conectividade.", ex);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao enviar e-mail para {destinatario}: {ex.Message}");
+                throw new EmailException($"Erro inesperado ao enviar o e-mail para {destinatario}.", ex);
             }
         }
 
@@ -63,13 +68,13 @@ namespace DoseEmDia.Helpers
             {
                 await smtp.SendMailAsync(mail);
             }
-            catch (SmtpException smtpEx)
+            catch (SmtpException ex)
             {
-                throw new Exception("Falha ao enviar o e-mail. Verifique as configurações de SMTP.", smtpEx);
+                throw new EmailException("Falha ao enviar o e-mail. Verifique as configurações de SMTP.", ex);
             }
             catch (Exception ex)
             {
-                throw new Exception("Erro ao tentar enviar o e-mail de redefinição de senha.", ex);
+                throw new EmailException("Erro ao tentar enviar o e-mail de redefinição de senha.", ex);
             }
         }
 
