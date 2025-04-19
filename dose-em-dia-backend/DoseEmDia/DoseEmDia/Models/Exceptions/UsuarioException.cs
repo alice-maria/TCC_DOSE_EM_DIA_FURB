@@ -6,6 +6,8 @@
         {
             public UsuarioNaoEncontradoException(string email)
                 : base($"Usuário com o e-mail '{email}' não foi encontrado.") { }
+            public UsuarioNaoEncontradoException(int id)
+                : base($"Usuário com o ID '{id}' não foi encontrado.") { }
         }
 
         public class EmailJaCadastradoException : Exception

@@ -5,6 +5,7 @@ using DoseEmDia.Models.db;
 using DoseEmDia.Controllers.Helpers;
 using DoseEmDia.Helpers;
 using DoseEmDia.Models.Exceptions;
+using DoseEmDia.Controllers.DTO;
 
 [Route("api/usuario")]
 [ApiController]
@@ -119,12 +120,63 @@ public class UsuarioController : ControllerBase
         return Ok("Senha redefinida com sucesso.");
     }
 
+    [HttpPatch("alterarDados/{id}")]
+    public async Task<IActionResult> AtualizarUsuario(int id, [FromBody] AtualizarUsuario request)
+    {
+        var usuario = await _context.Usuario
+            .Include(u => u.Endereco)
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (usuario == null)
+            throw new UsuarioException.UsuarioNaoEncontradoException(id);
+
+        if (!string.IsNullOrWhiteSpace(request.Nome))
+            usuario.Nome = request.Nome;
+
+        if (request.DataNascimento.HasValue)
+            usuario.DataNascimento = request.DataNascimento.Value;
+
+        if (!string.IsNullOrWhiteSpace(request.Telefone))
+            usuario.Telefone = request.Telefone;
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+            usuario.Email = request.Email;
+
+        if (request.Endereco != null)
+        {
+            if (usuario.Endereco == null)
+                usuario.Endereco = new Endereco();
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Logradouro))
+                usuario.Endereco.Logradouro = request.Endereco.Logradouro;
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Bairro))
+                usuario.Endereco.Bairro = request.Endereco.Bairro;
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Cidade))
+                usuario.Endereco.Cidade = request.Endereco.Cidade;
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Estado))
+                usuario.Endereco.Estado = request.Endereco.Estado;
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.CEP))
+                usuario.Endereco.CEP = request.Endereco.CEP;
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Pais))
+                usuario.Endereco.Pais = request.Endereco.Pais;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok("Dados do usuário atualizados com sucesso.");
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> ObterUsuarioPorId(int id)
     {
         var usuario = await _context.Usuario.FindAsync(id);
         if (usuario == null)
-            return NotFound("Usuário não encontrado.");
+            throw new UsuarioException.UsuarioNaoEncontradoException(id);
 
         return Ok(usuario);
     }

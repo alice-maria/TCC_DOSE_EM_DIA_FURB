@@ -16,7 +16,7 @@ public class Usuario
     public Endereco Endereco { get; set; }
     public int EnderecoId { get; set; }
     public List<Vacina>? Vacinas { get; set; } = new List<Vacina>();
-    public List<Notificacao> Notificacaos { get; set; } = new List<Notificacao>();
+    public List<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
     public string? TokenRedefinicaoSenha { get; set; }
     public DateTime? TokenExpiracao { get; set; }
 
