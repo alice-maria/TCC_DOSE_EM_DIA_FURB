@@ -1,10 +1,6 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using DoseEmDia.Models.db;
+using DoseEmDia.Helpers;
 
 namespace DoseEmDia
 {
@@ -19,6 +15,7 @@ namespace DoseEmDia
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<EnvioEmail>();
             services.AddControllers();
 
             services.AddDbContext<ApplicationDbContext>(options =>

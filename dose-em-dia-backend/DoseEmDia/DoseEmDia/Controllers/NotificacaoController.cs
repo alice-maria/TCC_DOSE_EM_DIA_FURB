@@ -1,10 +1,12 @@
 ﻿using DoseEmDia.Models.db;
-using DoseEmDia.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DoseEmDia.Controllers
 {
-    public class NotificacaoController : Controller
+    [ApiController]
+    [Route("api/notificacoes")]
+    public class NotificacaoController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
 
@@ -13,16 +15,15 @@ namespace DoseEmDia.Controllers
             _context = context;
         }
 
-        [HttpGet("{usuarioId}/notificacoes")]
+        [HttpGet("{usuarioId}/listaNotificacoes")]
         public async Task<IActionResult> ListarNotificacoes(int usuarioId)
         {
             var notificacoes = await _context.Notificacao
                 .Where(n => n.UsuarioId == usuarioId)
                 .OrderByDescending(n => n.DataEnvio)
                 .ToListAsync();
-
+            
             return Ok(notificacoes);
         }
-
     }
 }

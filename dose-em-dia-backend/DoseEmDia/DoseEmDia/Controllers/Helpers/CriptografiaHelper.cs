@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace DoseEmDia.Controllers.Seguranca
+namespace DoseEmDia.Controllers.Helpers
 {
     public static class CriptografiaHelper
     {

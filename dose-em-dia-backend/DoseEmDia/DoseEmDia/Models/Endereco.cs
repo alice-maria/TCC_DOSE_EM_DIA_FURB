@@ -10,7 +10,6 @@
         public string CEP { get; set; }
         public string Pais { get; set; }
 
-        //construtor vazio (vou usar pro EF criar o banco) obs: marcia tu eh uma jaguara
         public Endereco() { }
 
         public Endereco(string logradouro, string bairro, string cidade, string estado, string cep, string pais)

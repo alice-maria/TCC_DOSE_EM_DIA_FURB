@@ -1,8 +1,6 @@
-﻿using DoseEmDia.Controllers.Seguranca;
+﻿using DoseEmDia.Controllers.Helpers;
 using DoseEmDia.Models;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Cryptography;
-using System.Text;
 
 public class Usuario
 {
@@ -16,8 +14,9 @@ public class Usuario
     public string? Senha { get; set; }
     public string? Salt { get; set; }
     public Endereco Endereco { get; set; }
-    public int? EnderecoId { get; set; }
-    public List<Vacina> Vacinas { get; set; } = new List<Vacina>();
+    public int EnderecoId { get; set; }
+    public List<Vacina>? Vacinas { get; set; } = new List<Vacina>();
+    public List<Notificacao> Notificacaos { get; set; } = new List<Notificacao>();
     public string? TokenRedefinicaoSenha { get; set; }
     public DateTime? TokenExpiracao { get; set; }
 
