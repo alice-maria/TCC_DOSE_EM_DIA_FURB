@@ -43,6 +43,7 @@
                 class="form-control"
                 placeholder="E-mail*"
                 required
+                v-model="email"
               />
             </div>
           </div>
@@ -52,11 +53,12 @@
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-lock"></i></span>
               <input
-                type="password"
-                id="senha"
-                class="form-control"
-                placeholder="Senha*"
-                required
+              type="password"
+              id="senha"
+              class="form-control"
+              placeholder="Senha*"
+              required
+              v-model="senha"
               />
             </div>
           </div>
@@ -71,8 +73,9 @@
           >
 
           <button
-            type="submit"
+            type="button"
             class="btn btn-orange text-white fw-bold px-4 py-2 rounded-pill shadow w-100"
+            @click="fazerLogin"
           >
             Entrar
           </button>
@@ -89,9 +92,42 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: "Login",
+  data() {
+    return {
+      email: "",
+      senha: ""
+    };
+  },
+  methods: {
+    async fazerLogin() {
+      const payload = {
+        email: this.email,
+        senha: this.senha
+      };
+
+      try {
+        const response = await axios.post("http://localhost:5054/api/usuario/login", payload);
+        localStorage.setItem("usuarioNome", response.data.nome); //salvar nome do usuario
+
+        alert("Login feito com sucesso!");
+
+        //armazena e-mail e nome no localStorage
+        localStorage.setItem("usuarioEmail", this.email);
+        localStorage.setItem("usuarioNome", response.data.nome);
+
+        // Redirecionar para a rota da tela inicial:
+        this.$router.push("/home");
+        console.log("login teste:", response.data);
+      } catch (err) {
+        alert("Erro ao fazer login: " + (err.response?.data || err.message));
+      }
+    }
+  }
 };
 </script>
 

@@ -118,6 +118,7 @@ export default {
         this.form.endereco.logradouro = data.logradouro;
         this.form.endereco.bairro = data.bairro;
         this.form.endereco.cidade = data.localidade;
+        this.form.endereco.estado = data.uf; //correção do BUG que ocorria ao tentar salvar um estado como "Sao paulo", limite de caracteres do banco era em 2
       } catch (error) {
         alert("CEP inválido ou erro ao buscar endereço.");
       }
@@ -148,6 +149,7 @@ export default {
       try {
         this.carregando = true;
         const response = await axios.post("http://localhost:5054/api/usuario/criar", payload);
+        localStorage.setItem("usuarioNome", response.data.nome);
         console.log("Usuário criado:", response.data);
         alert("Conta criada com sucesso!");
         this.$router.push("/");
