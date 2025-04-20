@@ -6,6 +6,7 @@ using DoseEmDia.Controllers.Helpers;
 using DoseEmDia.Helpers;
 using DoseEmDia.Models.Exceptions;
 using DoseEmDia.Controllers.DTO;
+using DoseEmDia.Models.Enums;
 
 [Route("api/usuario")]
 [ApiController]
@@ -55,6 +56,25 @@ public class UsuarioController : ControllerBase
 
             _context.Usuario.Add(usuario);
             await _context.SaveChangesAsync();
+
+            // Criar vacinas fictícias
+            var vacinasFicticias = new List<Vacina>
+            {
+                new("Covid19 - 3 dose", "Pfizer", 3, 123456, "120 dias", DateTime.Today.AddDays(-5), StatusVacina.EmAtraso),
+                new("Influenza", "Butantan", 1, 654321, "Anual", DateTime.Today.AddDays(3), StatusVacina.AVencer),
+                new("Covid19 - 2 dose", "Pfizer", 2, 111111, "30 dias", DateTime.Today.AddMonths(-4), StatusVacina.Aplicada),
+                new("HPV", "MSD", 3, 222222, "6 meses", DateTime.Today.AddYears(-5), StatusVacina.Aplicada),
+                new("Febre Amarela", "Fiocruz", 1, 333333, "Única", DateTime.Today.AddYears(-8), StatusVacina.Aplicada),
+            };
+
+            foreach (var vacina in vacinasFicticias)
+            {
+                vacina.UsuarioId = usuario.Id;
+                _context.Vacina.Add(vacina);
+            }
+
+            await _context.SaveChangesAsync();
+
 
             return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.Id }, usuario);
         }

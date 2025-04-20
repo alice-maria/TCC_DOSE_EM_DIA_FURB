@@ -1,4 +1,7 @@
-﻿using DoseEmDia.Models.db;
+﻿using DoseEmDia.Models;
+using DoseEmDia.Models.db;
+using DoseEmDia.Models.Enums;
+using iText.Commons.Actions.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,33 +22,27 @@ namespace DoseEmDia.Controllers
                 _context = context;
             }
 
-            [HttpGet("{usuarioId}")]
-            public async Task<IActionResult> GetVacinas(int usuarioId)
+            [HttpGet("listaVacinas/{cpf}")]
+            public async Task<IActionResult> ObterVacinasPorCpf(string cpf)
             {
-                var vacinas = await _context.Vacina
-                    .Where(v => v.UsuarioId == usuarioId)
-                    .ToListAsync();
+                var usuario = await _context.Usuario
+                .Include(u => u.Vacinas)
+                .FirstOrDefaultAsync(u => u.CPF == cpf);
 
-                return Ok(vacinas);
+                if (usuario == null)
+                    return NotFound("Usuário não encontrado.");
+
+                var vacinasOrdenadas = usuario.Vacinas
+                .OrderByDescending(v =>
+                    v.Status == StatusVacina.EmAtraso ? 1 :
+                    v.Status == StatusVacina.AVencer ? 2 :
+                    3)
+                .ThenBy(v => v.DataAplicacao)
+                .ToList();
+
+                return Ok(vacinasOrdenadas);
             }
 
-            ///Verificar tempo de cada vacina
-
-            public string ObterStatus(DateTime dataAplicacao)
-            {
-                /*if (dataAplicacao < DateTime.Today)
-                    return "Aplicada";
-
-                var diasRestantes = (dataAplicacao - DateTime.Today).TotalDays;
-
-                if (diasRestantes <= 7)
-                    return "A vencer";
-
-                return "Em atraso";*/
-
-                return null;
-            }
         }
-
     }
 }
