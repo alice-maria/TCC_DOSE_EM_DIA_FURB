@@ -2,24 +2,25 @@
 using Microsoft.EntityFrameworkCore;
 using DoseEmDia.Models;
 using DoseEmDia.Models.db;
-using System.Net.Mail;
-using System.Net;
-using System.Security.Cryptography;
-using DoseEmDia.Controllers.Seguranca;
+using DoseEmDia.Controllers.Helpers;
+using DoseEmDia.Helpers;
+using DoseEmDia.Models.Exceptions;
+using DoseEmDia.Controllers.DTO;
 
 [Route("api/usuario")]
 [ApiController]
 public class UsuarioController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly EnvioEmail _envioEmail;
 
-    public UsuarioController(ApplicationDbContext context)
+    public UsuarioController(ApplicationDbContext context, EnvioEmail envioEmail)
     {
         _context = context;
+        _envioEmail = envioEmail;
     }
 
-    // 🔹 Criar Conta (POST)
-    [HttpPost("criar")]
+    [HttpPost("criar")] 
     public async Task<IActionResult> CriarUsuario([FromBody] Usuario request)
     {
         try
@@ -57,14 +58,16 @@ public class UsuarioController : ControllerBase
 
             return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.Id }, usuario);
         }
-        catch (Exception ex)
+        catch (UsuarioException.EmailJaCadastradoException ex)
+        {
+            return Conflict(ex.Message); // 409
+        }
+        catch (Exception)
         {
             return StatusCode(500, "Erro interno ao criar o usuário.");
         }
     }
 
-
-    // 🔹 Login (POST)
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -77,7 +80,6 @@ public class UsuarioController : ControllerBase
         return Ok(new { mensagem = "Login realizado com sucesso." });
     }
 
-    // 🔹 Esqueci Minha Senha (POST)
     [HttpPost("esqueciSenha")]
     public async Task<IActionResult> EsqueciSenha([FromBody] EsqueciSenhaRequest request)
     {
@@ -85,13 +87,12 @@ public class UsuarioController : ControllerBase
         if (usuario == null)
             return NotFound("E-mail não encontrado.");
 
-        usuario.TokenRedefinicaoSenha = GerarToken();
-        usuario.TokenExpiracao = DateTime.UtcNow.AddHours(1); // Token válido por 1 hora
+        usuario.TokenRedefinicaoSenha = _envioEmail.GerarToken();
+        usuario.TokenExpiracao = DateTime.UtcNow.AddHours(1);
 
         await _context.SaveChangesAsync();
 
-        // Enviar e-mail com o token
-        EnviarEmailRedefinicao(usuario.Email, usuario.TokenRedefinicaoSenha);
+        await _envioEmail.EnviarEmailRedefinicaoSenhaAsync(usuario.Email, usuario.TokenRedefinicaoSenha);
 
         return Ok("Se o e-mail estiver cadastrado, um link de redefinição será enviado.");
     }
@@ -119,82 +120,68 @@ public class UsuarioController : ControllerBase
         return Ok("Senha redefinida com sucesso.");
     }
 
-
-    private string GerarToken()
+    [HttpPatch("alterarDados/{id}")]
+    public async Task<IActionResult> AtualizarUsuario(int id, [FromBody] AtualizarUsuario request)
     {
-        using (var rng = new RNGCryptoServiceProvider())
+        var usuario = await _context.Usuario
+            .Include(u => u.Endereco)
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (usuario == null)
+            throw new UsuarioException.UsuarioNaoEncontradoException(id);
+
+        if (!string.IsNullOrWhiteSpace(request.Nome))
+            usuario.Nome = request.Nome;
+
+        if (request.DataNascimento.HasValue)
+            usuario.DataNascimento = request.DataNascimento.Value;
+
+        if (!string.IsNullOrWhiteSpace(request.Telefone))
+            usuario.Telefone = request.Telefone;
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+            usuario.Email = request.Email;
+
+        if (request.Endereco != null)
         {
-            byte[] tokenData = new byte[32];
-            rng.GetBytes(tokenData);
-            return Convert.ToBase64String(tokenData);
+            if (usuario.Endereco == null)
+                usuario.Endereco = new Endereco();
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Logradouro))
+                usuario.Endereco.Logradouro = request.Endereco.Logradouro;
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Bairro))
+                usuario.Endereco.Bairro = request.Endereco.Bairro;
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Cidade))
+                usuario.Endereco.Cidade = request.Endereco.Cidade;
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Estado))
+                usuario.Endereco.Estado = request.Endereco.Estado;
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.CEP))
+                usuario.Endereco.CEP = request.Endereco.CEP;
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Pais))
+                usuario.Endereco.Pais = request.Endereco.Pais;
         }
-    }
-    private void EnviarEmailRedefinicao(string email, string token)
-    {
-        try
-        {
-            // Obtém o servidor SMTP e a porta com base no domínio do e-mail
-            var (smtpServidor, porta) = ObterServidorSmtp(email);
 
-            string remetente = "notificadoseemdia@gmail.com"; // Seu e-mail de envio
-            string senha = "Doseemdia2025"; // A senha do seu e-mail de envio
+        await _context.SaveChangesAsync();
 
-            using (SmtpClient smtpClient = new SmtpClient(smtpServidor))
-            {
-                smtpClient.Port = porta;
-                smtpClient.Credentials = new NetworkCredential(remetente, senha);
-                smtpClient.EnableSsl = true;
-
-                MailMessage mailMessage = new MailMessage
-                {
-                    From = new MailAddress(remetente),
-                    Subject = "Redefinição de Senha",
-                    Body = $"Clique no link para redefinir sua senha: https://doseemdia.com/redefinir-senha?token={token}",
-                    IsBodyHtml = true
-                };
-                mailMessage.To.Add(email);
-
-                // Envia o e-mail
-                smtpClient.Send(mailMessage);
-            }
-        }
-        catch(SmtpException smtpEx)
-        {
-            throw new Exception("Falha ao enviar o e-mail. Verifique as configurações de SMTP.", smtpEx);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Ocorreu um erro inesperado ao tentar enviar o e-mail de redefinição de senha.", ex);
-        }
-    }
-    public static (string servidor, int porta) ObterServidorSmtp(string email)
-    {
-        string dominio = email.Split('@')[1].ToLower();
-
-        // Verifica o domínio do e-mail e retorna o servidor SMTP apropriado
-        return dominio switch
-        {
-            "gmail.com" => ("smtp.gmail.com", 587),
-            "outlook.com" or "hotmail.com" => ("smtp.office365.com", 587),
-            "yahoo.com" => ("smtp.mail.yahoo.com", 465),
-            "icloud.com" => ("smtp.mail.me.com", 587),
-            _ => ("smtp.sendgrid.net", 587) // Default para SendGrid
-        };
+        return Ok("Dados do usuário atualizados com sucesso.");
     }
 
-    // 🔹 Obter Usuário por ID (GET)
     [HttpGet("{id}")]
     public async Task<IActionResult> ObterUsuarioPorId(int id)
     {
         var usuario = await _context.Usuario.FindAsync(id);
         if (usuario == null)
-            return NotFound("Usuário não encontrado.");
+            throw new UsuarioException.UsuarioNaoEncontradoException(id);
 
         return Ok(usuario);
     }
 }
 
-// 🔹 Modelos auxiliares para login e recuperação de senha
 public class LoginRequest
 {
     public string Email { get; set; }

@@ -16,6 +16,7 @@ namespace DoseEmDia.Models.db
         public DbSet<Endereco> Endereco { get; set; }
         public DbSet<Vacina> Vacina { get; set; }
         public DbSet<Pais> Paises { get; set; }
+        public DbSet<Notificacao> Notificacao { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
