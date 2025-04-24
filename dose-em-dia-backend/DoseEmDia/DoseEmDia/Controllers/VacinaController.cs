@@ -11,7 +11,7 @@ namespace DoseEmDia.Controllers
     public class VacinaController : Controller
     {
         [ApiController]
-        [Route("api/[controller]")]
+        [Route("api/vacinas")]
 
         public class VacinasController : ControllerBase
         {

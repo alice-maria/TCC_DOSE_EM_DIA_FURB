@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using DoseEmDia.Models.db;
 using DoseEmDia.Helpers;
+using DoseEmDia.Controllers.Helpers;
 
 namespace DoseEmDia
 {
@@ -15,8 +16,9 @@ namespace DoseEmDia
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<EnvioEmail>();
             services.AddControllers();
+            services.AddScoped<EnvioEmail>();
+            services.AddHostedService<VacinaNotificacao>();
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));

@@ -57,24 +57,13 @@ public class UsuarioController : ControllerBase
             _context.Usuario.Add(usuario);
             await _context.SaveChangesAsync();
 
-            // Criar vacinas fictícias
-            var vacinasFicticias = new List<Vacina>
-            {
-                new("Covid19 - 3 dose", "Pfizer", 3, 123456, "120 dias", DateTime.Today.AddDays(-5), StatusVacina.EmAtraso),
-                new("Influenza", "Butantan", 1, 654321, "Anual", DateTime.Today.AddDays(3), StatusVacina.AVencer),
-                new("Covid19 - 2 dose", "Pfizer", 2, 111111, "30 dias", DateTime.Today.AddMonths(-4), StatusVacina.Aplicada),
-                new("HPV", "MSD", 3, 222222, "6 meses", DateTime.Today.AddYears(-5), StatusVacina.Aplicada),
-                new("Febre Amarela", "Fiocruz", 1, 333333, "Única", DateTime.Today.AddYears(-8), StatusVacina.Aplicada),
-            };
-
-            foreach (var vacina in vacinasFicticias)
+            var vacinas = GerarVacinasFicticiasParaUsuario();
+            foreach (var vacina in vacinas)
             {
                 vacina.UsuarioId = usuario.Id;
                 _context.Vacina.Add(vacina);
             }
-
             await _context.SaveChangesAsync();
-
 
             return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.Id }, usuario);
         }
@@ -205,6 +194,114 @@ public class UsuarioController : ControllerBase
 
         return Ok(usuario);
     }
+
+    private List<Vacina> GerarVacinasFicticiasParaUsuario()
+    {
+        var listaVacinas = new Dictionary<string, string>
+        {
+            { "BCG", "Única" },
+            { "Hepatite B", "0-1-6 meses" },
+            { "Penta", "2, 4 e 6 meses" },
+            { "Pólio inativada", "2, 4 e 6 meses" },
+            { "Rotavírus", "2 e 4 meses" },
+            { "Pneumo 10", "2 e 4 meses + reforço com 12 meses" },
+            { "Meningo C", "3 e 5 meses + reforço com 12 meses" },
+            { "Febre amarela", "Dose única aos 9 meses" },
+            { "Tríplice viral", "12 e 15 meses" },
+            { "Tetra viral", "15 meses" },
+            { "DTP", "15 meses e 4 anos" },
+            { "Hepatite A", "15 meses" },
+            { "Varicela", "15 meses" },
+            { "Difteria e tétano adulto (dT)", "Reforço a cada 10 anos" },
+            { "Meningocócica ACWY", "11 e 12 anos" },
+            { "HPV quadrivalente", "2 doses a partir dos 9 anos" },
+            { "dTpa", "Gestante / substituto do dT" },
+            { "Covid-19", "2 ou 3 doses + reforços" },
+            { "Pneumocócica 23-valente (Pneumo 23)", "Única após 60 anos" }
+        };
+
+        var validadeMeses = new Dictionary<string, int>
+        {
+            { "BCG", 999 },
+            { "Hepatite B", 6 },
+            { "Penta", 6 },
+            { "Pólio inativada", 6 },
+            { "Rotavírus", 6 },
+            { "Pneumo 10", 12 },
+            { "Meningo C", 12 },
+            { "Febre amarela", 999 },
+            { "Tríplice viral", 12 },
+            { "Tetra viral", 12 },
+            { "DTP", 48 },
+            { "Hepatite A", 12 },
+            { "Varicela", 12 },
+            { "Difteria e tétano adulto (dT)", 120 },
+            { "Meningocócica ACWY", 24 },
+            { "HPV quadrivalente", 12 },
+            { "dTpa", 120 },
+            { "Covid-19", 12 },
+            { "Pneumocócica 23-valente (Pneumo 23)", 999 }
+        };
+
+        var fabricantes = new[] { "Pfizer", "Butantan", "MSD", "Fiocruz", "AstraZeneca", "GSK", "Moderna" };
+        var nomesSorteio = listaVacinas.Keys.ToList();
+        var rand = new Random();
+        var vacinas = new List<Vacina>();
+
+        // Geração das vacinas aplicadas
+        for (int i = 0; i < 10; i++)
+        {
+            var nome = nomesSorteio[rand.Next(nomesSorteio.Count)];
+            vacinas.Add(new Vacina(
+                nome,
+                fabricantes[rand.Next(fabricantes.Length)],
+                rand.Next(1, 4),
+                rand.Next(100000, 999999),
+                listaVacinas[nome],
+                DateTime.Today.AddMonths(-rand.Next(1, 48)),
+                StatusVacina.Aplicada)
+            {
+                ValidadeMeses = validadeMeses.ContainsKey(nome) ? validadeMeses[nome] : 12
+            });
+        }
+
+        // Geração das vacinas em atraso
+        for (int i = 0; i < 5; i++)
+        {
+            var nome = nomesSorteio[rand.Next(nomesSorteio.Count)];
+            vacinas.Add(new Vacina(
+                nome,
+                fabricantes[rand.Next(fabricantes.Length)],
+                rand.Next(1, 4),
+                rand.Next(100000, 999999),
+                listaVacinas[nome],
+                DateTime.Today.AddDays(-rand.Next(10, 90)),
+                StatusVacina.EmAtraso)
+            {
+                ValidadeMeses = validadeMeses.ContainsKey(nome) ? validadeMeses[nome] : 12
+            });
+        }
+
+        // Geração das vacinas a vencer
+        for (int i = 0; i < 4; i++)
+        {
+            var nome = nomesSorteio[rand.Next(nomesSorteio.Count)];
+            vacinas.Add(new Vacina(
+                nome,
+                fabricantes[rand.Next(fabricantes.Length)],
+                rand.Next(1, 4),
+                rand.Next(100000, 999999),
+                listaVacinas[nome],
+                DateTime.Today.AddDays(rand.Next(1, 15)),
+                StatusVacina.AVencer)
+            {
+                ValidadeMeses = validadeMeses.ContainsKey(nome) ? validadeMeses[nome] : 12
+            });
+        }
+
+        return vacinas;
+    }
+
 }
 
 public class LoginRequest

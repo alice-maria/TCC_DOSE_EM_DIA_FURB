@@ -16,6 +16,7 @@ namespace DoseEmDia.Models
         public StatusVacina Status { get; set; }
         public Usuario Usuario { get; set; }
         public int UsuarioId { get; set; }
+        public int? ValidadeMeses { get; set; }
 
         public Vacina(string nome, string fabricante,int numeroDoses, long numeroLote, string intervaloEntreDoses, DateTime dataAplicacao, StatusVacina status)
         {
