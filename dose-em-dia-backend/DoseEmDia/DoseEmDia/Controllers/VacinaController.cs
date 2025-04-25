@@ -1,10 +1,7 @@
-﻿using DoseEmDia.Models;
-using DoseEmDia.Models.db;
+﻿using DoseEmDia.Models.db;
 using DoseEmDia.Models.Enums;
-using iText.Commons.Actions.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace DoseEmDia.Controllers
 {

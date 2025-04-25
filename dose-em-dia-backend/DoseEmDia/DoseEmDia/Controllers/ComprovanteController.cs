@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PdfSharpCore.Drawing;
+using PdfSharpCore.Pdf;
 using DoseEmDia.Models.db;
-using DoseEmDia.Models.Exceptions;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Properties;
 using DoseEmDia.Models.Enums;
+using DoseEmDia.Models.Exceptions;
 
 namespace DoseEmDia.Controllers
 {
@@ -38,41 +36,55 @@ namespace DoseEmDia.Controllers
                 .ToList();
 
             using var stream = new MemoryStream();
-            var writer = new PdfWriter(stream);
-            var pdf = new PdfDocument(writer);
-            var document = new Document(pdf);
+            var document = new PdfDocument();
+            var page = document.AddPage();
+            var gfx = XGraphics.FromPdfPage(page);
 
-            // Título
-            document.Add(new Paragraph("Certificado de Vacinação")
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetBold().SetFontSize(16));
+            var fontRegular = new XFont("Verdana", 11, XFontStyle.Regular);
+            var fontBold = new XFont("Verdana", 11, XFontStyle.Bold);
+            var fontTitle = new XFont("Verdana", 13, XFontStyle.Bold);
+            var fontSmall = new XFont("Verdana", 9, XFontStyle.Regular);
 
-            document.Add(new Paragraph($"Nome: {usuario.Nome}"));
-            document.Add(new Paragraph($"CPF: {usuario.CPF}"));
-            document.Add(new Paragraph($"E-mail: {usuario.Email}"));
-            document.Add(new Paragraph($"Telefone: {usuario.Telefone}"));
-            document.Add(new Paragraph(" "));
+            int y = 40;
 
-            // Lista de vacinas
+            // Dados do usuário
+            gfx.DrawString($"{usuario.Nome}", fontBold, XBrushes.Black, 40, y); y += 20;
+            gfx.DrawString($"CPF: {usuario.CPF}", fontBold, XBrushes.Blue, 40, y); y += 20;
+            gfx.DrawString($"E-mail: {usuario.Email}", fontBold, XBrushes.Blue, 40, y); y += 20;
+            gfx.DrawString($"Telefone: {usuario.Telefone}", fontBold, XBrushes.Blue, 40, y); y += 25;
+
+            // Nome do sistema
+            gfx.DrawString("Dose em dia", fontBold, XBrushes.Black, page.Width - 130, y - 65);
+
+            // Linha divisória
+            gfx.DrawLine(XPens.Black, 40, y, page.Width - 40, y);
+            y += 30;
+
+            // Título centralizado
+            gfx.DrawString("Certificado de Vacinação", fontTitle, XBrushes.Black,
+                new XRect(0, y, page.Width, 20), XStringFormats.TopCenter);
+            y += 20;
+            gfx.DrawString($"Gerado em: {DateTime.Now:dd/MM/yyyy às HH:mm}", fontSmall, XBrushes.Black,
+                new XRect(0, y, page.Width, 20), XStringFormats.TopCenter);
+            y += 30;
+
+            // Vacinas
             foreach (var vacina in vacinas)
             {
-                var paragrafoVacina = new Paragraph()
-                    .Add(new Text($"Vacina: {vacina.Nome}").SetBold())
-                    .Add($"\nAplicada em: {vacina.DataAplicacao:dd/MM/yyyy}")
-                    .Add($"\nFabricante: {vacina.Fabricante}")
-                    .Add($"\nLote: {vacina.NumeroLote}")
-                    .SetMarginBottom(15);
+                // ✔️ unicode: 2714
+                gfx.DrawString("✔", new XFont("Arial", 16), XBrushes.Green, 45, y + 12);
+                gfx.DrawString($"{vacina.Nome} - {vacina.Dose}", fontBold, XBrushes.Black, 70, y); y += 20;
+                gfx.DrawString($"Aplicada em: {vacina.DataAplicacao:dd/MM/yyyy}", fontRegular, XBrushes.Black, 70, y); y += 25;
 
-                document.Add(paragrafoVacina);
+                if (y > page.Height - 100)
+                {
+                    page = document.AddPage();
+                    gfx = XGraphics.FromPdfPage(page);
+                    y = 40;
+                }
             }
 
-            // Rodapé
-            document.Add(new Paragraph($"Gerado em: {DateTime.Now:dd/MM/yyyy HH:mm}")
-                .SetTextAlignment(TextAlignment.RIGHT)
-                .SetFontSize(9));
-
-            document.Close();
-
+            document.Save(stream, false);
             return File(stream.ToArray(), "application/pdf", "comprovante-vacinacao.pdf");
         }
     }
