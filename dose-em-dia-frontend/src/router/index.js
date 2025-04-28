@@ -2,11 +2,15 @@ import { createRouter, createWebHistory } from "vue-router";
 import Login from "../views/Login.vue";
 import CriarConta from "@/views/CriarConta.vue";
 import Home from "../views/HomeView.vue";
+import EsqueciMinhaSenha from "@/views/EsqueciMinhaSenha.vue";
+import RedefinirSenha from "@/views/RedefinirSenha.vue";
 
 const routes = [
   { path: "/", component: Login },
   { path: "/criar-conta", component: CriarConta },
   { path: "/home", component: Home },
+  {path: "/esqueci-minha-senha", component: EsqueciMinhaSenha},
+  { path: '/redefinir-senha', component: RedefinirSenha },
 ];
 
 const router = createRouter({

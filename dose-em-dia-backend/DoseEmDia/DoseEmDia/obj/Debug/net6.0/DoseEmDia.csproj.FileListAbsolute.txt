@@ -161,3 +161,5 @@ C:\programação\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\bin\Debug\n
 C:\programação\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\bin\Debug\net6.0\BouncyCastle.Crypto.dll
 C:\programação\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\bin\Debug\net6.0\System.Collections.Immutable.dll
 C:\programação\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\bin\Debug\net6.0\System.Diagnostics.DiagnosticSource.dll
+C:\programação\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\bin\Debug\net6.0\Humanizer.dll
+C:\programação\dose_em_dia\dose-em-dia-backend\DoseEmDia\DoseEmDia\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Design.dll
