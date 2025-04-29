@@ -80,11 +80,9 @@
             Entrar
           </button>
 
-          <p class="text-center mt-3">
-            <a href="#" class="text-orange fw-bold text-decoration-none"
-              >Esqueceu a senha?</a
-            >
-          </p>
+          <router-link to="/esqueci-minha-senha" class="text-orange fw-bold text-decoration-none">
+            Esqueceu a senha?
+          </router-link>
         </form>
       </div>
     </div>
