@@ -9,7 +9,7 @@ namespace DoseEmDia.Helpers
     public class EnvioEmail
     {
         private readonly string _remetente = "notificadoseemdia@gmail.com";
-        private readonly string _senha = "cwtp slgb cnpx dkvu";
+        private readonly string _senha = "cwtpslgbcnpxdkvu";
 
         public async Task EnviarEmailAsync(string destinatario, string assunto, string corpoHtml)
         {
@@ -55,11 +55,13 @@ namespace DoseEmDia.Helpers
                 EnableSsl = true
             };
 
+            var tokenEncoded = WebUtility.UrlEncode(token);
+
             var mail = new MailMessage
             {
                 From = new MailAddress(_remetente),
                 Subject = "Redefinição de Senha",
-                Body = $"Clique no link para redefinir sua senha: http://localhost:8080/redefinir-senha?token={token}",
+                Body = $"Clique no link para redefinir sua senha: http://localhost:8080/redefinir-senha?token={tokenEncoded}",
                 IsBodyHtml = true
             };
 
