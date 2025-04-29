@@ -73,7 +73,7 @@ namespace DoseEmDia.Controllers
             {
                 // ✔️ unicode: 2714
                 gfx.DrawString("✔", new XFont("Arial", 16), XBrushes.Green, 45, y + 12);
-                gfx.DrawString($"{vacina.Nome} - {vacina.Dose}", fontBold, XBrushes.Black, 70, y); y += 20;
+                gfx.DrawString($"{vacina.Nome} - {vacina.NumeroDoses}", fontBold, XBrushes.Black, 70, y); y += 20;
                 gfx.DrawString($"Aplicada em: {vacina.DataAplicacao:dd/MM/yyyy}", fontRegular, XBrushes.Black, 70, y); y += 25;
 
                 if (y > page.Height - 100)
