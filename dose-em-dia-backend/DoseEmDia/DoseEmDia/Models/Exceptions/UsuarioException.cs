@@ -2,6 +2,8 @@
 {
     public class UsuarioException :Exception
     {
+        public UsuarioException(string mensagem) : base(mensagem){ }
+
         public class UsuarioNaoEncontradoException : Exception
         {
             public UsuarioNaoEncontradoException(string email)
@@ -21,5 +23,8 @@
             public TokenInvalidoOuExpiradoException()
                 : base("O token de redefinição de senha é inválido ou expirou.") { }
         }
+       
+        public static UsuarioException UsuarioNaoEncontradoPorCpf(string cpf) =>
+            new UsuarioException($"Usuário com CPF {cpf} não encontrado.");
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DoseEmDia.Models.db;
 using DoseEmDia.Models.Enums;
+using DoseEmDia.Models.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +28,10 @@ namespace DoseEmDia.Controllers
                 .FirstOrDefaultAsync(u => u.CPF == cpf);
 
                 if (usuario == null)
-                    return NotFound("Usuário não encontrado.");
+                    throw UsuarioException.UsuarioNaoEncontradoPorCpf(cpf);
+
+                if (usuario.Vacinas == null || !usuario.Vacinas.Any())
+                    throw VacinaException.NenhumaVacinaEncontrada(usuario.Id);
 
                 var vacinasOrdenadas = usuario.Vacinas
                 .OrderByDescending(v =>

@@ -3,19 +3,11 @@
     public class PostoVacinacao
     {
         public string Nome { get; set; }
-        public string Cidade { get; set; }
-        public string Estado { get; set; }
-        public string Telefone { get; set; }
-        public string HorarioFuncionamento { get; set; }
-
-        public PostoVacinacao(string nome, string cidade, string estado, string telefone, string horarioFuncionamento)
-        {
-            Nome = nome;
-            Cidade = cidade;
-            Estado = estado;
-            Telefone = telefone;
-            HorarioFuncionamento = horarioFuncionamento;
-        }
+        public Endereco Endereco { get; set; }
+        public int DistanciaMetros { get; set; }
+        public string LinkGoogleMaps { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
         public PostoVacinacao() { }
     }
