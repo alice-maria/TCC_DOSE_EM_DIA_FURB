@@ -2,6 +2,7 @@
 using System.Net;
 using System.Security.Cryptography;
 using DoseEmDia.Models.Exceptions;
+using System.Net.Mime;
 
 namespace DoseEmDia.Helpers
 {
@@ -76,6 +77,37 @@ namespace DoseEmDia.Helpers
             {
                 throw new EmailException("Erro ao tentar enviar o e-mail de redefinição de senha.", ex);
             }
+        }
+
+        public async Task EnviarEmailCampanhaAsync(string destinatario, string titulo, string mensagemHtml, byte[] imagemBytes)
+        {
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_remetente),
+                Subject = titulo,
+                IsBodyHtml = true
+            };
+            mailMessage.To.Add(destinatario);
+
+            var view = AlternateView.CreateAlternateViewFromString(mensagemHtml, null, MediaTypeNames.Text.Html);
+
+            var imagem = new LinkedResource(new MemoryStream(imagemBytes), MediaTypeNames.Image.Jpeg)
+            {
+                ContentId = "bannerCampanha"
+            };
+            view.LinkedResources.Add(imagem);
+
+            mailMessage.AlternateViews.Add(view);
+
+            var (servidor, porta) = ObterServidorSmtp(destinatario); // pega o smtp e a porta conforme o e-mail destino
+
+            using var smtpClient = new SmtpClient(servidor, porta)
+            {
+                Credentials = new NetworkCredential(_remetente, _senha),
+                EnableSsl = true
+            };
+
+            await smtpClient.SendMailAsync(mailMessage);
         }
 
         private static (string servidor, int porta) ObterServidorSmtp(string email)
