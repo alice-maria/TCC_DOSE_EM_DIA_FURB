@@ -1,0 +1,21 @@
+body.contraste-alto {
+    background-color: #000;
+    color: #fff;
+  }
+  
+  body.fonte-grande * {
+    font-size: 1.25em;
+  }
+  
+  body.fonte-dislexia * {
+    font-family: 'OpenDyslexic', Arial, sans-serif;
+  }
+  
+  body.espacamento-letras * {
+    letter-spacing: 0.1em;
+  }
+  
+  body.espacamento-linhas * {
+    line-height: 1.75;
+  }
+  
