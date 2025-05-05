@@ -1,4 +1,3 @@
-
 <template>
   <div class="container d-flex justify-content-center py-5">
     <div class="home-container p-4 rounded shadow">
@@ -8,9 +7,6 @@
           <p class="text-muted mb-0">Bem-vindo ao Dose em Dia</p>
         </div>
         <div class="dropdown">
-          <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-            Menu
-          </button>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="#">Minhas Vacinas</a></li>
             <li><a class="dropdown-item" href="#">Notificações</a></li>
@@ -96,8 +92,8 @@ export default {
 .home-container {
   background-color: #f8f9fa;
   width: 100%;
-  max-width: 1400px; /* ficou maior e mais "dashboard" */
-  min-height: 80vh;   /* opcional: pra garantir altura */
+  max-width: 2500px;
+  min-height: 80vh;
   padding: 2rem;
 }
 .bg-aplicada {
