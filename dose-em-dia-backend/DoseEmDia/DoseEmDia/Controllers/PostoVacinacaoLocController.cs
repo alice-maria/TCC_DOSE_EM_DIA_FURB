@@ -64,6 +64,7 @@ namespace DoseEmDia.Controllers
             return Ok(locais);
         }
 
+        //criar api
         private static string GerarLinkGoogleMaps(double latitude, double longitude)
         {
             return $"https://www.google.com/maps/search/?api=1&query={latitude},{longitude}";
