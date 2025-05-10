@@ -50,8 +50,8 @@ export default {
 <style scoped>
 .acessibilidade-container {
   position: fixed;
-  right: 20px;
-  bottom: 150px; /* altura alinhada com o botão do VLibras */
+  right: 10px;
+  bottom: 295px; /* altura alinhada com o botão do VLibras */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -62,7 +62,7 @@ export default {
   background-color: #3084ee;
   border: none;
   border-radius: 9px;
-  padding: 8px;
+  padding: 4.3px;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
