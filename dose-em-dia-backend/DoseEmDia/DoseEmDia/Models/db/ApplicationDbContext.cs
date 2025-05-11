@@ -1,7 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using DoseEmDia.Models;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 
 namespace DoseEmDia.Models.db
 {
@@ -22,48 +19,41 @@ namespace DoseEmDia.Models.db
         {
             base.OnModelCreating(modelBuilder);
 
-            // 1:1 entre Usuario e Endereco
-            modelBuilder.Entity<Usuario>()
-                .HasOne(u => u.Endereco)
-                .WithOne()
-                .HasForeignKey<Usuario>(u => u.EnderecoId);
-
-            // 1:N entre Usuario e Vacinas
-            modelBuilder.Entity<Vacina>()
-                .HasOne(v => v.Usuario)
-                .WithMany(u => u.Vacinas)
-                .HasForeignKey(v => v.UsuarioId);
-
-            // Enum como string
-            modelBuilder.Entity<Vacina>()
-                .Property(v => v.Status)
-                .HasConversion<string>();
-
-            modelBuilder.Entity<Usuario>().ToTable("Usuario");
+            // Configuração da tabela Usuario
+            modelBuilder.Entity<Usuario>().ToTable("Usuario")
+                .HasKey(u => u.IdUser);
 
             modelBuilder.Entity<Usuario>()
-                .Property(u => u.Id)
+                .Property(u => u.IdUser)
                 .HasColumnName("IdUser");
-
-            modelBuilder.Entity<Usuario>()
-                .Property(u => u.Senha)
-                .HasColumnName("Senha");
 
             modelBuilder.Entity<Usuario>()
                 .Property(u => u.EnderecoId)
                 .HasColumnName("IdEndereco");
 
-            modelBuilder.Entity<Endereco>().ToTable("Endereco");
+            modelBuilder.Entity<Usuario>()
+                .HasOne(u => u.Endereco)
+                .WithOne()
+                .HasForeignKey<Usuario>(u => u.EnderecoId);
 
-            modelBuilder.Entity<Endereco>()
-                .Property(e => e.Id)
+            // Configuração da tabela Vacina
+            modelBuilder.Entity<Vacina>().ToTable("Vacina")
+                .HasOne(v => v.Usuario)
+                .WithMany(u => u.Vacinas)
+                .HasForeignKey(v => v.UsuarioId);
+
+            modelBuilder.Entity<Vacina>()
+                .Property(v => v.Status)
+                .HasConversion<string>();
+
+            // Configuração da tabela Endereco
+            modelBuilder.Entity<Endereco>().ToTable("Endereco")
+                .Property(e => e.IdEndereco)
                 .HasColumnName("IdEndereco");
 
             modelBuilder.Entity<Endereco>()
                 .Property(e => e.CEP)
                 .HasColumnName("Cep");
-
         }
-
     }
 }

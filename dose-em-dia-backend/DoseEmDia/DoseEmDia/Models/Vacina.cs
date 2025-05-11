@@ -1,12 +1,14 @@
 ﻿using DoseEmDia.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DoseEmDia.Models
 {
     public class Vacina
     {
         [Key]
-        public int Id { get; set; }
+        [Column("IdVacina")]
+        public int IdVacina { get; set; }
         public string Nome { get; set; }
         public string Fabricante { get; set; }
         public int NumeroDoses { get; set; }

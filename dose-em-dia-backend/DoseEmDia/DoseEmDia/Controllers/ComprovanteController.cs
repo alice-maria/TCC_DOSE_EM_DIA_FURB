@@ -25,7 +25,7 @@ namespace DoseEmDia.Controllers
             var usuario = await _context.Usuario
                 .Include(u => u.Endereco)
                 .Include(u => u.Vacinas)
-                .FirstOrDefaultAsync(u => u.Id == usuarioId);
+                .FirstOrDefaultAsync(u => u.IdUser == usuarioId);
 
             if (usuario == null)
                 throw new UsuarioException.UsuarioNaoEncontradoException(usuarioId);

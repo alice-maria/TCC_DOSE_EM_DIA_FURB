@@ -29,23 +29,23 @@ namespace DoseEmDia.Controllers.Helpers
 
                     var vacinas = await context.Vacina
                         .Include(v => v.Usuario)
-                        .Where(v => v.ValidadeMeses.HasValue)
+                        .Where(v => v.ValidadeMeses.HasValue &&
+                                    v.Usuario.ReceberNotificacoes &&
+                                    (v.DataAplicacao.AddMonths(v.ValidadeMeses.Value) <= dataAlvo ||
+                                     v.DataAplicacao.AddMonths(v.ValidadeMeses.Value) < hoje))
                         .ToListAsync(stoppingToken);
+
+                    var notificacoesCriadas = new List<Notificacao>();
 
                     foreach (var vacina in vacinas)
                     {
-                        var dataVencimento = vacina.DataAplicacao.AddMonths(vacina.ValidadeMeses ?? 12);
-
+                        var dataVencimento = vacina.DataAplicacao.AddMonths(vacina.ValidadeMeses.Value);
                         TipoNotificacao? tipo = null;
 
                         if (dataVencimento.Date == dataAlvo)
-                        {
                             tipo = TipoNotificacao.VacinaVencendo;
-                        }
                         else if (dataVencimento.Date < hoje)
-                        {
                             tipo = TipoNotificacao.VacinaAtrasada;
-                        }
 
                         if (tipo != null)
                         {
@@ -55,6 +55,7 @@ namespace DoseEmDia.Controllers.Helpers
 
                             string mensagem = $"Atenção! A vacina {vacina.Nome} está {titulo.ToLower()} e precisa de sua atenção.";
 
+                            // Verifica se já foi enviada
                             bool jaEnviado = await context.Notificacao.AnyAsync(n =>
                                 n.UsuarioId == vacina.UsuarioId &&
                                 n.Tipo == tipo &&
@@ -63,9 +64,11 @@ namespace DoseEmDia.Controllers.Helpers
 
                             if (!jaEnviado)
                             {
+                                // Envia o e-mail
                                 await emailService.EnviarEmailAsync(vacina.Usuario.Email, titulo, mensagem);
 
-                                context.Notificacao.Add(new Notificacao
+                                // Adiciona a notificação
+                                notificacoesCriadas.Add(new Notificacao
                                 {
                                     UsuarioId = vacina.UsuarioId,
                                     Titulo = titulo,
@@ -74,10 +77,15 @@ namespace DoseEmDia.Controllers.Helpers
                                     DataEnvio = DateTime.Now,
                                     Visualizada = false
                                 });
-
-                                await context.SaveChangesAsync(stoppingToken);
                             }
                         }
+                    }
+
+                    // Salva todas as notificações de uma vez
+                    if (notificacoesCriadas.Any())
+                    {
+                        context.Notificacao.AddRange(notificacoesCriadas);
+                        await context.SaveChangesAsync(stoppingToken);
                     }
                 }
 

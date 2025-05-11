@@ -1,11 +1,13 @@
 ﻿using DoseEmDia.Controllers.Helpers;
 using DoseEmDia.Models;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 public class Usuario
 {
     [Key]
-    public int Id { get; set; }
+    [Column("IdUser")]
+    public int IdUser { get; set; }
     public string Nome { get; set; }
     public DateTime DataNascimento { get; set; }
     public string Email { get; set; }
@@ -19,6 +21,7 @@ public class Usuario
     public List<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
     public string? TokenRedefinicaoSenha { get; set; }
     public DateTime? TokenExpiracao { get; set; }
+    public bool ReceberNotificacoes { get; set; }
 
     public Usuario(string nome, DateTime dataNascimento, string email, string telefone, string cpf, string senha, Endereco endereco)
     {

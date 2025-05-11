@@ -60,12 +60,12 @@ public class UsuarioController : ControllerBase
             var vacinas = GerarVacinasFicticiasParaUsuario();
             foreach (var vacina in vacinas)
             {
-                vacina.UsuarioId = usuario.Id;
+                vacina.UsuarioId = usuario.IdUser;
                 _context.Vacina.Add(vacina);
             }
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.Id }, usuario);
+            return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.IdUser }, usuario);
         }
         catch (UsuarioException.EmailJaCadastradoException ex)
         {
@@ -139,7 +139,7 @@ public class UsuarioController : ControllerBase
     {
         var usuario = await _context.Usuario
             .Include(u => u.Endereco)
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .FirstOrDefaultAsync(u => u.IdUser == id);
 
         if (usuario == null)
             throw new UsuarioException.UsuarioNaoEncontradoException(id);

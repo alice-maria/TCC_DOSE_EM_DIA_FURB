@@ -1,5 +1,4 @@
 ﻿using DoseEmDia.Models;
-using DoseEmDia.Helpers;
 using System.Text.Json;
 using DoseEmDia.Controllers.DTO;
 using DoseEmDia.Controllers.Helpers;
@@ -11,6 +10,8 @@ namespace DoseEmDia.Controllers
     [Route("api/localizacao")]
     public class PostoVacinacaoLocController : ControllerBase
     {
+        private static int _contadorRequisicoes = 0;
+        private static readonly int _limiteRequisicoes = 1500;
         private readonly HttpClient _httpClient;
         private readonly string _hereApiKey = "SUA_API_KEY_HERE"; //Falta criar uma conta na HERE e pegar a chave
 
@@ -22,6 +23,13 @@ namespace DoseEmDia.Controllers
         [HttpGet("buscar-postos")]
         public async Task<IActionResult> BuscarPostosVacina([FromQuery] double latitude, [FromQuery] double longitude)
         {
+            if (_contadorRequisicoes >= _limiteRequisicoes)
+            {
+                return StatusCode(429, "Limite de requisições atingido. Entre em contato com o suporte.");
+            }
+
+            _contadorRequisicoes++;
+
             var url = $"https://discover.search.hereapi.com/v1/discover" +
                       $"?q=posto+de+vacinação" +
                       $"&at={latitude},{longitude}" +
@@ -68,6 +76,12 @@ namespace DoseEmDia.Controllers
         private static string GerarLinkGoogleMaps(double latitude, double longitude)
         {
             return $"https://www.google.com/maps/search/?api=1&query={latitude},{longitude}";
+        }
+
+        //metodo para zerar o contador de requisições, ver como aplicar
+        public static void ResetarContadorRequisicoes()
+        {
+            _contadorRequisicoes = 0;
         }
     }
 }
