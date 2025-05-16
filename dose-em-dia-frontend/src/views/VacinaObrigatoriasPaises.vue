@@ -1,47 +1,42 @@
 <template>
-    <div class="container mx-auto p-4 bg-white rounded-lg shadow">
+    <div class="container">
         <!-- Cabeçalho -->
-        <div class="flex justify-between items-center mb-4 px-4">
-            <h1 class="text-2xl font-bold text-orange-600">Dose em dia</h1>
-            <div class="flex items-center gap-4">
-                <v-avatar color="white" size="40">
-                    <v-icon class="text-orange-600">mdi-account-circle</v-icon>
-                </v-avatar>
-                <span>Olá, {{ nomeUsuario }}</span>
+        <div class="header">
+            <h1 class="titulo">Dose em dia</h1>
+            <div class="usuario">
+                <img src="@/imagens/icone-user-orange.png" alt="Ícone de usuário" class="icone-usuario">
+                <span class="saudacao">Olá, {{ nomeUsuario }}</span>
             </div>
         </div>
 
-        <!-- Navegação -->
-        <div class="flex justify-between items-center text-sm mb-4 px-4">
-            <div class="flex items-center">
-                <v-icon class="mr-2">mdi-home</v-icon>
-                <span class="text-black">Serviços e Informações</span>
-                <span class="mx-1">&gt;</span>
-                <span class="font-semibold text-orange-600">Vacinas pelo mundo</span>
+        <!-- Navegação e Filtro -->
+        <div class="navegacao-filtro">
+            <div class="navegacao">
+                <span class="texto">Serviços e Informações</span>
+                <span class="seta">&gt;</span>
+                <span class="pagina-atual">Vacinas pelo mundo</span>
             </div>
-            <div class="flex items-center" style="float: right;">
-                <v-btn variant="outlined" color="primary" class="text-orange-600 border-orange-600" @click="mostrarFiltro = !mostrarFiltro">
-                    <span class="font-semibold">FILTROS</span>
-                </v-btn>
-            </div>
+            <v-btn class="botao-filtro" variant="outlined" color="primary" @click="mostrarFiltro = !mostrarFiltro">
+                <span>FILTROS</span>
+            </v-btn>
         </div>
 
         <!-- Filtro em linha completa -->
-        <div v-if="mostrarFiltro" class="w-full mb-4 px-4">
-            <v-text-field v-model="filtro" label="Pesquisar país..." outlined clearable class="w-full"></v-text-field>
+        <div v-if="mostrarFiltro" class="filtro">
+            <v-text-field v-model="filtro" label="Pesquisar país..." outlined clearable class="campo-pesquisa"></v-text-field>
         </div>
 
         <!-- Lista de Países -->
-        <v-card class="rounded-xl p-4">
+        <v-card class="lista-paises rounded-xl">
             <v-list>
                 <template v-for="(pais, index) in paisesFiltrados" :key="pais.idPais">
-                    <v-list-item @click="redirecionarUrl(pais.url)" class="cursor-pointer hover:bg-gray-100 rounded-lg">
+                    <v-list-item @click="redirecionarUrl(pais.url)" class="item-pais hover-sombra">
                         <v-list-item-content>
-                            <v-list-item-title class="text-orange-600 font-bold text-lg">{{ pais.nome }}</v-list-item-title>
-                            <v-list-item-subtitle class="text-gray-500">Consulte as vacinas desse país</v-list-item-subtitle>
+                            <v-list-item-title class="titulo-pais">{{ pais.nome }}</v-list-item-title>
+                            <v-list-item-subtitle class="subtitulo-pais">Consulte as vacinas desse país.</v-list-item-subtitle>
                         </v-list-item-content>
                         <v-list-item-icon>
-                            <v-icon class="text-orange-600 text-2xl">mdi-chevron-right</v-icon>
+                            <v-icon class="icone-seta">mdi-chevron-right</v-icon>
                         </v-list-item-icon>
                     </v-list-item>
                     <v-divider v-if="index < paisesFiltrados.length - 1"></v-divider>
@@ -49,7 +44,7 @@
             </v-list>
         </v-card>
 
-        <p v-if="paisesFiltrados.length === 0" class="text-gray-500">Nenhum país encontrado.</p>
+        <p v-if="paisesFiltrados.length === 0" class="mensagem-nenhum-pais">Nenhum país encontrado.</p>
     </div>
 </template>
 
@@ -92,36 +87,106 @@ export default {
 <style scoped>
 .container {
     background-color: #f8f9fa;
-    width: 100%;
     max-width: 1400px;
     min-height: 80vh;
     padding: 2rem;
 }
 
-.v-list-item {
-    transition: background-color 0.2s;
+.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    border-radius: 12px;
 }
 
-.v-list-item-title {
+.titulo {
+    font-size: 2rem;
+    color: #f97316; /* Laranja */
+    font-weight: bold;
+}
+
+.usuario {
+    display: flex;
+    align-items: center;
+}
+
+.icone-usuario {
+    width: 27px;
+    height: 27px;
+}
+
+.saudacao {
+    margin-left: 8px;
+}
+
+.navegacao-filtro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.navegacao {
+    display: flex;
+    align-items: center;
+}
+
+.botao-filtro {
+    margin-left: auto;
+    color: #f97316 !important;
+    border-color: #f97316 !important;
+}
+
+.texto {
+    font-size: 1rem;
+    color: #000000;
+}
+
+.seta {
+    font-size: 1rem;
+    color: #000000;
+    margin: 0 4px;
+}
+
+.pagina-atual {
+    font-size: 1rem;
     color: #f97316;
     font-weight: bold;
 }
 
-.v-list-item-subtitle {
+.filtro {
+    margin-top: 8px;
+}
+
+.lista-paises {
+    margin-top: 16px;
+}
+
+.item-pais {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.hover-sombra:hover {
+    background-color: #f1f1f1;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.titulo-pais {
+    font-size: 1.125rem;
+    font-weight: bold;
+    color: #f97316;
+}
+
+.subtitulo-pais {
     color: #6b7280;
 }
 
-.v-icon {
-    font-size: 1.5rem;
-    color: #f97316 !important;
-}
-
-.text-orange-600 {
-    color: #f97316 !important;
+.mensagem-nenhum-pais {
+    text-align: center;
+    color: #6b7280;
 }
 </style>
