@@ -7,7 +7,7 @@ namespace DoseEmDia.Controllers
 {
     [Route("api/paises")]
     [ApiController]
-    public class VacinasExteriorController : Controller
+    public class VacinasExteriorController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
 
@@ -17,10 +17,20 @@ namespace DoseEmDia.Controllers
         }
 
         [HttpGet("listaPaises")]
-        public async Task<ActionResult<IEnumerable<Pais>>> ListarPaisesVacinasObrigatorias()
+        public async Task<IActionResult> ListarPaisesVacinasObrigatorias()
         {
-            var paises = await _context.Paises.ToListAsync();
-            return Ok(paises);
+            try
+            {
+                var paises = await _context.Paises
+                    .OrderBy(p => p.Nome)
+                    .ToListAsync();
+
+                return Ok(paises);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Erro ao buscar países: " + ex.Message);
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ public class UsuarioController : ControllerBase
         _envioEmail = envioEmail;
     }
 
-    [HttpPost("criar")] 
+    [HttpPost("criar")]
     public async Task<IActionResult> CriarUsuario([FromBody] Usuario request)
     {
         try
@@ -38,7 +38,7 @@ public class UsuarioController : ControllerBase
                 request.Endereco.Pais
             );
 
-            _context.Endereco.Add( endereco );
+            _context.Endereco.Add(endereco);
 
             var salt = CriptografiaHelper.GerarSalt();
 

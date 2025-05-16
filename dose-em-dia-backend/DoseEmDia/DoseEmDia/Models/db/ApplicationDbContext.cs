@@ -54,6 +54,14 @@ namespace DoseEmDia.Models.db
             modelBuilder.Entity<Endereco>()
                 .Property(e => e.CEP)
                 .HasColumnName("Cep");
+
+            modelBuilder.Entity<Pais>().ToTable("Paises")
+                .HasKey(p => p.IdPais);
+
+            modelBuilder.Entity<Pais>()
+                .Property(p => p.IdPais)
+                .HasColumnName("IdPais")
+                .IsRequired();
         }
     }
 }
