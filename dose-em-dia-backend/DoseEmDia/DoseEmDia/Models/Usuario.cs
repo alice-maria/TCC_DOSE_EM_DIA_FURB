@@ -13,6 +13,7 @@ public class Usuario
     public string Email { get; set; }
     public string Telefone { get; set; }
     public string CPF { get; set; }
+    public string? Sexo { get; set; }
     public string? Senha { get; set; }
     public string? Salt { get; set; }
     public Endereco Endereco { get; set; }
@@ -23,7 +24,7 @@ public class Usuario
     public DateTime? TokenExpiracao { get; set; }
     public bool ReceberNotificacoes { get; set; }
 
-    public Usuario(string nome, DateTime dataNascimento, string email, string telefone, string cpf, string senha, Endereco endereco)
+    public Usuario(string nome, DateTime dataNascimento, string email, string telefone, string cpf, string sexo, string senha, Endereco endereco)
     {
         Nome = nome;
         DataNascimento = dataNascimento;

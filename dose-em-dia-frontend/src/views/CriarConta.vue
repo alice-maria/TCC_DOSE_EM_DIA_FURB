@@ -22,6 +22,14 @@
 
           <label class="form-label mt-3">Data de nascimento*</label>
           <input type="date" class="form-control" v-model="form.dataNascimento" required />
+
+          <label class="form-label mt-3">Sexo*</label>
+          <select class="form-control" v-model="form.sexo" required>
+            <option value="" disabled>Selecione</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Feminino">Feminino</option>
+            <option value="Outro">Outro</option>
+          </select>
         </div>
 
         <!-- Coluna 2 -->
@@ -89,6 +97,7 @@ export default {
         telefone: "",
         cpf: "",
         dataNascimento: "",
+        sexo: "",
         cep: "",
         senha: "",
         confirmarSenha: "",
@@ -135,13 +144,14 @@ export default {
         telefone: this.form.telefone,
         cpf: this.form.cpf,
         dataNascimento: this.form.dataNascimento,
+        sexo: this.form.sexo,
         senha: this.form.senha,
         endereco: {
           logradouro: this.form.endereco.logradouro,
           bairro: this.form.endereco.bairro,
           cidade: this.form.endereco.cidade,
           estado: this.form.endereco.estado,
-          cep: this.form.endereco.cep,
+          cep: this.form.cep,
           pais: this.form.endereco.pais
         },
       };

@@ -34,7 +34,7 @@ public class UsuarioController : ControllerBase
                 request.Endereco.Bairro,
                 request.Endereco.Cidade,
                 request.Endereco.Estado,
-                request.Endereco.CEP,
+                FormatacaoHelper.FormataCEP(request.Endereco.CEP),
                 request.Endereco.Pais
             );
 
@@ -47,8 +47,9 @@ public class UsuarioController : ControllerBase
                 Nome = request.Nome,
                 DataNascimento = request.DataNascimento,
                 Email = request.Email,
-                Telefone = request.Telefone,
-                CPF = request.CPF.Replace(".", "").Replace("-", ""),
+                Telefone = FormatacaoHelper.FormataTelefone(request.Telefone),
+                CPF = FormatacaoHelper.FormataCPF(request.CPF),
+                Sexo = request.Sexo,
                 Senha = CriptografiaHelper.GerarHash(request.Senha, salt),
                 Salt = salt,
                 Endereco = endereco
@@ -151,10 +152,13 @@ public class UsuarioController : ControllerBase
             usuario.DataNascimento = request.DataNascimento.Value;
 
         if (!string.IsNullOrWhiteSpace(request.Telefone))
-            usuario.Telefone = request.Telefone;
+            usuario.Telefone = FormatacaoHelper.FormataTelefone(request.Telefone);
 
         if (!string.IsNullOrWhiteSpace(request.Email))
             usuario.Email = request.Email;
+
+        if (!string.IsNullOrWhiteSpace(request.Sexo))
+            usuario.Sexo = request.Sexo;
 
         if (request.Endereco != null)
         {
@@ -174,7 +178,7 @@ public class UsuarioController : ControllerBase
                 usuario.Endereco.Estado = request.Endereco.Estado;
 
             if (!string.IsNullOrWhiteSpace(request.Endereco.CEP))
-                usuario.Endereco.CEP = request.Endereco.CEP;
+                usuario.Endereco.CEP = FormatacaoHelper.FormataCEP(request.Endereco.CEP);
 
             if (!string.IsNullOrWhiteSpace(request.Endereco.Pais))
                 usuario.Endereco.Pais = request.Endereco.Pais;
