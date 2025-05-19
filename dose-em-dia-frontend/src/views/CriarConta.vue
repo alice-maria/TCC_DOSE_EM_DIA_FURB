@@ -12,7 +12,13 @@
           <input type="text" class="form-control" v-model="form.nome" required />
 
           <label class="form-label mt-3">E-mail*</label>
-          <input type="email" class="form-control" v-model="form.email" required />
+          <input type="email" class="form-control" v-model="form.email"
+            :class="{ 'is-valid': emailValido, 'is-invalid': !emailValido && form.email.length > 0 }"
+            @input="validarEmail" required />
+          <p v-if="form.email.length > 0" :class="{ 'text-success': emailValido, 'text-danger': !emailValido }">
+            {{ emailValido ? 'E-mail válido' : 'E-mail inválido' }}
+          </p>
+
 
           <label class="form-label mt-3">Telefone*</label>
           <input type="text" class="form-control" v-mask="'(##) #####-####'" v-model="form.telefone" required />
@@ -28,7 +34,7 @@
             <option value="" disabled>Selecione</option>
             <option value="Masculino">Masculino</option>
             <option value="Feminino">Feminino</option>
-            <option value="Outro">Outro</option>
+            <option value="Outro">Não informar</option>
           </select>
         </div>
 
@@ -53,7 +59,11 @@
           <input type="text" class="form-control" v-model="form.endereco.bairro" required />
 
           <label class="form-label mt-3">Senha*</label>
-          <input type="password" class="form-control" v-model="form.senha" required />
+          <input type="password" class="form-control" v-model="form.senha"
+            :class="{ 'is-valid': senhaValida, 'is-invalid': erroSenha }" @input="validarSenha" required />
+          <p v-if="!senhaValida && form.senha.length > 0" class="text-danger mt-1">
+            A senha deve conter no mínimo 8 caracteres e ao menos 3 letras maiúsculas, 2 números e 1 caractere especial.
+          </p>
 
           <label class="form-label mt-3">Confirme sua senha*</label>
           <input type="password" class="form-control" v-model="form.confirmarSenha" required />
@@ -109,10 +119,68 @@ export default {
           cep: "",
           pais: "",
         },
+        erroSenha: '',
+        senhaValida: false
       },
     };
   },
   methods: {
+    validarEmail() {
+      const field = this.form.email;
+      const usuario = field.substring(0, field.indexOf("@"));
+      const dominio = field.substring(field.indexOf("@") + 1, field.length);
+
+      this.emailValido = (
+        usuario.length >= 1 &&
+        dominio.length >= 3 &&
+        usuario.indexOf("@") === -1 &&
+        dominio.indexOf("@") === -1 &&
+        usuario.indexOf(" ") === -1 &&
+        dominio.indexOf(" ") === -1 &&
+        dominio.indexOf(".") !== -1 &&
+        dominio.indexOf(".") >= 1 &&
+        dominio.lastIndexOf(".") < dominio.length - 1
+      );
+
+      console.log("E-mail:", field);
+      console.log("E-mail Válido:", this.emailValido);
+    },
+    
+    validarSenha() {
+      const senha = this.form.senha;
+
+      let letraMaiscula = 0;
+      let numero = 0;
+      let caracterEspecial = 0;
+      const caracteresEspeciais = "/([~`!@#$%^&*+=\\-\\[\\]\\\\';,/{}|\":<>?])";
+
+      //usar valores ASCII melhora a performance ;)
+      for (let i = 0; i < senha.length; i++) {
+        const valorAscii = senha.charCodeAt(i);
+
+        // Verifica se é letra maiúscula (A-Z)
+        if (valorAscii >= 65 && valorAscii <= 90) {
+          letraMaiscula++;
+        }
+
+        // Verifica se é número (0-9)
+        if (valorAscii >= 48 && valorAscii <= 57) {
+          numero++;
+        }
+
+        // Verifica se é caractere especial
+        if (caracteresEspeciais.indexOf(senha[i]) !== -1) {
+          caracterEspecial++;
+        }
+      }
+
+      // Verifica se atende aos requisitos
+      this.senhaValida = (senha.length >= 7) &&
+        (letraMaiscula >= 1) &&
+        (numero >= 1) &&
+        (caracterEspecial >= 1);
+    },
+
     async buscarCep() {
       const cepLimpo = this.form.cep.replace(/\D/g, "");
       if (cepLimpo.length !== 8) return;
@@ -230,5 +298,18 @@ export default {
   padding: 40px;
   width: 300px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.is-valid {
+  border-color: #28a745;
+  background-color: #e6f9e9;
+}
+
+.is-invalid {
+  border-color: #dc3545;
+}
+
+.text-danger {
+  color: #dc3545;
 }
 </style>
