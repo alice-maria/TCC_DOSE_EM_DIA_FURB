@@ -89,7 +89,8 @@ public class UsuarioController : ControllerBase
         return Ok(new //atualizado esse trecho do retorno de login para salvar o nome do usuario, vou usar no front
         {
             mensagem = "Login realizado com sucesso.",
-            nome = usuario.Nome
+            nome = usuario.Nome,
+            cpf = usuario.CPF
         });
 
     }

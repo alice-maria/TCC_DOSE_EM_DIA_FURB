@@ -6,14 +6,6 @@
           <h2 class="text-orange fw-bold">Olá, {{ nomeUsuario }}!</h2>
           <p class="text-muted mb-0">Bem-vindo ao Dose em Dia</p>
         </div>
-        <div class="dropdown">
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">Minhas Vacinas</a></li>
-            <li><a class="dropdown-item" href="#">Notificações</a></li>
-            <li><a class="dropdown-item" href="#">Perfil</a></li>
-            <li><a class="dropdown-item" href="#">Sair</a></li>
-          </ul>
-        </div>
       </div>
 
       <!-- Filtros -->
@@ -27,11 +19,11 @@
       <!-- Vacinas -->
       <div class="row">
         <div class="col-md-4 mb-3" v-for="vacina in vacinasFiltradas" :key="vacina.id">
-          <div class="card border-0 shadow-sm rounded" :class="vacina.classe">
+          <div class="card border-0 shadow-sm rounded" :class="definirClasse(vacina.status)">
             <div class="card-body">
               <h5 class="card-title fw-bold">{{ vacina.nome }}</h5>
               <p class="card-text mb-1">Status: {{ vacina.status }}</p>
-              <small>Data: {{ vacina.data }}</small>
+              <small>Data: {{ formatarData(vacina.dataAplicacao) }}</small>
             </div>
           </div>
         </div>
@@ -41,35 +33,15 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: "HomeView",
   data() {
     return {
       nomeUsuario: "",
       filtro: "",
-      vacinas: [
-        {
-          id: 1,
-          nome: "Hepatite B",
-          status: "Aplicada",
-          data: "10/02/2023",
-          classe: "bg-aplicada"
-        },
-        {
-          id: 2,
-          nome: "Tétano",
-          status: "A vencer",
-          data: "15/08/2024",
-          classe: "bg-avencer"
-        },
-        {
-          id: 3,
-          nome: "Febre Amarela",
-          status: "Vencida",
-          data: "01/01/2022",
-          classe: "bg-vencida"
-        }
-      ]
+      vacinas: []
     };
   },
   computed: {
@@ -79,8 +51,36 @@ export default {
     }
   },
   mounted() {
-    const nome = localStorage.getItem("usuarioNome");
-    this.nomeUsuario = nome || "Usuário";
+    this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
+    const cpf = localStorage.getItem("usuarioCPF");
+
+    if (!cpf) {
+      alert("CPF do usuário não encontrado. Faça login novamente.");
+      this.$router.push('/');
+      return;
+    }
+
+    axios.get(`http://localhost:5054/api/vacinas/listaVacinas/${cpf}`)
+      .then(response => {
+        this.vacinas = response.data;
+      })
+      .catch(error => {
+        console.error("Erro ao buscar vacinas:", error);
+      });
+  },
+  methods: {
+    formatarData(dataISO) {
+      const data = new Date(dataISO);
+      return data.toLocaleDateString('pt-BR');
+    },
+    definirClasse(status) {
+      switch (status) {
+        case 'Aplicada': return 'bg-aplicada';
+        case 'A vencer': return 'bg-avencer';
+        case 'Vencida': return 'bg-vencida';
+        default: return '';
+      }
+    }
   }
 };
 </script>
