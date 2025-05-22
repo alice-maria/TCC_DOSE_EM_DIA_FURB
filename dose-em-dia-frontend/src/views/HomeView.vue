@@ -22,7 +22,7 @@
           <div class="card border-0 shadow-sm rounded" :class="definirClasse(vacina.status)">
             <div class="card-body">
               <h5 class="card-title fw-bold">{{ vacina.nome }}</h5>
-              <p class="card-text mb-1">Status: {{ vacina.status }}</p>
+              <p class="card-text mb-1">Status: {{ mapearStatus(vacina.status) }}</p>
               <small>Data: {{ formatarData(vacina.dataAplicacao) }}</small>
             </div>
           </div>
@@ -52,35 +52,56 @@ export default {
   },
   mounted() {
     this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
-    const cpf = localStorage.getItem("usuarioCPF");
-
-    if (!cpf) {
-      alert("CPF do usuário não encontrado. Faça login novamente.");
-      this.$router.push('/');
-      return;
-    }
-
-    axios.get(`http://localhost:5054/api/vacinas/listaVacinas/${cpf}`)
-      .then(response => {
-        this.vacinas = response.data;
-      })
-      .catch(error => {
-        console.error("Erro ao buscar vacinas:", error);
-      });
+    this.carregarVacinas();
   },
   methods: {
-    formatarData(dataISO) {
-      const data = new Date(dataISO);
-      return data.toLocaleDateString('pt-BR');
+    formatarData(data) {
+      const dataObj = new Date(data);
+      if (isNaN(dataObj)) return 'Data inválida';
+      return dataObj.toLocaleDateString('pt-BR');
     },
     definirClasse(status) {
       switch (status) {
         case 'Aplicada': return 'bg-aplicada';
-        case 'A vencer': return 'bg-avencer';
+        case 'A Vencer': return 'bg-avencer';
         case 'Vencida': return 'bg-vencida';
         default: return '';
       }
-    }
+    },
+    mapearStatus(codigo) {
+      switch (codigo) {
+        case 0: return 'Aplicada';
+        case 1: return 'A vencer';
+        case 2: return 'Vencida';
+        default: return 'Desconhecido';
+      }
+    },
+    async carregarVacinas() {
+      const cpf = localStorage.getItem('usuarioCPF');
+      if (!cpf) {
+        alert('CPF não encontrado. Faça login novamente.');
+        return;
+      }
+
+      try {
+        const response = await axios.get(`http://localhost:5054/api/vacinas/listaVacinas/${cpf}`);
+
+        // Se as vacinas estiverem dentro de uma propriedade:
+        const vacinas = Array.isArray(response.data)
+          ? response.data
+          : response.data.vacinas || [];
+
+        this.vacinas = vacinas.map(v => ({
+          ...v,
+          classe: this.definirClasse(this.mapearStatus(v.status))
+        }));
+
+        console.log("Vacinas carregadas:", this.vacinas);
+      } catch (error) {
+        console.error("Erro ao buscar vacinas:", error);
+        alert("Erro ao buscar vacinas.");
+      }
+    },
   }
 };
 </script>
