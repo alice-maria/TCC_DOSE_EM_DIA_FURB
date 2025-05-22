@@ -87,10 +87,11 @@ public class UsuarioController : ControllerBase
         if (usuario == null || !senhaValida)
             return Unauthorized("Usuário ou senha inválidos.");
 
-        return Ok(new //atualizado esse trecho do retorno de login para salvar o nome do usuario, vou usar no front
+        return Ok(new
         {
             mensagem = "Login realizado com sucesso.",
-            nome = usuario.Nome
+            nome = usuario.Nome,
+            cpf = usuario.CPF
         });
 
     }

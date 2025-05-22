@@ -117,6 +117,7 @@ export default {
         //armazena e-mail e nome no localStorage
         localStorage.setItem("usuarioEmail", this.email);
         localStorage.setItem("usuarioNome", response.data.nome);
+        localStorage.setItem("usuarioCPF", response.data.cpf); // adiciona o CPF pra validação de vacinas
 
         // Redirecionar para a rota da tela inicial:
         this.$router.push("/home");

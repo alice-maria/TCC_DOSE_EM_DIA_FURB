@@ -6,34 +6,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DoseEmDia.Controllers
 {
-    public class VacinaController : Controller
+    [ApiController]
+    [Route("api/vacinas")]
+    public class VacinaController : ControllerBase
     {
-        [ApiController]
-        [Route("api/vacinas")]
+        private readonly ApplicationDbContext _context;
 
-        public class VacinasController : ControllerBase
+        public VacinaController(ApplicationDbContext context)
         {
-            private readonly ApplicationDbContext _context;
+            _context = context;
+        }
 
-            public VacinasController(ApplicationDbContext context)
-            {
-                _context = context;
-            }
-
-            [HttpGet("listaVacinas/{cpf}")]
-            public async Task<IActionResult> ObterVacinasPorCpf(string cpf)
-            {
-                var usuario = await _context.Usuario
+        [HttpGet("listaVacinas/{cpf}")]
+        public async Task<IActionResult> ObterVacinasPorCpf(string cpf)
+        {
+            var usuario = await _context.Usuario
                 .Include(u => u.Vacinas)
                 .FirstOrDefaultAsync(u => u.CPF == cpf);
 
-                if (usuario == null)
-                    throw UsuarioException.UsuarioNaoEncontradoPorCpf(cpf);
+            if (usuario == null)
+                throw UsuarioException.UsuarioNaoEncontradoPorCpf(cpf);
 
-                if (usuario.Vacinas == null || !usuario.Vacinas.Any())
-                    throw VacinaException.NenhumaVacinaEncontrada(usuario.IdUser);
+            if (usuario.Vacinas == null || !usuario.Vacinas.Any())
+                throw VacinaException.NenhumaVacinaEncontrada(usuario.Id);
 
-                var vacinasOrdenadas = usuario.Vacinas
+            var vacinasOrdenadas = usuario.Vacinas
                 .OrderByDescending(v =>
                     v.Status == StatusVacina.EmAtraso ? 1 :
                     v.Status == StatusVacina.AVencer ? 2 :
@@ -41,9 +38,7 @@ namespace DoseEmDia.Controllers
                 .ThenBy(v => v.DataAplicacao)
                 .ToList();
 
-                return Ok(vacinasOrdenadas);
-            }
-
+            return Ok(vacinasOrdenadas);
         }
     }
 }
