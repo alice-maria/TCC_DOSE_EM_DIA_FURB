@@ -1,21 +1,44 @@
 body.contraste-alto {
-    background-color: #000;
-    color: #fff;
-  }
-  
-  body.fonte-grande * {
-    font-size: 1.25em;
-  }
-  
-  body.fonte-dislexia * {
-    font-family: 'OpenDyslexic', Arial, sans-serif;
-  }
-  
-  body.espacamento-letras * {
-    letter-spacing: 0.1em;
-  }
-  
-  body.espacamento-linhas * {
-    line-height: 1.75;
-  }
-  
+  background-color: #000;
+  color: #fff;
+}
+
+body.fonte-baixa * {
+  font-size: 1.05em;
+}
+
+body.fonte-média * {
+  font-size: 1.10em;
+}
+
+body.fonte-alta * {
+  font-size: 1.15em;
+}
+
+body.fonte-dislexia * {
+  font-family: 'OpenDyslexic', Arial, sans-serif;
+}
+
+body.espacamento-letras-baixo * {
+  letter-spacing: 0.1em;
+}
+
+body.espacamento-letras-medio * {
+  letter-spacing: 0.2em;
+}
+
+body.espacamento-letras-alto * {
+  letter-spacing: 0.3em;
+}
+
+body.espacamento-linhas-baixo * {
+  line-height: 1.80;
+}
+
+body.espacamento-linhas-medio * {
+  line-height: 1.90;
+}
+
+body.espacamento-linhas-alto * {
+  line-height: 2.00;
+}

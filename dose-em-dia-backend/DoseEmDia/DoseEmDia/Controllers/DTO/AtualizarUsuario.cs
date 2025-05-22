@@ -7,6 +7,7 @@
         public string? Telefone { get; set; }
         public AtualizarEndereco? Endereco { get; set; }
         public string? Email { get; set; }
+        public string? Sexo { get; set; }
     }
 
     public class AtualizarEndereco

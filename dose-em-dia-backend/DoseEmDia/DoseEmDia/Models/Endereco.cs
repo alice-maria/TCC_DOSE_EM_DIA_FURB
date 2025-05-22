@@ -1,8 +1,13 @@
-﻿namespace DoseEmDia.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+
+namespace DoseEmDia.Models
 {
     public class Endereco
     {
-        public int Id { get; set; }
+        [Key]
+        [Column("IdEndereco")]
+        public int IdEndereco { get; set; }
         public string Logradouro { get; set; }
         public string Bairro { get; set; }
         public string Cidade { get; set; }

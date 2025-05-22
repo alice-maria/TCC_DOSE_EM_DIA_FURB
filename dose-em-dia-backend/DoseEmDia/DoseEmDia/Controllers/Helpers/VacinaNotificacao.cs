@@ -36,13 +36,18 @@ namespace DoseEmDia.Controllers.Helpers
                     {
                         vacinas = await context.Vacina
                             .Include(v => v.Usuario)
-                            .Where(v => v.ValidadeMeses.HasValue)
+                            .Where(v => v.ValidadeMeses.HasValue &&
+                                        v.Usuario.ReceberNotificacoes &&
+                                        (v.DataAplicacao.AddMonths(v.ValidadeMeses.Value) <= dataAlvo ||
+                                         v.DataAplicacao.AddMonths(v.ValidadeMeses.Value) < hoje))
                             .ToListAsync(stoppingToken);
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Erro ao buscar vacinas no método ExecuteAsync.");
                     }
+
+                    var notificacoesCriadas = new List<Notificacao>();
 
                     foreach (var vacina in vacinas)
                     {
@@ -80,10 +85,10 @@ namespace DoseEmDia.Controllers.Helpers
                                     catch (Exception ex)
                                     {
                                         _logger.LogError(ex, $"Falha ao enviar e-mail para {vacina.Usuario.Email} - Método: ExecuteAsync");
-                                        continue; // não salva notificação se o e-mail falhar
+                                        continue;
                                     }
 
-                                    context.Notificacao.Add(new Notificacao
+                                    notificacoesCriadas.Add(new Notificacao
                                     {
                                         UsuarioId = vacina.UsuarioId,
                                         Titulo = titulo,
@@ -92,8 +97,6 @@ namespace DoseEmDia.Controllers.Helpers
                                         DataEnvio = DateTime.Now,
                                         Visualizada = false
                                     });
-
-                                    await context.SaveChangesAsync(stoppingToken);
                                 }
                             }
                         }
@@ -101,6 +104,12 @@ namespace DoseEmDia.Controllers.Helpers
                         {
                             _logger.LogError(ex, $"Erro ao processar vacina ID {vacina.Id} - Método: ExecuteAsync");
                         }
+                    }
+
+                    if (notificacoesCriadas.Any())
+                    {
+                        context.Notificacao.AddRange(notificacoesCriadas);
+                        await context.SaveChangesAsync(stoppingToken);
                     }
                 }
 

@@ -21,7 +21,7 @@ public class UsuarioController : ControllerBase
         _envioEmail = envioEmail;
     }
 
-    [HttpPost("criar")] 
+    [HttpPost("criar")]
     public async Task<IActionResult> CriarUsuario([FromBody] Usuario request)
     {
         try
@@ -34,11 +34,11 @@ public class UsuarioController : ControllerBase
                 request.Endereco.Bairro,
                 request.Endereco.Cidade,
                 request.Endereco.Estado,
-                request.Endereco.CEP,
+                FormatacaoHelper.FormataCEP(request.Endereco.CEP),
                 request.Endereco.Pais
             );
 
-            _context.Endereco.Add( endereco );
+            _context.Endereco.Add(endereco);
 
             var salt = CriptografiaHelper.GerarSalt();
 
@@ -47,8 +47,9 @@ public class UsuarioController : ControllerBase
                 Nome = request.Nome,
                 DataNascimento = request.DataNascimento,
                 Email = request.Email,
-                Telefone = request.Telefone,
-                CPF = request.CPF.Replace(".", "").Replace("-", ""),
+                Telefone = FormatacaoHelper.FormataTelefone(request.Telefone),
+                CPF = FormatacaoHelper.FormataCPF(request.CPF),
+                Sexo = request.Sexo,
                 Senha = CriptografiaHelper.GerarHash(request.Senha, salt),
                 Salt = salt,
                 Endereco = endereco
@@ -60,12 +61,12 @@ public class UsuarioController : ControllerBase
             var vacinas = GerarVacinasFicticiasParaUsuario();
             foreach (var vacina in vacinas)
             {
-                vacina.UsuarioId = usuario.Id;
+                vacina.UsuarioId = usuario.IdUser;
                 _context.Vacina.Add(vacina);
             }
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.Id }, usuario);
+            return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.IdUser }, usuario);
         }
         catch (UsuarioException.EmailJaCadastradoException ex)
         {
@@ -140,7 +141,7 @@ public class UsuarioController : ControllerBase
     {
         var usuario = await _context.Usuario
             .Include(u => u.Endereco)
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .FirstOrDefaultAsync(u => u.IdUser == id);
 
         if (usuario == null)
             throw new UsuarioException.UsuarioNaoEncontradoException(id);
@@ -152,10 +153,13 @@ public class UsuarioController : ControllerBase
             usuario.DataNascimento = request.DataNascimento.Value;
 
         if (!string.IsNullOrWhiteSpace(request.Telefone))
-            usuario.Telefone = request.Telefone;
+            usuario.Telefone = FormatacaoHelper.FormataTelefone(request.Telefone);
 
         if (!string.IsNullOrWhiteSpace(request.Email))
             usuario.Email = request.Email;
+
+        if (!string.IsNullOrWhiteSpace(request.Sexo))
+            usuario.Sexo = request.Sexo;
 
         if (request.Endereco != null)
         {
@@ -175,7 +179,7 @@ public class UsuarioController : ControllerBase
                 usuario.Endereco.Estado = request.Endereco.Estado;
 
             if (!string.IsNullOrWhiteSpace(request.Endereco.CEP))
-                usuario.Endereco.CEP = request.Endereco.CEP;
+                usuario.Endereco.CEP = FormatacaoHelper.FormataCEP(request.Endereco.CEP);
 
             if (!string.IsNullOrWhiteSpace(request.Endereco.Pais))
                 usuario.Endereco.Pais = request.Endereco.Pais;
