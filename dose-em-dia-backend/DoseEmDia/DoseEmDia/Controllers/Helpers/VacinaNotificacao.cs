@@ -102,7 +102,7 @@ namespace DoseEmDia.Controllers.Helpers
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, $"Erro ao processar vacina ID {vacina.Id} - Método: ExecuteAsync");
+                            _logger.LogError(ex, $"Erro ao processar vacina ID {vacina.IdVacina} - Método: ExecuteAsync");
                         }
                     }
 

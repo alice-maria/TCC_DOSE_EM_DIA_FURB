@@ -28,7 +28,7 @@ namespace DoseEmDia.Controllers
                 throw UsuarioException.UsuarioNaoEncontradoPorCpf(cpf);
 
             if (usuario.Vacinas == null || !usuario.Vacinas.Any())
-                throw VacinaException.NenhumaVacinaEncontrada(usuario.Id);
+                throw VacinaException.NenhumaVacinaEncontrada(usuario.IdUser);
 
             var vacinasOrdenadas = usuario.Vacinas
                 .OrderByDescending(v =>
