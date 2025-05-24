@@ -3,6 +3,8 @@ using System.Text.Json;
 using DoseEmDia.Controllers.DTO;
 using DoseEmDia.Controllers.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using DoseEmDia.Models.db;
+using Microsoft.EntityFrameworkCore;
 
 namespace DoseEmDia.Controllers
 {
@@ -10,25 +12,36 @@ namespace DoseEmDia.Controllers
     [Route("api/localizacao")]
     public class PostoVacinacaoLocController : ControllerBase
     {
-        private static int _contadorRequisicoes = 0;
+        private readonly ApplicationDbContext _context;
         private static readonly int _limiteRequisicoes = 1500;
         private readonly HttpClient _httpClient;
         private readonly string _hereApiKey = "SUA_API_KEY_HERE"; //Falta criar uma conta na HERE e pegar a chave
 
-        public PostoVacinacaoLocController(IHttpClientFactory httpClientFactory)
+        public PostoVacinacaoLocController(ApplicationDbContext context, IHttpClientFactory httpClientFactory)
         {
+            _context = context;
             _httpClient = httpClientFactory.CreateClient();
         }
 
         [HttpGet("buscar-postos")]
         public async Task<IActionResult> BuscarPostosVacina([FromQuery] double latitude, [FromQuery] double longitude)
         {
-            if (_contadorRequisicoes >= _limiteRequisicoes)
+            var contador = await _context.ContadorRequisicoes.FirstOrDefaultAsync();
+
+            if (contador == null)
+            {
+                contador = new ContadorRequisicoes { Requisicoes = 0 };
+                _context.ContadorRequisicoes.Add(contador);
+                await _context.SaveChangesAsync();
+            }
+
+            if (contador.Requisicoes >= _limiteRequisicoes)
             {
                 return StatusCode(429, "Limite de requisições atingido. Entre em contato com o suporte.");
             }
 
-            _contadorRequisicoes++;
+            contador.Requisicoes++;
+            await _context.SaveChangesAsync();
 
             var url = $"https://discover.search.hereapi.com/v1/discover" +
                       $"?q=posto+de+vacinação" +
@@ -81,8 +94,14 @@ namespace DoseEmDia.Controllers
         //metodo para zerar o contador de requisições, ver como aplicar
         public static void ResetarContadorRequisicoes()
         {
-            _contadorRequisicoes = 0;
+            
         }
+    }
+
+    public class ContadorRequisicoes
+    {
+        public int Id { get; set; }
+        public int Requisicoes { get; set; }
     }
 }
 

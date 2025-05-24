@@ -40,6 +40,9 @@ public class UsuarioController : ControllerBase
 
             _context.Endereco.Add(endereco);
 
+            // Remover espaço final do nome
+            request.Nome = request.Nome?.TrimEnd();
+
             var salt = CriptografiaHelper.GerarSalt();
 
             var usuario = new Usuario
@@ -103,7 +106,7 @@ public class UsuarioController : ControllerBase
             return NotFound("E-mail não encontrado.");
 
         usuario.TokenRedefinicaoSenha = _envioEmail.GerarToken();
-        usuario.TokenExpiracao = DateTime.UtcNow.AddHours(1);
+        usuario.TokenExpiracao = DateTime.UtcNow.AddMinutes(15);
 
         await _context.SaveChangesAsync();
 

@@ -1,6 +1,80 @@
 body.contraste-alto {
-  background-color: #000;
-  color: #fff;
+  background-color: #000000 !important;
+  /* Fundo preto */
+  color: #00ff66 !important;
+  /* Texto verde claro */
+  filter: contrast(150%) brightness(110%);
+  /* Aumenta o contraste e o brilho */
+}
+
+/* Ajustes para texto e links */
+body.contraste-alto * {
+  color: #00ff66 !important;
+  /* Verde claro para texto e links */
+  background-color: transparent !important;
+  /* Remove fundo de elementos */
+  border-color: #00ff66 !important;
+  /* Bordas verdes */
+}
+
+/* Ajuste para links específicos */
+body.contraste-alto a {
+  color: #ffff00 !important;
+  /* Links em amarelo */
+  text-decoration: underline;
+}
+
+/* Botões e links com fundo em verde escuro */
+body.contraste-alto button {
+  background-color: #003300 !important;
+  /* Fundo verde escuro */
+  color: #00ff66 !important;
+  /* Texto verde claro */
+  border: 1px solid #00ff66 !important;
+}
+
+/* Campos de formulário (input, textarea, select) */
+body.contraste-alto input,
+body.contraste-alto textarea,
+body.contraste-alto select {
+  background-color: #003300 !important;
+  /* Fundo verde escuro */
+  color: #00ff66 !important;
+  border: 1px solid #00ff66 !important;
+}
+
+/* Ajuste para foco nos elementos (acessibilidade) */
+body.contraste-alto *:focus {
+  outline: 2px solid #ffff00 !important;
+  /* Foco em amarelo */
+}
+
+/* Ajuste para imagens (filtro de contraste) */
+body.contraste-alto img {
+  filter: brightness(0.9) contrast(1.2) !important;
+}
+
+/* Títulos em verde claro */
+body.contraste-alto h1,
+body.contraste-alto h2,
+body.contraste-alto h3,
+body.contraste-alto h4,
+body.contraste-alto h5,
+body.contraste-alto h6 {
+  color: #00ff66 !important;
+}
+
+/* Ajuste para as bordas dos botões */
+body.contraste-alto button {
+  border: 1px solid #00ff66 !important;
+  box-shadow: 0 0 5px #00ff66;
+}
+
+/* Ajuste para linhas e separadores */
+body.contraste-alto hr {
+  border-color: #00ff66;
+  height: 1px;
+  background: #00ff66;
 }
 
 body.fonte-baixa * {

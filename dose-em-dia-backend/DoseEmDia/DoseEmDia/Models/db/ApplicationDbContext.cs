@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DoseEmDia.Controllers;
+using Microsoft.EntityFrameworkCore;
 
 namespace DoseEmDia.Models.db
 {
@@ -14,6 +15,8 @@ namespace DoseEmDia.Models.db
         public DbSet<Vacina> Vacina { get; set; }
         public DbSet<Pais> Paises { get; set; }
         public DbSet<Notificacao> Notificacao { get; set; }
+        public DbSet<ContadorRequisicoes> ContadorRequisicoes { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -62,6 +65,10 @@ namespace DoseEmDia.Models.db
                 .Property(p => p.IdPais)
                 .HasColumnName("IdPais")
                 .IsRequired();
+
+            modelBuilder.Entity<ContadorRequisicoes>()
+               .Property(e => e.Requisicoes)
+               .HasColumnName("Requisicoes");
         }
     }
 }

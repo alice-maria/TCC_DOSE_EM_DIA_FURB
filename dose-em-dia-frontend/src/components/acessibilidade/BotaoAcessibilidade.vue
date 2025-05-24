@@ -7,11 +7,21 @@
 
     <!-- Menu de acessibilidade -->
     <div v-if="menuAberto" class="acessibilidade-menu">
-      <button @click="toggleContraste">Contraste alto</button>
-      <button @click="aumentarFonte">Aumentar fonte</button>
-      <button @click="toggleFonteDislexia">Dislexia</button>
-      <button @click="toggleEspacamentoLetras">Espaçamento entre letras</button>
-      <button @click="toggleEspacamentoLinhas">Espaçamento entre linhas</button>
+      <button @click="toggleContraste">
+        <img src="@/assets/icons/Icone-contraste-escuro.png" alt="Contraste" class="icone-contraste" />
+        Contraste alto</button>
+      <button @click="aumentarFonte">
+        <img src="@/assets/icons/Icone-aumentar-fonte.png" alt="Contraste" class="icone-fonte" />
+        Aumentar fonte</button>
+      <button @click="toggleFonteDislexia">
+        <img src="@/assets/icons/Icone-dislexia.png" alt="Contraste" class="icone-dislexia" />
+        Dislexia</button>
+      <button @click="toggleEspacamentoLetras">
+        <img src="@/assets/icons/Icone-espacamento-entre-linhas.png" alt="Contraste" class="icone-letras" />
+        Espaçamento entre letras</button>
+      <button @click="toggleEspacamentoLinhas">
+        <img src="@/assets/icons/Icone-espacamento-entre-letras.png" alt="Contraste" class="icone-linhas" />
+        Espaçamento entre linhas</button>
     </div>
   </div>
 </template>
@@ -69,7 +79,8 @@ export default {
 .acessibilidade-container {
   position: fixed;
   right: 10px;
-  bottom: 295px; /* altura alinhada com o botão do VLibras */
+  bottom: 335px;
+  /* altura alinhada com o botão do VLibras */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -82,11 +93,23 @@ export default {
   padding: 4.3px;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .icone {
   width: 32px;
   height: 32px;
+  width: 32px !important;
+  /* Tamanho fixo da imagem */
+  height: 32px !important;
+  /* Tamanho fixo da imagem */
+  object-fit: contain;
+  pointer-events: none;
+  /* Impede interação com a imagem */
 }
 
 /* Menu flutuante à esquerda do botão */
@@ -99,20 +122,52 @@ export default {
   border: 1px solid #ccc;
   border-radius: 6px;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
-  min-width: 180px;
+  min-width: 420px;
+  min-height: 320px;
   z-index: 10000;
 }
 
 .acessibilidade-menu button {
   display: block;
   width: 100%;
-  margin-bottom: 6px;
-  padding: 6px 10px;
-  font-size: 14px;
+  margin-bottom: 8px;
+  padding: 13px 10px;
+  font-size: 20px;
   border: none;
   background-color: #f0f0f0;
   cursor: pointer;
   border-radius: 4px;
   text-align: left;
 }
+
+.icone-contraste {
+  width: 35px;
+  height: 35px;
+  margin-right: 5px;
+}
+
+.icone-fonte {
+  width: 35px;
+  height: 35px;
+  margin-right: 5px;
+}
+
+.icone-dislexia {
+ width: 35px;
+  height: 35px;
+  margin-right: 5px;
+}
+
+.icone-letras {
+  width: 35px;
+  height: 35px;
+  margin-right: 5px;
+}
+
+.icone-linhas {
+ width: 35px;
+  height: 35px;
+  margin-right: 5px;
+}
+
 </style>

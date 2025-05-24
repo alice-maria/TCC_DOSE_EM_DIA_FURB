@@ -62,7 +62,7 @@
           <input type="password" class="form-control" v-model="form.senha"
             :class="{ 'is-valid': senhaValida, 'is-invalid': erroSenha }" @input="validarSenha" required />
           <p v-if="!senhaValida && form.senha.length > 0" class="text-danger mt-1">
-            A senha deve conter no mínimo 8 caracteres e ao menos 3 letras maiúsculas, 2 números e 1 caractere especial.
+            A senha deve conter no mínimo 8 caracteres e ao menos 1 letra maiúscula, 1 número e 1 caractere especial.
           </p>
 
           <label class="form-label mt-3">Confirme sua senha*</label>
@@ -72,7 +72,7 @@
 
       <div class="d-flex justify-content-end mt-4">
         <button type="button" class="btn btn-outline-orange me-2" @click="$router.push('/')">
-          Entrar
+          Cancelar
         </button>
         <button type="submit" class="btn btn-orange">Criar</button>
       </div>
@@ -125,7 +125,7 @@ export default {
     };
   },
   methods: {
-    validarEmail() {
+    validarEmail() { 
       const field = this.form.email;
       const usuario = field.substring(0, field.indexOf("@"));
       const dominio = field.substring(field.indexOf("@") + 1, field.length);
@@ -145,7 +145,7 @@ export default {
       console.log("E-mail:", field);
       console.log("E-mail Válido:", this.emailValido);
     },
-    
+
     validarSenha() {
       const senha = this.form.senha;
 
