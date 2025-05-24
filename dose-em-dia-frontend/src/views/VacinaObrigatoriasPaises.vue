@@ -72,7 +72,7 @@ export default {
         async carregarPaises() {
             try {
                 const response = await axios.get("http://localhost:5054/api/paises/listaPaises");
-                this.paises = response.data.$values || [];
+                this.paises = Array.isArray(response.data) ? response.data : response.data.$values || [];
             } catch (error) {
                 this.paises = [];
             }
@@ -176,7 +176,7 @@ export default {
 }
 
 .titulo-pais {
-    font-size: 1.125rem;
+    font-size: 1.8rem;
     font-weight: bold;
     color: #f97316;
 }

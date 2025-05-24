@@ -4,6 +4,7 @@ import CriarConta from "@/views/CriarConta.vue";
 import Home from "../views/HomeView.vue";
 import EsqueciMinhaSenha from "@/views/EsqueciMinhaSenha.vue";
 import RedefinirSenha from "@/views/RedefinirSenha.vue";
+import VacinasMundo from '@/views/VacinaObrigatoriasPaises.vue';
 
 const routes = [
   { path: "/", component: Login },
@@ -11,6 +12,7 @@ const routes = [
   { path: "/home", component: Home },
   {path: "/esqueci-minha-senha", component: EsqueciMinhaSenha},
   { path: '/redefinir-senha', component: RedefinirSenha },
+  { path: '/vacinas-mundo', component: VacinasMundo },
 ];
 
 const router = createRouter({

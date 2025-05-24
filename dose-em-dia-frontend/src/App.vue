@@ -23,14 +23,14 @@ export default {
   },
   setup() {
     const route = useRoute();
-    const rotasComSidebar = ['/home', '/vacinas', '/perfil']; //DEFINE AS ROTAS QUE DEVEM EXIBIR A SIDEBAR
 
-    
-    const exibirSidebar = computed(() =>
-      rotasComSidebar.includes(route.path)
+    const rotasSemSidebar = ['/', '/criar-conta']; // ROTAS SEM SIDEBAR
+
+    const exibirSidebar = computed(() => 
+      !rotasSemSidebar.includes(route.path)
     );
 
-    return {exibirSidebar};
+    return { exibirSidebar };
   }    
 };
 
