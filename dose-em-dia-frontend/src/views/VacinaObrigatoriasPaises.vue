@@ -55,7 +55,7 @@ export default {
     data() {
         return {
             paises: [],
-            nomeUsuario: localStorage.getItem('nomeUsuario') || 'Usuário',
+            nomeUsuario: localStorage.getItem('nomeUsuario'),
             filtro: "",
             mostrarFiltro: false
         };
