@@ -19,12 +19,10 @@
       <!-- Vacinas -->
       <div class="row">
         <div class="col-md-4 mb-3" v-for="vacina in vacinasFiltradas" :key="vacina.id">
-          <div class="card border-0 shadow-sm rounded" :class="definirClasse(vacina.status)">
-            <div class="card-body">
-              <h5 class="card-title fw-bold">{{ vacina.nome }}</h5>
-              <p class="card-text mb-1">Status: {{ mapearStatus(vacina.status) }}</p>
-              <small>Data: {{ formatarData(vacina.dataAplicacao) }}</small>
-            </div>
+          <div class="vacina-card d-flex flex-column justify-content-center p-3 shadow-sm rounded" :class="definirClasse(mapearStatus(vacina.status))">
+            <h5 class="fw-bold mb-1">{{ vacina.nome }}</h5>
+            <p class="mb-0 small">Aplicada em: {{ formatarData(vacina.dataAplicacao) }}</p>
+            <p class="mb-0 small">Status: {{ mapearStatus(vacina.status) }}</p>
           </div>
         </div>
       </div>
@@ -62,10 +60,14 @@ export default {
     },
     definirClasse(status) {
       switch (status) {
-        case 'Aplicada': return 'bg-aplicada';
-        case 'A Vencer': return 'bg-avencer';
-        case 'Vencida': return 'bg-vencida';
-        default: return '';
+        case 'Aplicada':
+          return 'vacina-aplicada';
+        case 'A vencer':
+          return 'vacina-avencer';
+        case 'Vencida':
+          return 'vacina-vencida';
+        default:
+          return '';
       }
     },
     mapearStatus(codigo) {
@@ -130,4 +132,26 @@ export default {
   font-weight: bold;
   border: 2px solid #f46c20 !important;
 }
+
+.vacina-card {
+  border-left: 8px solid transparent;
+  background-color: #fff;
+  transition: all 0.2s ease-in-out;
+  min-height: 120px;
+}
+
+/* Barras laterais conforme status */
+.vacina-aplicada {
+  border-left-color: #4caf50;
+}
+
+.vacina-avencer {
+  border-left-color: #ffeb3b;
+}
+
+.vacina-vencida {
+  border-left-color: #f44336;
+}
+
+
 </style>

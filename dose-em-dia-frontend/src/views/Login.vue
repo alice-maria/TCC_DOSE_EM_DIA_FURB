@@ -118,6 +118,7 @@ export default {
         localStorage.setItem("usuarioEmail", this.email);
         localStorage.setItem("usuarioNome", response.data.nome);
         localStorage.setItem("usuarioCPF", response.data.cpf); // adiciona o CPF pra validação de vacinas
+        localStorage.setItem("usuarioId", response.data.id); //salva o id do usuário pra puxar comprovante no local storage, motivo de bug no primeiro teste
 
         // Redirecionar para a rota da tela inicial:
         this.$router.push("/home");

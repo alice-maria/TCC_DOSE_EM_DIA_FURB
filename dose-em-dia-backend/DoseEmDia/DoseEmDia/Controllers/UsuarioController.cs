@@ -94,7 +94,8 @@ public class UsuarioController : ControllerBase
         {
             mensagem = "Login realizado com sucesso.",
             nome = usuario.Nome,
-            cpf = usuario.CPF
+            cpf = usuario.CPF,
+            id = usuario.IdUser
         });
 
     }

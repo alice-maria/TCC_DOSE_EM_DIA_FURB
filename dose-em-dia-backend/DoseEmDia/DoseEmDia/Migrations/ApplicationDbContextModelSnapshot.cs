@@ -22,6 +22,23 @@ namespace DoseEmDia.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("DoseEmDia.Controllers.ContadorRequisicoes", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("Requisicoes")
+                        .HasColumnType("int")
+                        .HasColumnName("Requisicoes");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ContadorRequisicoes");
+                });
+
             modelBuilder.Entity("DoseEmDia.Models.Endereco", b =>
                 {
                     b.Property<int>("IdEndereco")
@@ -29,7 +46,7 @@ namespace DoseEmDia.Migrations
                         .HasColumnType("int")
                         .HasColumnName("IdEndereco");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdEndereco"), 1L, 1);
 
                     b.Property<string>("Bairro")
                         .IsRequired()
@@ -65,7 +82,8 @@ namespace DoseEmDia.Migrations
                 {
                     b.Property<int>("IdNotificacao")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IdNotificacao");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdNotificacao"), 1L, 1);
 
@@ -89,7 +107,7 @@ namespace DoseEmDia.Migrations
                     b.Property<bool>("Visualizada")
                         .HasColumnType("bit");
 
-                    b.HasKey("Id");
+                    b.HasKey("IdNotificacao");
 
                     b.HasIndex("UsuarioId");
 
@@ -100,7 +118,8 @@ namespace DoseEmDia.Migrations
                 {
                     b.Property<int>("IdPais")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IdPais");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPais"), 1L, 1);
 
@@ -114,14 +133,15 @@ namespace DoseEmDia.Migrations
 
                     b.HasKey("IdPais");
 
-                    b.ToTable("Paises");
+                    b.ToTable("Paises", (string)null);
                 });
 
             modelBuilder.Entity("DoseEmDia.Models.Vacina", b =>
                 {
                     b.Property<int>("IdVacina")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IdVacina");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdVacina"), 1L, 1);
 
@@ -143,8 +163,8 @@ namespace DoseEmDia.Migrations
                     b.Property<int>("NumeroDoses")
                         .HasColumnType("int");
 
-                    b.Property<long>("NumeroLote")
-                        .HasColumnType("bigint");
+                    b.Property<int>("NumeroLote")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -198,6 +218,9 @@ namespace DoseEmDia.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Senha")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sexo")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Telefone")

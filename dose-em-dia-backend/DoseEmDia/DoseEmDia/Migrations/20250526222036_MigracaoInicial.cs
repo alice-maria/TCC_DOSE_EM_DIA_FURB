@@ -5,10 +5,23 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DoseEmDia.Migrations
 {
-    public partial class CorrigirUsuarioId : Migration
+    public partial class MigracaoInicial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ContadorRequisicoes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Requisicoes = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContadorRequisicoes", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Endereco",
                 columns: table => new
@@ -31,14 +44,14 @@ namespace DoseEmDia.Migrations
                 name: "Paises",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    IdPais = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Url = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Paises", x => x.Id);
+                    table.PrimaryKey("PK_Paises", x => x.IdPais);
                 });
 
             migrationBuilder.CreateTable(
@@ -52,6 +65,7 @@ namespace DoseEmDia.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Telefone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CPF = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Sexo = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Senha = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Salt = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IdEndereco = table.Column<int>(type: "int", nullable: false),
@@ -74,7 +88,7 @@ namespace DoseEmDia.Migrations
                 name: "Notificacao",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    IdNotificacao = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UsuarioId = table.Column<int>(type: "int", nullable: false),
                     Titulo = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -85,7 +99,7 @@ namespace DoseEmDia.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Notificacao", x => x.Id);
+                    table.PrimaryKey("PK_Notificacao", x => x.IdNotificacao);
                     table.ForeignKey(
                         name: "FK_Notificacao_Usuario_UsuarioId",
                         column: x => x.UsuarioId,
@@ -98,12 +112,12 @@ namespace DoseEmDia.Migrations
                 name: "Vacina",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    IdVacina = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Fabricante = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NumeroDoses = table.Column<int>(type: "int", nullable: false),
-                    NumeroLote = table.Column<long>(type: "bigint", nullable: false),
+                    NumeroLote = table.Column<int>(type: "int", nullable: false),
                     IntervaloEntreDoses = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DataAplicacao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -112,7 +126,7 @@ namespace DoseEmDia.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Vacina", x => x.Id);
+                    table.PrimaryKey("PK_Vacina", x => x.IdVacina);
                     table.ForeignKey(
                         name: "FK_Vacina_Usuario_UsuarioId",
                         column: x => x.UsuarioId,
@@ -140,6 +154,9 @@ namespace DoseEmDia.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ContadorRequisicoes");
+
             migrationBuilder.DropTable(
                 name: "Notificacao");
 
