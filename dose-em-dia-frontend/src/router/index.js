@@ -7,6 +7,7 @@ import RedefinirSenha from "@/views/RedefinirSenha.vue";
 import VacinasMundo from '@/views/VacinaObrigatoriasPaises.vue';
 import ComprovanteView from "@/views/ComprovanteView.vue";
 import Configuracoes from '@/views/AcessarConfiguracoes.vue';
+import HistoricoNotificacoes from "@/views/HistoricoNotificacoes.vue";
 
 const routes = [
   { path: "/", component: Login },
@@ -17,6 +18,7 @@ const routes = [
   { path: '/vacinas-mundo', component: VacinasMundo },
   {path: '/exportar-comprovante', component: ComprovanteView},
   { path: '/vacinas', component: Configuracoes },
+  {path: '/historico-notificacoes', component: HistoricoNotificacoes}
 ];
 
 const router = createRouter({
