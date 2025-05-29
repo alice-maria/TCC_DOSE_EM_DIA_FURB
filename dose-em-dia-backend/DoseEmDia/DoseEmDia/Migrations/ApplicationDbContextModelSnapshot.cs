@@ -90,6 +90,10 @@ namespace DoseEmDia.Migrations
                     b.Property<DateTime>("DataEnvio")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("EmailEnviado")
+                        .HasColumnType("bit")
+                        .HasColumnName("EmailEnviado");
+
                     b.Property<string>("Mensagem")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

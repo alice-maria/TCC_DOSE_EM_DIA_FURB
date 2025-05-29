@@ -17,6 +17,9 @@ namespace DoseEmDia.Models
         public DateTime DataEnvio { get; set; }
         public bool Visualizada { get; set; } = false;
 
+        [Column("EmailEnviado")]
+        public bool EmailEnviado { get; set; } = false; //atualização: validação de Email enviado
+
         public Notificacao() { }
     }
 }

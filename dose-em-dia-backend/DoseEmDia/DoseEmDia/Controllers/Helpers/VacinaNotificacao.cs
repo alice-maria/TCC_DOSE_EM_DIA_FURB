@@ -78,14 +78,17 @@ namespace DoseEmDia.Controllers.Helpers
 
                                 if (!jaEnviado)
                                 {
+                                    bool emailEnviado = false;
+
                                     try
                                     {
                                         await emailService.EnviarEmailAsync(vacina.Usuario.Email, titulo, mensagem);
+                                        emailEnviado = true;
                                     }
                                     catch (Exception ex)
                                     {
                                         _logger.LogError(ex, $"Falha ao enviar e-mail para {vacina.Usuario.Email} - Método: ExecuteAsync");
-                                        continue;
+                                        // segue mesmo com falha
                                     }
 
                                     notificacoesCriadas.Add(new Notificacao
@@ -95,7 +98,8 @@ namespace DoseEmDia.Controllers.Helpers
                                         Mensagem = mensagem,
                                         Tipo = tipo.Value,
                                         DataEnvio = DateTime.Now,
-                                        Visualizada = false
+                                        Visualizada = false,
+                                        EmailEnviado = emailEnviado
                                     });
                                 }
                             }

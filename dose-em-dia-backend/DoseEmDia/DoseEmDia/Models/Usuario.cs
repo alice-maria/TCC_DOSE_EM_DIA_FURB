@@ -22,7 +22,7 @@ public class Usuario
     public List<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
     public string? TokenRedefinicaoSenha { get; set; }
     public DateTime? TokenExpiracao { get; set; }
-    public bool ReceberNotificacoes { get; set; }
+    public bool ReceberNotificacoes { get; set; } = true;
 
     public Usuario(string nome, DateTime dataNascimento, string email, string telefone, string cpf, string sexo, string senha, Endereco endereco)
     {

@@ -32,7 +32,7 @@ export default {
         { title: 'Exportar Comprovante', icon: 'fas fa-file-pdf', route: '/exportar-comprovante' },
         { title: 'Vacinas pelo Mundo', icon: 'fas fa-globe-americas', route: '/vacinas-mundo' },
         { title: 'Postos de Saúde', icon: 'fas fa-map-marker-alt', route: '/postos-saude' },
-        { title: 'Notificações', icon: 'fas fa-bell', route: '/notificacoes' },
+        { title: 'Notificações', icon: 'fas fa-bell', route: '/historico-notificacoes' },
         { title: 'Perfil', icon: 'fas fa-user', route: '/perfil' },
         { title: 'Sair', icon: 'fas fa-sign-out-alt', route: '/' }
       ]
