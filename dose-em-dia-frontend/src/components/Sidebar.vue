@@ -3,11 +3,11 @@
   <div>
     <div v-if="!isCollapsed" class="sidebar-overlay" @click="toggleSidebar"></div>
     <aside :class="['position-fixed h-100 bg-primary', { 'w-15': !isCollapsed, 'w-auto': isCollapsed }]" style="background-color: #f46c20 !important;">
-      <div class="d-flex align-items-center p-3">
-        <button @click="toggleSidebar" class="btn btn-link text-white p-0">
+      <div class="menu-toggle">
+        <button @click="toggleSidebar" class="btn-toggle-menu">
           <i class="fas fa-bars"></i>
         </button>
-        <span v-if="!isCollapsed" class="text-white ms-3 fw-bold">Menu</span>
+        <span v-if="!isCollapsed" class="text-white ms-2 fw-bold">Menu</span>
       </div>
       <ul class="list-unstyled px-3">
         <li v-for="item in menuItems" :key="item.title" class="mb-2">
@@ -28,7 +28,7 @@ export default {
       isCollapsed: true,
       menuItems: [
         { title: 'Início', icon: 'fas fa-home', route: '/home' },
-        { title: 'Vacinas', icon: 'fas fa-syringe', route: '/vacinas' },
+       { title: 'Configurações', icon: 'fas fa-cog', route: '/configuracoes' },
         { title: 'Exportar Comprovante', icon: 'fas fa-file-pdf', route: '/exportar-comprovante' },
         { title: 'Vacinas pelo Mundo', icon: 'fas fa-globe-americas', route: '/vacinas-mundo' },
         { title: 'Postos de Saúde', icon: 'fas fa-map-marker-alt', route: '/postos-saude' },
@@ -74,5 +74,20 @@ aside {
 
 .w-15 {
   width: 15% !important;
+}
+
+.menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+}
+
+.btn-toggle-menu {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 25px !important;
+  cursor: pointer;
 }
 </style>  

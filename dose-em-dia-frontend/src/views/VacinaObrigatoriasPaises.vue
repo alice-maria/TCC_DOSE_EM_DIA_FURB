@@ -9,13 +9,21 @@
             </div>
         </div>
 
+        <v-breadcrumbs class="meus-breadcrumbs" :items="breadcrumbs">
+            <template v-slot:item="{ item }">
+                <span :class="[
+                    'breadcrumb-link',
+                    { 'breadcrumb-laranja': !item.to }
+                ]" @click="item.to && navegar(item.to)" style="cursor: pointer;">
+                    <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+                    {{ item.text }}
+                </span>
+
+            </template>
+        </v-breadcrumbs>
+
         <!-- Navegação e Filtro -->
         <div class="navegacao-filtro">
-            <div class="navegacao">
-                <span class="texto">Serviços e Informações</span>
-                <span class="seta">&gt;</span>
-                <span class="pagina-atual">Vacinas pelo mundo</span>
-            </div>
             <v-btn class="botao-filtro" variant="outlined" color="primary" @click="mostrarFiltro = !mostrarFiltro">
                 <span>FILTROS</span>
             </v-btn>
@@ -23,7 +31,8 @@
 
         <!-- Filtro em linha completa -->
         <div v-if="mostrarFiltro" class="filtro">
-            <v-text-field v-model="filtro" label="Pesquisar país..." outlined clearable class="campo-pesquisa"></v-text-field>
+            <v-text-field v-model="filtro" label="Pesquisar país..." outlined clearable
+                class="campo-pesquisa"></v-text-field>
         </div>
 
         <!-- Lista de Países -->
@@ -33,7 +42,8 @@
                     <v-list-item @click="redirecionarUrl(pais.url)" class="item-pais hover-sombra">
                         <v-list-item-content>
                             <v-list-item-title class="titulo-pais">{{ pais.nome }}</v-list-item-title>
-                            <v-list-item-subtitle class="subtitulo-pais">Consulte as vacinas desse país.</v-list-item-subtitle>
+                            <v-list-item-subtitle class="subtitulo-pais">Consulte as vacinas desse
+                                país.</v-list-item-subtitle>
                         </v-list-item-content>
                         <v-list-item-icon>
                             <v-icon class="icone-seta">mdi-chevron-right</v-icon>
@@ -55,9 +65,13 @@ export default {
     data() {
         return {
             paises: [],
-            nomeUsuario: localStorage.getItem('nomeUsuario'),
+            nomeUsuario: "",
             filtro: "",
-            mostrarFiltro: false
+            mostrarFiltro: false,
+            breadcrumbs: [
+                { text: "Serviços e Informações", to: "/home", icon: "mdi-home" },
+                { text: "Vacinas pelo mundo" }
+            ],
         };
     },
     computed: {
@@ -66,8 +80,10 @@ export default {
         }
     },
     mounted() {
+        this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
         this.carregarPaises();
     },
+
     methods: {
         async carregarPaises() {
             try {
@@ -79,7 +95,10 @@ export default {
         },
         redirecionarUrl(url) {
             if (url) window.open(url, "_blank");
-        }
+        },
+        navegar(rota) {
+            if (rota) this.$router.push(rota);
+        },
     }
 };
 </script>
@@ -87,7 +106,7 @@ export default {
 <style scoped>
 .container {
     background-color: #f8f9fa;
-    max-width: 1400px;
+    max-width: 1500px;
     min-height: 80vh;
     padding: 2rem;
 }
@@ -100,7 +119,8 @@ export default {
 
 .titulo {
     font-size: 2rem;
-    color: #f97316; /* Laranja */
+    color: #f97316;
+    /* Laranja */
     font-weight: bold;
 }
 
@@ -189,4 +209,22 @@ export default {
     text-align: center;
     color: #6b7280;
 }
+
+.breadcrumb-link {
+    color: #6b7280;
+    transition: color 0.2s;
+    font-size: 1.2rem;
+}
+
+.breadcrumb-link:hover {
+    color: #f97316;
+    text-decoration: underline;
+}
+
+.breadcrumb-laranja {
+    color: #f97316 !important;
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+
 </style>

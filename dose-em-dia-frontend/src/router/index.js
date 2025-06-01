@@ -17,8 +17,9 @@ const routes = [
   { path: '/redefinir-senha', component: RedefinirSenha },
   { path: '/vacinas-mundo', component: VacinasMundo },
   {path: '/exportar-comprovante', component: ComprovanteView},
-  { path: '/vacinas', component: Configuracoes },
-  {path: '/historico-notificacoes', component: HistoricoNotificacoes}
+  { path: '/configuracoes', component: Configuracoes },
+  {path: '/historico-notificacoes', component: HistoricoNotificacoes},
+  { path: '/redefinir-senha', name: 'redefinir-senha', component: RedefinirSenha }
 ];
 
 const router = createRouter({

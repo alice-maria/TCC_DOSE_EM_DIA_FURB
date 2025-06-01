@@ -5,11 +5,21 @@
       <h1 class="titulo">Dose em dia</h1>
       <div class="usuario">
         <img src="@/imagens/icone-user-orange.png" alt="Ícone de usuário" class="icone-usuario">
-        <span class="saudacao">Olá, {{ nomeUsuario }}</span>
+        <span class="saudacao">Olá, {{ nomeUsuario }}!</span>
       </div>
     </div>
 
-    <v-breadcrumbs :items="breadcrumbs" class="mb-4" />
+    <v-breadcrumbs class="meus-breadcrumbs" :items="breadcrumbs">
+      <template v-slot:item="{ item }">
+        <span :class="[
+          'breadcrumb-link',
+          { 'breadcrumb-laranja': !item.to } // se não tem .to, é o item atual
+        ]" @click="item.to && navegar(item.to)" style="cursor: pointer;">
+          <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+          {{ item.text }}
+        </span>
+      </template>
+    </v-breadcrumbs>
 
     <v-card class="card-ajustado">
       <v-card-text>
@@ -39,7 +49,7 @@
         <v-divider class="separador"></v-divider>
 
         <!-- Segurança -->
-        <v-list-item @click="navegar('seguranca')" class="hoverable">
+        <v-list-item @click="navegar('redefinir-senha')" class="hoverable">
           <v-list-item-title class="secao-titulo">Segurança</v-list-item-title>
           <v-list-item-subtitle>Altere aqui a sua senha.</v-list-item-subtitle>
           <v-icon>mdi-chevron-right</v-icon>
@@ -55,31 +65,59 @@
         <v-divider class="separador"></v-divider>
 
         <!-- Sair -->
-        <v-list-item @click="sair()" class="hoverable">
+        <v-list-item @click="dialogSair = true" class="hoverable">
           <v-list-item-title class="secao-titulo">Sair</v-list-item-title>
           <v-list-item-subtitle>Desconecte da conta em que você está.</v-list-item-subtitle>
           <v-icon>mdi-logout</v-icon>
         </v-list-item>
+
+        <!-- Diálogo de confirmação -->
+        <v-dialog v-model="dialogSair" max-width="320">
+          <v-card class="popup-sair">
+            <v-card-text class="popup-sair__texto">
+              Você confirma a saída da conta?
+            </v-card-text>
+
+            <v-card-actions class="popup-sair__botoes">
+              <v-btn class="popup-sair__cancelar" @click="dialogSair = false">Cancelar</v-btn>
+              <v-btn class="popup-sair__confirmar" @click="confirmarSaida">Confirmar</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
       </v-card-text>
     </v-card>
   </v-container>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-const nomeUsuario = ref(localStorage.getItem('nomeUsuario') || 'Usuário')
-const notificacoesAtivas = ref(true)
-
-function sair() {
-  localStorage.removeItem('token')
-  localStorage.removeItem('nomeUsuario')
-  router.push('/')
-}
-
+<script>
+export default {
+  name: "AcessarConfiguracoes",
+  data() {
+    return {
+      nomeUsuario: "",
+      dialogSair: false,
+      notificacoesAtivas: true,
+      breadcrumbs: [
+        { text: "Serviços e Informações", to: "/home", icon: "mdi-home" },
+        { text: "Configurações" } // este é o item atual, sem link
+      ],
+    };
+  },
+  mounted() {
+    this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
+  },
+  methods: {
+    confirmarSaida() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("usuarioNome");
+      this.$router.push("/");
+    },
+    navegar(rota) {
+      if (rota) this.$router.push(rota);
+    },
+  }
+};
 </script>
 
 <style scoped>
@@ -117,7 +155,7 @@ function sair() {
 }
 
 .secao-titulo {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #f97316;
 }
@@ -130,7 +168,7 @@ function sair() {
 .hoverable {
   cursor: pointer;
   transition: background-color 0.2s ease;
-  min-height: 12vh; /* altura mínima */
+  min-height: 12vh;
 }
 
 .hoverable:hover {
@@ -138,11 +176,71 @@ function sair() {
 }
 
 .card-ajustado {
-  width: 75vw; /* ocupa 95% da largura da viewport */
-  min-height: 77vh; /* altura mínima */
-  margin: 20px auto; /* centraliza com espaçamento */
+  width: 75vw;
+  min-height: 77vh;
+  margin: 20px auto;
   box-sizing: border-box;
 }
 
+.popup-sair {
+  background-color: #f97316;
+  border-radius: 25px !important;
+  /* mais arredondado */
+  padding: 32px 24px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.popup-sair__texto {
+  font-weight: bold;
+  font-size: 1.3rem !important;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.popup-sair__botoes {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.popup-sair__cancelar,
+.popup-sair__confirmar {
+  border-radius: 999px;
+  text-transform: none;
+  font-weight: 600;
+  padding: 8px 20px;
+  font-size: 0.95rem;
+  min-width: 100px;
+}
+
+.popup-sair__cancelar {
+  background-color: #fb923c;
+  color: white;
+}
+
+.popup-sair__confirmar {
+  background-color: white;
+  color: #f97316;
+}
+
+.breadcrumb-link {
+  color: #6b7280;
+  transition: color 0.2s;
+  font-size: 1.1rem; 
+}
+
+.breadcrumb-link:hover {
+  color: #f97316;
+  text-decoration: underline;
+}
+
+.breadcrumb-laranja {
+  color: #f97316 !important;
+  font-weight: 900;
+  font-size: 1.1rem;
+}
 
 </style>

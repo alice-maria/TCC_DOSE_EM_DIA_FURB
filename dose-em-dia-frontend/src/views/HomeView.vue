@@ -11,15 +11,19 @@
       <!-- Filtros -->
       <div class="d-flex gap-2 mb-4">
         <button class="btn btn-outline-dark" :class="{ active: filtro === '' }" @click="filtro = ''">Todas</button>
-        <button class="btn btn-outline-success" :class="{ active: filtro === 'Aplicada' }" @click="filtro = 'Aplicada'">Aplicadas</button>
-        <button class="btn btn-outline-warning" :class="{ active: filtro === 'A vencer' }" @click="filtro = 'A vencer'">A vencer</button>
-        <button class="btn btn-outline-danger" :class="{ active: filtro === 'Vencida' }" @click="filtro = 'Vencida'">Vencidas</button>
+        <button class="btn btn-outline-success" :class="{ active: filtro === 'Aplicada' }"
+          @click="filtro = 'Aplicada'">Aplicadas</button>
+        <button class="btn btn-outline-warning" :class="{ active: filtro === 'A vencer' }"
+          @click="filtro = 'A vencer'">A vencer</button>
+        <button class="btn btn-outline-danger" :class="{ active: filtro === 'Vencida' }"
+          @click="filtro = 'Vencida'">Vencidas</button>
       </div>
 
       <!-- Vacinas -->
       <div class="row">
         <div class="col-md-4 mb-3" v-for="vacina in vacinasFiltradas" :key="vacina.id">
-          <div class="vacina-card d-flex flex-column justify-content-center p-3 shadow-sm rounded" :class="definirClasse(mapearStatus(vacina.status))">
+          <div class="vacina-card d-flex flex-column justify-content-center p-3 shadow-sm rounded"
+            :class="definirClasse(mapearStatus(vacina.status))">
             <h5 class="fw-bold mb-1">{{ vacina.nome }}</h5>
             <p class="mb-0 small">Aplicada em: {{ formatarData(vacina.dataAplicacao) }}</p>
             <p class="mb-0 small">Status: {{ mapearStatus(vacina.status) }}</p>
@@ -45,7 +49,7 @@ export default {
   computed: {
     vacinasFiltradas() {
       if (!this.filtro) return this.vacinas;
-      return this.vacinas.filter(v => v.status === this.filtro);
+      return this.vacinas.filter(v => this.mapearStatus(v.status) === this.filtro);
     }
   },
   mounted() {
@@ -112,6 +116,7 @@ export default {
 .text-orange {
   color: #f46c20;
 }
+
 .home-container {
   background-color: #f8f9fa;
   width: 100%;
@@ -119,15 +124,19 @@ export default {
   min-height: 80vh;
   padding: 2rem;
 }
+
 .bg-aplicada {
   background-color: #d1f7d1;
 }
+
 .bg-avencer {
   background-color: #fff9c4;
 }
+
 .bg-vencida {
   background-color: #ffcdd2;
 }
+
 .btn.active {
   font-weight: bold;
   border: 2px solid #f46c20 !important;
@@ -152,6 +161,4 @@ export default {
 .vacina-vencida {
   border-left-color: #f44336;
 }
-
-
 </style>
