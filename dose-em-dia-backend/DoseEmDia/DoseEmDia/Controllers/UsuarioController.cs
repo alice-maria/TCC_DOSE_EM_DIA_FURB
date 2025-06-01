@@ -21,6 +21,19 @@ public class UsuarioController : ControllerBase
         _envioEmail = envioEmail;
     }
 
+    [HttpGet("buscarPorCpf/{cpf}")]
+    public async Task<IActionResult> BuscarPorCpf(string cpf)
+    {
+        var usuario = await _context.Usuario
+            .Include(u => u.Endereco)
+            .FirstOrDefaultAsync(u => u.CPF == cpf);
+
+        if (usuario == null)
+            return NotFound();
+
+        return Ok(usuario);
+    }
+
     [HttpPost("criar")]
     public async Task<IActionResult> CriarUsuario([FromBody] Usuario request)
     {
