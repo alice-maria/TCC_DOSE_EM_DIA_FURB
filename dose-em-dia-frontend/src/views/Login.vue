@@ -112,7 +112,7 @@ export default {
         const response = await axios.post("http://localhost:5054/api/usuario/login", payload);
         localStorage.setItem("usuarioNome", response.data.nome); //salvar nome do usuario
 
-        alert("Login feito com sucesso!");
+        console.log("Login feito com sucesso!");
 
         //armazena e-mail e nome no localStorage
         localStorage.setItem("usuarioEmail", this.email);
