@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using DoseEmDia.Models.db;
 using DoseEmDia.Helpers;
 using DoseEmDia.Controllers.Helpers;
+using DoseEmDia.Services;
 
 namespace DoseEmDia
 {
@@ -25,12 +26,13 @@ namespace DoseEmDia
 
             services.AddScoped<EnvioEmail>();
             services.AddHostedService<VacinaNotificacao>();
+            services.AddScoped<PaisService>();
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -38,6 +40,12 @@ namespace DoseEmDia
             }
 
             app.UseRouting();
+
+            using (var scope = app.ApplicationServices.CreateScope())
+            {
+                var paisService = scope.ServiceProvider.GetRequiredService<PaisService>();
+                await paisService.PopularPaisesSeNecessarioAsync();
+            }
 
             app.UseCors(policy => policy
                 .AllowAnyOrigin()
