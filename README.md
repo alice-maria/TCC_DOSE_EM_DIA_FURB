@@ -60,7 +60,7 @@ docker-compose up --build
 Você pode testar os endpoints da API com o [Postman](https://www.postman.com/).
 
 - Acesse nossa coleção de testes:  
-  [🔗 Coleção no Postman](https://postman.com/YOUR-COLLECTION-LINK)
+  [🔗 Coleção no Postman](https://web.postman.co/workspace/afab16b2-821e-4af1-83d6-077f44a6939b)
 
 ---
 
