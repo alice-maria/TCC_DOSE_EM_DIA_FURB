@@ -1,61 +1,65 @@
 <template>
-    <div class="container">
-        <!-- Cabeçalho -->
-        <div class="header">
-            <h1 class="titulo">Dose em dia</h1>
-            <div class="usuario">
-                <img src="@/imagens/icone-user-orange.png" alt="Ícone de usuário" class="icone-usuario">
-                <span class="saudacao">Olá, {{ nomeUsuario }}</span>
+    <v-container fluid class="pa-0">
+        <!-- Envoltório com margem -->
+        <div class="pagina-paises">
+            <!-- Cabeçalho -->
+            <div class="header">
+                <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
+                <div class="usuario">
+                    <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario"
+                        @click="$router.push('/editar-perfil')" />
+                    <span class="saudacao" @click="$router.push('/editar-perfil')">Olá, {{ nomeUsuario }}!</span>
+                </div>
             </div>
-        </div>
 
-        <v-breadcrumbs class="meus-breadcrumbs" :items="breadcrumbs">
-            <template v-slot:item="{ item }">
-                <span :class="[
-                    'breadcrumb-link',
-                    { 'breadcrumb-laranja': !item.to }
-                ]" @click="item.to && navegar(item.to)" style="cursor: pointer;">
-                    <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
-                    {{ item.text }}
-                </span>
-
-            </template>
-        </v-breadcrumbs>
-
-        <!-- Navegação e Filtro -->
-        <div class="navegacao-filtro">
-            <v-btn class="botao-filtro" variant="outlined" color="primary" @click="mostrarFiltro = !mostrarFiltro">
-                <span>FILTROS</span>
-            </v-btn>
-        </div>
-
-        <!-- Filtro em linha completa -->
-        <div v-if="mostrarFiltro" class="filtro">
-            <v-text-field v-model="filtro" label="Pesquisar país..." outlined clearable
-                class="campo-pesquisa"></v-text-field>
-        </div>
-
-        <!-- Lista de Países -->
-        <v-card class="lista-paises rounded-xl">
-            <v-list>
-                <template v-for="(pais, index) in paisesFiltrados" :key="pais.idPais">
-                    <v-list-item @click="redirecionarUrl(pais.url)" class="item-pais hover-sombra">
-                        <v-list-item-content>
-                            <v-list-item-title class="titulo-pais">{{ pais.nome }}</v-list-item-title>
-                            <v-list-item-subtitle class="subtitulo-pais">Consulte as vacinas desse
-                                país.</v-list-item-subtitle>
-                        </v-list-item-content>
-                        <v-list-item-icon>
-                            <v-icon class="icone-seta">mdi-chevron-right</v-icon>
-                        </v-list-item-icon>
-                    </v-list-item>
-                    <v-divider v-if="index < paisesFiltrados.length - 1"></v-divider>
+            <!-- Breadcrumbs -->
+            <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs">
+                <template v-slot:item="{ item }">
+                    <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]"
+                        @click="item.to && navegar(item.to)" style="cursor: pointer;">
+                        <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+                        {{ item.text }}
+                    </span>
                 </template>
-            </v-list>
-        </v-card>
+            </v-breadcrumbs>
 
-        <p v-if="paisesFiltrados.length === 0" class="mensagem-nenhum-pais">Nenhum país encontrado.</p>
-    </div>
+            <!-- Navegação e Filtro -->
+            <div class="navegacao-filtro">
+                <v-btn class="botao-round-laranja" @click="mostrarFiltro = !mostrarFiltro">
+                    FILTRO
+                </v-btn>
+
+            </div>
+
+            <!-- Filtro em linha completa -->
+            <div v-if="mostrarFiltro" class="filtro">
+                <v-text-field v-model="filtro" placeholder="Pesquisar país" prepend-inner-icon="mdi-magnify" clearable
+                    rounded variant="outlined" density="comfortable" hide-details
+                    class="campo-pesquisa campo-material-search" />
+            </div>
+
+            <!-- Lista de Países -->
+            <div class="lista-paises rounded-xl px-3">
+                <v-list>
+                    <template v-for="(pais, index) in paisesFiltrados" :key="pais.idPais">
+                        <v-list-item @click="redirecionarUrl(pais.url)" class="item-pais hover-sombra">
+                            <v-list-item-content>
+                                <v-list-item-title class="titulo-pais">{{ pais.nome }}</v-list-item-title>
+                                <v-list-item-subtitle class="subtitulo-pais">Consulte as vacinas desse
+                                    país.</v-list-item-subtitle>
+                            </v-list-item-content>
+                            <template #append>
+                                <v-icon>mdi-chevron-right</v-icon>
+                            </template>
+                        </v-list-item>
+                        <v-divider v-if="index < paisesFiltrados.length - 1"></v-divider>
+                    </template>
+                </v-list>
+            </div>
+
+            <p v-if="paisesFiltrados.length === 0" class="mensagem-nenhum-pais">Nenhum país encontrado.</p>
+        </div>
+    </v-container>
 </template>
 
 <script>
@@ -104,24 +108,23 @@ export default {
 </script>
 
 <style scoped>
-.container {
-    background-color: #f8f9fa;
-    max-width: 1500px;
-    min-height: 80vh;
-    padding: 2rem;
+.pagina-paises {
+    margin-left: 95px;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 1.5rem 2rem;
+    background-color: white;
+    border-bottom: 1px solid #eee;
 }
 
 .titulo {
-    font-size: 2rem;
-    color: #f97316;
-    /* Laranja */
+    font-size: 1.8rem;
     font-weight: bold;
+    color: #f97316;
 }
 
 .usuario {
@@ -130,19 +133,21 @@ export default {
 }
 
 .icone-usuario {
-    width: 27px;
-    height: 27px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
 }
 
 .saudacao {
-    margin-left: 8px;
+    font-weight: 500;
 }
 
 .navegacao-filtro {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 8px;
+    margin-top: -53px;
 }
 
 .navegacao {
@@ -150,31 +155,27 @@ export default {
     align-items: center;
 }
 
-.botao-filtro {
-    margin-left: auto;
-    color: #f97316 !important;
-    border-color: #f97316 !important;
-}
-
-.texto {
-    font-size: 1rem;
-    color: #000000;
-}
-
-.seta {
-    font-size: 1rem;
-    color: #000000;
-    margin: 0 4px;
-}
-
-.pagina-atual {
-    font-size: 1rem;
+.botao-round-laranja {
+    background-color: transparent;
+    border: 1.5px solid #f97316;
     color: #f97316;
-    font-weight: bold;
+    border-radius: 999px;
+    /* deixa bem arredondado */
+    text-transform: none;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 6px 20px;
+    min-height: 40px;
+    min-width: 80px;
+    box-shadow: none;
+    transition: background-color 0.2s ease;
+    margin-left: 1450px;
+    margin-top: -12px;
 }
 
-.filtro {
-    margin-top: 8px;
+.botao-round-laranja:hover {
+    background-color: rgba(249, 115, 22, 0.08);
+    /* preenchimento leve no hover */
 }
 
 .lista-paises {
@@ -190,19 +191,25 @@ export default {
     transition: background-color 0.3s, box-shadow 0.3s;
 }
 
+.hover-sombra {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    min-height: 12vh;
+}
+
 .hover-sombra:hover {
-    background-color: #f1f1f1;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
 }
 
 .titulo-pais {
-    font-size: 1.8rem;
-    font-weight: bold;
+    font-size: 1.5rem;
+    font-weight: 600;
     color: #f97316;
 }
 
 .subtitulo-pais {
-    color: #6b7280;
+    font-size: 0.9rem;
+    color: #555;
 }
 
 .mensagem-nenhum-pais {
@@ -211,20 +218,20 @@ export default {
 }
 
 .breadcrumb-link {
-    color: #6b7280;
-    transition: color 0.2s;
-    font-size: 1.2rem;
+  color: #6b7280;
+  transition: color 0.2s;
+  font-size: 1.1rem;
 }
 
 .breadcrumb-link:hover {
-    color: #f97316;
-    text-decoration: underline;
+  color: #f97316;
+  text-decoration: underline;
 }
 
 .breadcrumb-laranja {
-    color: #f97316 !important;
-    font-weight: 900;
-    font-size: 1.2rem;
+  color: #f97316 !important;
+  font-weight: 900;
+  font-size: 1.1rem;
 }
 
 </style>

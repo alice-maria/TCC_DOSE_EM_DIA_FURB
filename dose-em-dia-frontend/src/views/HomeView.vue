@@ -1,28 +1,51 @@
 <template>
-  <div class="container d-flex justify-content-center py-5">
-    <div class="home-container p-4 rounded shadow">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 class="text-orange fw-bold">Olá, {{ nomeUsuario }}!</h2>
-          <p class="text-muted mb-0">Bem-vindo ao Dose em Dia</p>
+  <v-container fluid class="pa-0">
+    <div class="pagina-home px-4 py-5">
+      <!-- Cabeçalho -->
+      <div class="header d-flex justify-content-between align-items-center mb-3">
+        <div class="logo-container" @click="$router.push('/home')" style="cursor: pointer;">
+          <img src="@/imagens/logo.png" alt="Logo Dose em Dia" class="logo-img" />
+          <span class="mensagem-boas-vindas text-muted fw-bold">Seja bem-vindo(a) ao Dose em Dia!</span>
+        </div>
+
+        <div class="usuario d-flex align-items-center gap-2">
+          <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario"
+            @click="$router.push('/editar-perfil')" />
+          <span class="saudacao" @click="$router.push('/editar-perfil')">
+            Olá, {{ nomeUsuario }}!
+          </span>
         </div>
       </div>
 
+      <!-- Breadcrumbs -->
+      <v-breadcrumbs class="meus-breadcrumbs px-1 mb-4" :items="breadcrumbs">
+        <template v-slot:item="{ item }">
+          <span :class="['breadcrumb-laranja', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
+            style="cursor: pointer;">
+            <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+            {{ item.text }}
+          </span>
+        </template>
+      </v-breadcrumbs>
+
       <!-- Filtros -->
-      <div class="d-flex gap-2 mb-4">
+      <div class="d-flex flex-wrap gap-2 mb-4">
         <button class="btn btn-outline-dark" :class="{ active: filtro === '' }" @click="filtro = ''">Todas</button>
-        <button class="btn btn-outline-success" :class="{ active: filtro === 'Aplicada' }"
-          @click="filtro = 'Aplicada'">Aplicadas</button>
-        <button class="btn btn-outline-warning" :class="{ active: filtro === 'A vencer' }"
-          @click="filtro = 'A vencer'">A vencer</button>
-        <button class="btn btn-outline-danger" :class="{ active: filtro === 'Vencida' }"
-          @click="filtro = 'Vencida'">Vencidas</button>
+        <button class="btn btn-outline-success" :class="{ active: filtro === 'Aplicada' }" @click="filtro = 'Aplicada'">
+          Aplicadas
+        </button>
+        <button class="btn btn-outline-warning" :class="{ active: filtro === 'A vencer' }" @click="filtro = 'A vencer'">
+          A vencer
+        </button>
+        <button class="btn btn-outline-danger" :class="{ active: filtro === 'Vencida' }" @click="filtro = 'Vencida'">
+          Vencidas
+        </button>
       </div>
 
       <!-- Vacinas -->
-      <div class="row">
-        <div class="col-md-4 mb-3" v-for="vacina in vacinasFiltradas" :key="vacina.id">
-          <div class="vacina-card d-flex flex-column justify-content-center p-3 shadow-sm rounded"
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 gx-4">
+        <div class="col mb-4" v-for="vacina in vacinasFiltradas" :key="vacina.id">
+          <div class="vacina-card d-flex flex-column justify-content-center p-3 shadow-sm rounded h-100"
             :class="definirClasse(mapearStatus(vacina.status))">
             <h5 class="fw-bold mb-1">{{ vacina.nome }}</h5>
             <p class="mb-0 small">Aplicada em: {{ formatarData(vacina.dataAplicacao) }}</p>
@@ -31,7 +54,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </v-container>
 </template>
 
 <script>
@@ -43,7 +66,10 @@ export default {
     return {
       nomeUsuario: "",
       filtro: "",
-      vacinas: []
+      vacinas: [],
+      breadcrumbs: [
+        { text: "Serviços e Informações", to: "/home", icon: "mdi-home" },
+      ],
     };
   },
   computed: {
@@ -113,16 +139,77 @@ export default {
 </script>
 
 <style scoped>
-.text-orange {
-  color: #f46c20;
+.pagina-home {
+  margin-left: 95px;
+}
+
+.logo-img {
+  height: 200px;
+  object-fit: contain;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  margin-top: -45px;
+  margin-left: -25px;
+}
+
+.mensagem-boas-vindas {
+  font-size: 25px;
+  margin-top: -110px;
+  margin-left: 200px;
+}
+
+.breadcrumb-link {
+  color: #6b7280;
+  transition: color 0.2s;
+  font-size: 1.1rem;
+}
+
+.breadcrumb-link:hover {
+  color: #f97316;
+  text-decoration: underline;
+}
+
+.breadcrumb-laranja {
+  color: #f97316 !important;
+  font-weight: 900;
+  font-size: 1.1rem;
+  margin-top: 40px;
+}
+
+.titulo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #f97316;
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+}
+
+.icone-usuario {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 0.1rem;
+  margin-top: 37px;
+}
+
+.saudacao {
+  font-weight: 500;
+  margin-top: 38px;
+  margin-right: 0.6rem;
 }
 
 .home-container {
-  background-color: #f8f9fa;
+  background-color: transparent;
   width: 100%;
-  max-width: 2500px;
-  min-height: 80vh;
-  padding: 2rem;
+  padding: 2rem 2rem;
+  margin-left: 95px;
 }
 
 .bg-aplicada {
@@ -139,7 +226,7 @@ export default {
 
 .btn.active {
   font-weight: bold;
-  border: 2px solid #f46c20 !important;
+  border: 2px solid !important;
 }
 
 .vacina-card {

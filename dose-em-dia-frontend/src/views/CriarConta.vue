@@ -1,91 +1,91 @@
 <template>
-  <div class="container py-5">
-    <h1 class="text-orange fw-bold">Dose em dia</h1>
-    <h4 class="mt-2">Crie sua conta</h4>
-    <p class="text-muted">Mantenha sua vacinação em dia!</p>
+  <div class="pagina">
+    <!-- TOPO BRANCO COM TÍTULOS -->
+    <div class="cabecalho-branco">
+      <h1 class="titulo-principal" @click="$router.push('/')">Dose em dia </h1>
+      <h2 class="segundo-titulo">Crie sua conta</h2>
+      <p class="terceiro-titulo">Mantenha sua vacinação em dia!</p>
+    </div>
 
-    <form @submit.prevent="criarConta" class="bg-white p-4 rounded shadow mt-4">
-      <div class="row g-3">
-        <!-- Coluna 1 -->
-        <div class="col-md-6">
-          <label class="form-label">Nome completo*</label>
-          <input type="text" class="form-control" v-model="form.nome" required />
+    <!-- FUNDO LARANJA COM FORMULÁRIO -->
+    <div class="container-laranja">
+      <div class="formulario-caixa">
 
-          <label class="form-label mt-3">E-mail*</label>
-          <input type="email" class="form-control" v-model="form.email"
-            :class="{ 'is-valid': emailValido, 'is-invalid': !emailValido && form.email.length > 0 }"
-            @input="validarEmail" required />
-          <p v-if="form.email.length > 0" :class="{ 'text-success': emailValido, 'text-danger': !emailValido }">
-            {{ emailValido ? 'E-mail válido' : 'E-mail inválido' }}
-          </p>
+        <v-progress-linear :model-value="percentualPreenchido" color="#b2443a" height="6" rounded
+          class="mb-6" />
 
+        <v-form @submit.prevent="criarConta" ref="form">
+          <v-row dense>
+            <!-- Coluna 1 -->
+            <v-col cols="12" md="6">
+              <v-text-field label="Nome completo*" v-model="form.nome" variant="outlined" required />
+              <v-text-field label="E-mail*" v-model="form.email" variant="outlined" type="email" @input="validarEmail"
+                :class="{
+                  'is-valid': emailValido,
+                  'is-invalid': !emailValido && form.email.length > 0
+                }" required />
+              <p v-if="form.email.length > 0" :class="{ 'text-success': emailValido, 'text-danger': !emailValido }">
+                {{ emailValido ? 'E-mail válido' : 'E-mail inválido' }}
+              </p>
 
-          <label class="form-label mt-3">Telefone*</label>
-          <input type="text" class="form-control" v-mask="'(##) #####-####'" v-model="form.telefone" required />
+              <v-text-field label="Telefone*" v-model="form.telefone" variant="outlined" v-mask="'(##) #####-####'"
+                required />
+              <v-text-field label="CPF*" v-model="form.cpf" variant="outlined" v-mask="'###.###.###-##'" required />
+              <v-text-field label="Data de nascimento*" v-model="form.dataNascimento" variant="outlined" type="date"
+                required />
+              <v-select label="Sexo*" v-model="form.sexo" variant="outlined"
+                :items="['Masculino', 'Feminino', 'Não informar']" required />
+            </v-col>
 
-          <label class="form-label mt-3">CPF*</label>
-          <input type="text" class="form-control" v-mask="'###.###.###-##'" v-model="form.cpf" required />
+            <!-- Coluna 2 -->
+            <v-col cols="12" md="6">
+              <v-text-field label="CEP*" v-model="form.cep" variant="outlined" v-mask="'#####-###'" @blur="buscarCep"
+                required />
+              <v-text-field label="Endereço*" v-model="form.endereco.logradouro" variant="outlined" required />
+              <v-text-field label="Estado*" v-model="form.endereco.estado" variant="outlined" required />
+              <v-text-field label="País*" v-model="form.endereco.pais" variant="outlined" required />
+              <v-text-field label="Cidade*" v-model="form.endereco.cidade" variant="outlined" required />
+              <v-text-field label="Bairro*" v-model="form.endereco.bairro" variant="outlined" required />
+              <v-text-field label="Senha*" v-model="form.senha" variant="outlined"
+                :type="mostrarSenha ? 'text' : 'password'" :append-inner-icon="mostrarSenha ? 'mdi-eye' : 'mdi-eye-off'"
+                @click:append-inner="mostrarSenha = !mostrarSenha" @input="validarSenha"
+                :class="{ 'is-valid': senhaValida, 'is-invalid': erroSenha && form.senha.length > 0 }" required />
+              <p v-if="!senhaValida && form.senha.length > 0" class="text-danger mt-1">
+                A senha deve conter no mínimo 8 caracteres e ao menos 1 letra maiúscula, 1 número e 1 caractere
+                especial.
+              </p>
 
-          <label class="form-label mt-3">Data de nascimento*</label>
-          <input type="date" class="form-control" v-model="form.dataNascimento" required />
+              <v-text-field label="Confirme sua senha*" v-model="form.confirmarSenha" variant="outlined"
+                :type="mostrarConfirmarSenha ? 'text' : 'password'"
+                :append-inner-icon="mostrarConfirmarSenha ? 'mdi-eye' : 'mdi-eye-off'"
+                @click:append-inner="mostrarConfirmarSenha = !mostrarConfirmarSenha"
+                :class="{ 'is-invalid': form.confirmarSenha.length > 0 && form.confirmarSenha !== form.senha }"
+                required />
 
-          <label class="form-label mt-3">Sexo*</label>
-          <select class="form-control" v-model="form.sexo" required>
-            <option value="" disabled>Selecione</option>
-            <option value="Masculino">Masculino</option>
-            <option value="Feminino">Feminino</option>
-            <option value="Outro">Não informar</option>
-          </select>
-        </div>
-
-        <!-- Coluna 2 -->
-        <div class="col-md-6">
-          <label class="form-label">CEP*</label>
-          <input type="text" class="form-control" v-mask="'#####-###'" v-model="form.cep" @blur="buscarCep" required />
-
-          <label class="form-label mt-3">Endereço*</label>
-          <input type="text" class="form-control" v-model="form.endereco.logradouro" required />
-
-          <label class="form-label mt-3">Estado*</label>
-          <input type="text" class="form-control" v-model="form.endereco.estado" required />
-
-          <label class="form-label mt-3">País*</label>
-          <input type="text" class="form-control" v-model="form.endereco.pais" required />
-
-          <label class="form-label mt-3">Cidade*</label>
-          <input type="text" class="form-control" v-model="form.endereco.cidade" required />
-
-          <label class="form-label mt-3">Bairro*</label>
-          <input type="text" class="form-control" v-model="form.endereco.bairro" required />
-
-          <label class="form-label mt-3">Senha*</label>
-          <input type="password" class="form-control" v-model="form.senha"
-            :class="{ 'is-valid': senhaValida, 'is-invalid': erroSenha }" @input="validarSenha" required />
-          <p v-if="!senhaValida && form.senha.length > 0" class="text-danger mt-1">
-            A senha deve conter no mínimo 8 caracteres e ao menos 1 letra maiúscula, 1 número e 1 caractere especial.
-          </p>
-
-          <label class="form-label mt-3">Confirme sua senha*</label>
-          <input type="password" class="form-control" v-model="form.confirmarSenha" required />
+              <p v-if="form.confirmarSenha.length > 0 && form.confirmarSenha !== form.senha" class="text-danger mt-1">As
+                senhas não coincidem.</p>
+            </v-col>
+          </v-row>
+          <!-- BOTÕES -->
+          <div class="d-flex justify-end mt-6">
+            <v-btn variant="outlined" color="orange" class="botao-secundario me-3" @click="$router.push('/')">
+              <template #append>
+                <span class="caption d-block">Voltar</span>
+              </template>
+            </v-btn>
+            <v-btn color="orange" class="botao-principal" type="submit">Criar </v-btn>
+          </div>
+        </v-form>
+        <small class="text-muted mt-2 d-block">*Informações obrigatórias</small>
+      </div>
+      <!-- Modal de carregamento -->
+      <div v-if="carregando" class="modal-loading">
+        <div class="modal-content text-white text-center p-4">
+          <h4>Você está quase lá!</h4>
+          <p>Criando conta...</p>
+          <button class="btn btn-light mt-3" @click="carregando = false">Cancelar</button>
         </div>
       </div>
-
-      <div class="d-flex justify-content-end mt-4">
-        <button type="button" class="btn btn-outline-orange me-2" @click="$router.push('/')">
-          Cancelar
-        </button>
-        <button type="submit" class="btn btn-orange">Criar</button>
-      </div>
-    </form>
-
-    <small class="text-muted mt-2 d-block">*Informações obrigatórias</small>
-  </div>
-  <!-- Modal de carregamento -->
-  <div v-if="carregando" class="modal-loading">
-    <div class="modal-content text-white text-center p-4">
-      <h4>Você está quase lá!</h4>
-      <p>Criando conta...</p>
-      <button class="btn btn-light mt-3" @click="carregando = false">Cancelar</button>
     </div>
   </div>
 </template>
@@ -100,7 +100,11 @@ export default {
   data() {
     return {
       carregando: false,
-
+      mostrarSenha: false,
+      mostrarConfirmarSenha: false,
+      emailValido: false,
+      senhaValida: false,
+      erroSenha: false,
       form: {
         nome: "",
         email: "",
@@ -119,13 +123,33 @@ export default {
           cep: "",
           pais: "",
         },
-        erroSenha: '',
-        senhaValida: false
       },
     };
   },
+  computed: {
+    percentualPreenchido() {
+      const campos = [
+        this.form.nome,
+        this.form.email,
+        this.form.telefone,
+        this.form.cpf,
+        this.form.dataNascimento,
+        this.form.sexo,
+        this.form.cep,
+        this.form.endereco.logradouro,
+        this.form.endereco.estado,
+        this.form.endereco.pais,
+        this.form.endereco.cidade,
+        this.form.endereco.bairro,
+        this.form.senha,
+        this.form.confirmarSenha
+      ];
+      const preenchidos = campos.filter(c => c && c.toString().trim() !== '').length;
+      return Math.round((preenchidos / campos.length) * 100);
+    }
+  },
   methods: {
-    validarEmail() { 
+    validarEmail() {
       const field = this.form.email;
       const usuario = field.substring(0, field.indexOf("@"));
       const dominio = field.substring(field.indexOf("@") + 1, field.length);
@@ -253,31 +277,88 @@ export default {
 </script>
 
 <style scoped>
-.text-orange {
+.pagina {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.cabecalho-branco {
+  background-color: white;
+  border-bottom: none;
+  padding: 2rem 2.5rem 1rem;
+  text-align: left;
+}
+
+.titulo-principal {
+  font-size: 40px;
+  font-weight: 900;
   color: #f46c20;
+  margin-bottom: 0.5rem;
+  margin-top: -1.5rem;
 }
 
-.btn-orange {
+/* Container laranja ocupa o restante da tela */
+.container-laranja {
   background-color: #f46c20;
-  color: white;
-  border: none;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  margin-top: -1.5rem;
+  padding: 2rem 1rem;
+  overflow: hidden;
+  border-top: 8px solid #f46c20;
+  /* linha laranja contínua, opcional */
 }
 
-.btn-orange:hover {
-  background-color: #d85c1a;
+/* Caixa branca com scroll interno se necessário */
+.formulario-caixa {
+  background-color: white;
+  border-radius: 20px;
+  max-width: 1640px;
+  width: 100%;
+  height: 100%;
+  max-height: 85vh;
+  padding: 2rem 4rem;
+  overflow-y: auto;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 
-.btn-outline-orange {
-  border: 1px solid #f46c20;
-  color: #f46c20;
+/* Aumentar largura dos campos */
+.v-text-field,
+.v-select {
+  width: 100%;
 }
 
-.btn-outline-orange:hover {
-  background-color: #f46c20;
-  color: white;
+.botao-principal {
+  background-color: #f46c20 !important;
+  color: white !important;
+  font-weight: bold;
+  border-radius: 30px;
+  padding: 10px 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* estilização do modal */
+.botao-secundario {
+  border: 2px solid;
+  color: darkgray !important;
+  border-radius: 30px;
+}
+
+.segundo-titulo {
+  font-size: 23px;
+  color: darkgray;
+  margin-top: -0.5rem;
+}
+
+.terceiro-titulo {
+  font-size: 18px;
+  color: darkgray;
+  margin-top: -0.7rem;
+}
+
 .modal-loading {
   position: fixed;
   top: 0;
@@ -299,17 +380,8 @@ export default {
   width: 300px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
-
-.is-valid {
-  border-color: #28a745;
-  background-color: #e6f9e9;
+.v-progress-linear {
+  background-color: #fff4e1; /* lilás bem claro */
 }
 
-.is-invalid {
-  border-color: #dc3545;
-}
-
-.text-danger {
-  color: #dc3545;
-}
 </style>

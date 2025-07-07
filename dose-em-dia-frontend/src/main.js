@@ -7,6 +7,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'mdb-ui-kit/js/mdb.min.js';
 import { loadFonts } from './plugins/webfontloader'; // ou onde ele estiver
 import vuetify from './plugins/vuetify'; // ou de onde você configurou
+import '@mdi/font/css/materialdesignicons.css'
 
 loadFonts();
 

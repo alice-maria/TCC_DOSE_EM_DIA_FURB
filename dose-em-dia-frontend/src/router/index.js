@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Login from "../views/Login.vue";
+import UserLogin from "../views/UserLogin.vue";
 import CriarConta from "@/views/CriarConta.vue";
 import Home from "../views/HomeView.vue";
 import EsqueciMinhaSenha from "@/views/EsqueciMinhaSenha.vue";
@@ -9,9 +9,10 @@ import ComprovanteView from "@/views/ComprovanteView.vue";
 import Configuracoes from '@/views/AcessarConfiguracoes.vue';
 import HistoricoNotificacoes from "@/views/HistoricoNotificacoes.vue";
 import EdicaoUsuario from "@/views/EdicaoUsuario.vue";
+import PostosSaude from "@/views/PostosSaude.vue";
 
 const routes = [
-  { path: "/", component: Login },
+  { path: "/", component: UserLogin },
   { path: "/criar-conta", component: CriarConta },
   { path: "/home", component: Home },
   {path: "/esqueci-minha-senha", component: EsqueciMinhaSenha},
@@ -22,6 +23,8 @@ const routes = [
   {path: '/historico-notificacoes', component: HistoricoNotificacoes},
   { path: '/redefinir-senha', name: 'redefinir-senha', component: RedefinirSenha },
   { path: '/editar-perfil', component: EdicaoUsuario },
+  { path: '/informacoes-cadastrais', component: EdicaoUsuario },
+  { path: '/postos-saude', component: PostosSaude },
 ];
 
 const router = createRouter({

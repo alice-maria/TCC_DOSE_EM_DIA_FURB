@@ -1,45 +1,49 @@
 <template>
-  <div id="app" class="d-flex">
-    <Sidebar v-if="exibirSidebar" />
-
-    <div class="flex-grow-1">
-      <router-view />
+  <v-app>
+    <div id="app" class="d-flex">
+      <AppSidebar v-if="exibirSidebar" />
+      <div class="flex-grow-1">
+        <router-view />
+      </div>
+      <BotaoAcessibilidade />
+      <ChatBot v-if="exibirChatBot" />
     </div>
-
-    <BotaoAcessibilidade />
-  </div>
+  </v-app>
 </template>
 
 <script>
-import Sidebar from './components/Sidebar.vue';
+import AppSidebar from './components/AppSidebar.vue';
 import BotaoAcessibilidade from './components/acessibilidade/BotaoAcessibilidade.vue';
 import { useRoute } from 'vue-router';
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
+import ChatBot from "@/components/ChatBot.vue";
 
 export default {
   components: {
-    Sidebar,
+    AppSidebar,
     BotaoAcessibilidade,
+    ChatBot,
   },
   setup() {
     const route = useRoute();
-
-    const rotasSemSidebar = ['/', '/criar-conta']; // ROTAS SEM SIDEBAR
-
-    const exibirSidebar = computed(() => 
+    const rotasSemSidebar = ['/', '/criar-conta', '/esqueci-minha-senha'];
+    const exibirSidebar = computed(() =>
       !rotasSemSidebar.includes(route.path)
     );
 
-    return { exibirSidebar };
-  }    
-};
+    const mostrarChat = ref(false);
+    const rotasSemChatBot = ['/', '/criar-conta', '/esqueci-minha-senha'];
+    const exibirChatBot = computed(() =>
+      !rotasSemChatBot.includes(route.path)
+    );
 
+    return { exibirSidebar, exibirChatBot, mostrarChat };
+  }
+};
 </script>
 
 <style>
-/* Para garantir que a sidebar fique do lado e o conteúdo ao lado dela */
 #app {
   min-height: 100vh;
 }
 </style>
-

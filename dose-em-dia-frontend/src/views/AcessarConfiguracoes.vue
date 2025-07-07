@@ -1,28 +1,28 @@
 <template>
-  <v-container class="pa-4">
-    <!-- Cabeçalho -->
-    <div class="header">
-      <h1 class="titulo">Dose em dia</h1>
-      <div class="usuario">
-        <img src="@/imagens/icone-user-orange.png" alt="Ícone de usuário" class="icone-usuario">
-        <span class="saudacao">Olá, {{ nomeUsuario }}!</span>
+  <v-container fluid class="pa-0">
+    <div class="pagina-config">
+      <!-- Cabeçalho -->
+      <div class="header">
+        <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
+        <div class="usuario">
+          <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario"
+            @click="$router.push('/editar-perfil')" />
+          <span class="saudacao" @click="$router.push('/editar-perfil')">Olá, {{ nomeUsuario }}!</span>
+        </div>
       </div>
-    </div>
 
-    <v-breadcrumbs class="meus-breadcrumbs" :items="breadcrumbs">
-      <template v-slot:item="{ item }">
-        <span :class="[
-          'breadcrumb-link',
-          { 'breadcrumb-laranja': !item.to } // se não tem .to, é o item atual
-        ]" @click="item.to && navegar(item.to)" style="cursor: pointer;">
-          <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
-          {{ item.text }}
-        </span>
-      </template>
-    </v-breadcrumbs>
+      <!-- Breadcrumbs -->
+      <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs">
+        <template v-slot:item="{ item }">
+          <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
+            style="cursor: pointer;">
+            <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+            {{ item.text }}
+          </span>
+        </template>
+      </v-breadcrumbs>
 
-    <v-card class="card-ajustado">
-      <v-card-text>
+      <div class="conteudo-configuracoes px-4">
         <!-- Notificações -->
         <v-list-item class="hoverable">
           <v-list-item-content>
@@ -31,44 +31,62 @@
               Você receberá comunicações por e-mail sobre suas vacinas.
             </v-list-item-subtitle>
           </v-list-item-content>
-
           <template #append>
-            <v-switch v-model="notificacoesAtivas" color="orange" />
+            <v-switch v-model="notificacoesAtivas" color="orange" inset hide-details class="switch-material"
+              :ripple="false" />
           </template>
         </v-list-item>
 
         <v-divider class="separador"></v-divider>
 
-
         <!-- Informações Cadastrais -->
         <v-list-item @click="navegar('informacoes-cadastrais')" class="hoverable">
-          <v-list-item-title class="secao-titulo">Informações cadastrais</v-list-item-title>
-          <v-list-item-subtitle>Informações sobre seu perfil e dados cadastrais.</v-list-item-subtitle>
-          <v-icon>mdi-chevron-right</v-icon>
+          <v-list-item-content>
+            <v-list-item-title class="secao-titulo">Informações cadastrais</v-list-item-title>
+            <v-list-item-subtitle>Informações sobre seu perfil e dados cadastrais.</v-list-item-subtitle>
+          </v-list-item-content>
+          <template #append>
+            <v-icon>mdi-chevron-right</v-icon>
+          </template>
         </v-list-item>
+
         <v-divider class="separador"></v-divider>
 
         <!-- Segurança -->
         <v-list-item @click="navegar('redefinir-senha')" class="hoverable">
-          <v-list-item-title class="secao-titulo">Segurança</v-list-item-title>
-          <v-list-item-subtitle>Altere aqui a sua senha.</v-list-item-subtitle>
-          <v-icon>mdi-chevron-right</v-icon>
+          <v-list-item-content>
+            <v-list-item-title class="secao-titulo">Segurança</v-list-item-title>
+            <v-list-item-subtitle>Altere aqui a sua senha.</v-list-item-subtitle>
+          </v-list-item-content>
+          <template #append>
+            <v-icon>mdi-chevron-right</v-icon>
+          </template>
         </v-list-item>
+
         <v-divider class="separador"></v-divider>
 
         <!-- Política de Privacidade -->
         <v-list-item @click="navegar('politica-privacidade')" class="hoverable">
-          <v-list-item-title class="secao-titulo">Política de Privacidade</v-list-item-title>
-          <v-list-item-subtitle>Regras de privacidade de dados pessoais.</v-list-item-subtitle>
-          <v-icon>mdi-chevron-right</v-icon>
+          <v-list-item-content>
+            <v-list-item-title class="secao-titulo">Política de Privacidade</v-list-item-title>
+            <v-list-item-subtitle>Regras de privacidade de dados pessoais.</v-list-item-subtitle>
+          </v-list-item-content>
+          <template #append>
+            <v-icon>mdi-chevron-right</v-icon>
+          </template>
         </v-list-item>
+
         <v-divider class="separador"></v-divider>
 
         <!-- Sair -->
         <v-list-item @click="dialogSair = true" class="hoverable">
-          <v-list-item-title class="secao-titulo">Sair</v-list-item-title>
-          <v-list-item-subtitle>Desconecte da conta em que você está.</v-list-item-subtitle>
-          <v-icon>mdi-logout</v-icon>
+          <v-list-item-content>
+            <v-list-item-title class="secao-titulo">Sair</v-list-item-title>
+            <v-list-item-subtitle>Desconecte da conta em que você está.</v-list-item-subtitle>
+          </v-list-item-content>
+          <template #append>
+            <v-icon class="icon-sair">mdi-logout</v-icon>
+          </template>
         </v-list-item>
 
         <!-- Diálogo de confirmação -->
@@ -85,8 +103,8 @@
           </v-card>
         </v-dialog>
 
-      </v-card-text>
-    </v-card>
+      </div>
+    </div>
   </v-container>
 </template>
 
@@ -121,11 +139,17 @@ export default {
 </script>
 
 <style scoped>
+.pagina-config {
+  margin-left: 95px;
+}
+
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 3.0rem;
+  padding: 1.5rem 2rem;
+  background-color: white;
+  border-bottom: 1px solid #eee;
 }
 
 .titulo {
@@ -229,7 +253,7 @@ export default {
 .breadcrumb-link {
   color: #6b7280;
   transition: color 0.2s;
-  font-size: 1.1rem; 
+  font-size: 1.1rem;
 }
 
 .breadcrumb-link:hover {
@@ -243,4 +267,35 @@ export default {
   font-size: 1.1rem;
 }
 
+.switch-material .v-selection-control__wrapper {
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.switch-material .v-switch__track {
+  background-color: #e1d7f0 !important;
+  /* cor quando inativo */
+  border-radius: 999px;
+  height: 32px;
+}
+
+.switch-material .v-switch__thumb {
+  background-color: white !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  width: 24px;
+  height: 24px;
+}
+
+/* Mostra o ícone ✓ apenas quando o switch estiver ativo */
+.switch-material.v-selection-control--dirty .v-switch__thumb::before {
+  content: "✓";
+  color: #f97316;
+  font-size: 16px;
+  font-weight: bold;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>
