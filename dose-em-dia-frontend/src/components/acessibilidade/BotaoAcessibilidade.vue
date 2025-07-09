@@ -8,19 +8,19 @@
     <!-- Menu de acessibilidade -->
     <div v-if="menuAberto" class="acessibilidade-menu">
       <button @click="toggleContraste">
-        <img src="@/assets/icons/Icone-contraste-escuro.png" alt="Contraste" class="icone-contraste" />
+        <img src="@/assets/icons/acessibilidade/contrasteAlto.svg" alt="Contraste" class="icone-contraste" />
         Contraste alto</button>
       <button @click="aumentarFonte">
-        <img src="@/assets/icons/Icone-aumentar-fonte.png" alt="Contraste" class="icone-fonte" />
+        <img src="@/assets/icons/acessibilidade/aumentarFonte.svg" alt="Contraste" class="icone-fonte" />
         Aumentar fonte</button>
       <button @click="toggleFonteDislexia">
-        <img src="@/assets/icons/Icone-dislexia.png" alt="Contraste" class="icone-dislexia" />
+        <img src="@/assets/icons/acessibilidade/dislexia.svg" alt="Contraste" class="icone-dislexia" />
         Dislexia</button>
       <button @click="toggleEspacamentoLetras">
-        <img src="@/assets/icons/Icone-espacamento-entre-linhas.png" alt="Contraste" class="icone-letras" />
+        <img src="@/assets/icons/acessibilidade/espacamentoLinha.svg" alt="Contraste" class="icone-letras" />
         Espaçamento entre letras</button>
       <button @click="toggleEspacamentoLinhas">
-        <img src="@/assets/icons/Icone-espacamento-entre-letras.png" alt="Contraste" class="icone-linhas" />
+        <img src="@/assets/icons/acessibilidade/espacamentoLetras.svg" alt="Contraste" class="icone-linhas" />
         Espaçamento entre linhas</button>
     </div>
   </div>

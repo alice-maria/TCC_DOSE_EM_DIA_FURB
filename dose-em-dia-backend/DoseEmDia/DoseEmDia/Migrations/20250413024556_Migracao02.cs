@@ -6,14 +6,6 @@ namespace DoseEmDia.Migrations
 {
     public partial class Migracao02 : Migration
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-
-        }
-
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-
-        }
+        // Não precisa repetir os métodos se já existem em outra parte da classe parcial
     }
 }

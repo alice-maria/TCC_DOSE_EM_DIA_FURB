@@ -113,6 +113,38 @@ public class UsuarioController : ControllerBase
 
     }
 
+    [HttpPost("excuir-conta")]
+    public async Task<IActionResult> ExcluitConta([FromBody] ExcluirContaRequest request)
+    {
+        var usuario = await _context.Usuario
+        .Include(u => u.Endereco)
+        .Include(u => u.Vacinas)
+        .Include(u => u.Notificacoes)
+        .FirstOrDefaultAsync(u => u.Email == request.Email);
+
+        if (usuario == null)
+            return NotFound("Usuário não encontrado.");
+
+        bool senhaValida = CriptografiaHelper.VerificarSenha(request.Senha, usuario.Senha, usuario.Salt);
+        if (!senhaValida)
+            return Unauthorized("Senha incorreta.");
+
+        if (usuario.Notificacoes != null && usuario.Notificacoes.Any())
+            _context.Notificacao.RemoveRange(usuario.Notificacoes);
+
+        if (usuario.Vacinas != null && usuario.Vacinas.Any())
+            _context.Vacina.RemoveRange(usuario.Vacinas);
+
+        if (usuario.Endereco != null)
+            _context.Endereco.Remove(usuario.Endereco);
+
+        _context.Usuario.Remove(usuario);
+
+        await _context.SaveChangesAsync();
+
+        return Ok("Conta excluída com sucesso.");
+    }
+
     [HttpPost("esqueciSenha")]
     public async Task<IActionResult> EsqueciSenha([FromBody] EsqueciSenhaRequest request)
     {
@@ -341,5 +373,11 @@ public class RedefinirSenhaRequest
 {
     public string Token { get; set; }
     public string NovaSenha { get; set; }
+}
+
+public class ExcluirContaRequest
+{
+    public string Email { get; set; }
+    public string Senha { get; set; }
 }
 

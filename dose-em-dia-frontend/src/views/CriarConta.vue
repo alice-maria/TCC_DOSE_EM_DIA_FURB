@@ -11,72 +11,110 @@
     <div class="container-laranja">
       <div class="formulario-caixa">
 
-        <v-progress-linear :model-value="percentualPreenchido" color="#b2443a" height="6" rounded
-          class="mb-6" />
+        <v-progress-linear :model-value="percentualPreenchido" color="#b2443a" height="6" rounded class="mb-6" />
 
         <v-form @submit.prevent="criarConta" ref="form">
-          <v-row dense>
-            <!-- Coluna 1 -->
-            <v-col cols="12" md="6">
-              <v-text-field label="Nome completo*" v-model="form.nome" variant="outlined" required />
-              <v-text-field label="E-mail*" v-model="form.email" variant="outlined" type="email" @input="validarEmail"
-                :class="{
-                  'is-valid': emailValido,
-                  'is-invalid': !emailValido && form.email.length > 0
-                }" required />
-              <p v-if="form.email.length > 0" :class="{ 'text-success': emailValido, 'text-danger': !emailValido }">
-                {{ emailValido ? 'E-mail válido' : 'E-mail inválido' }}
-              </p>
+          <!-- Abas -->
+          <v-tabs v-model="abaAtiva" background-color="#fff4e1" grow>
+            <v-tab :value="'pessoal'">Dados Pessoais</v-tab>
+            <v-tab :value="'endereco'">Endereço</v-tab>
+          </v-tabs>
 
-              <v-text-field label="Telefone*" v-model="form.telefone" variant="outlined" v-mask="'(##) #####-####'"
-                required />
-              <v-text-field label="CPF*" v-model="form.cpf" variant="outlined" v-mask="'###.###.###-##'" required />
-              <v-text-field label="Data de nascimento*" v-model="form.dataNascimento" variant="outlined" type="date"
-                required />
-              <v-select label="Sexo*" v-model="form.sexo" variant="outlined"
-                :items="['Masculino', 'Feminino', 'Não informar']" required />
-            </v-col>
+          <v-window v-model="abaAtiva" class="mt-4">
+            <!-- Aba Dados Pessoais -->
+            <v-window-item value="pessoal">
+              <v-container>
+                <v-text-field label="Nome completo*" v-model="form.nome" variant="outlined" required />
+                <v-text-field label="E-mail*" v-model="form.email" variant="outlined" type="email" @input="validarEmail"
+                  :class="{
+                    'is-valid': emailValido,
+                    'is-invalid': !emailValido && form.email.length > 0
+                  }" required />
+                <p v-if="form.email.length > 0" :class="{ 'text-success': emailValido, 'text-danger': !emailValido }">
+                  {{ emailValido ? 'E-mail válido' : 'E-mail inválido' }}
+                </p>
 
-            <!-- Coluna 2 -->
-            <v-col cols="12" md="6">
-              <v-text-field label="CEP*" v-model="form.cep" variant="outlined" v-mask="'#####-###'" @blur="buscarCep"
-                required />
-              <v-text-field label="Endereço*" v-model="form.endereco.logradouro" variant="outlined" required />
-              <v-text-field label="Estado*" v-model="form.endereco.estado" variant="outlined" required />
-              <v-text-field label="País*" v-model="form.endereco.pais" variant="outlined" required />
-              <v-text-field label="Cidade*" v-model="form.endereco.cidade" variant="outlined" required />
-              <v-text-field label="Bairro*" v-model="form.endereco.bairro" variant="outlined" required />
-              <v-text-field label="Senha*" v-model="form.senha" variant="outlined"
-                :type="mostrarSenha ? 'text' : 'password'" :append-inner-icon="mostrarSenha ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append-inner="mostrarSenha = !mostrarSenha" @input="validarSenha"
-                :class="{ 'is-valid': senhaValida, 'is-invalid': erroSenha && form.senha.length > 0 }" required />
-              <p v-if="!senhaValida && form.senha.length > 0" class="text-danger mt-1">
-                A senha deve conter no mínimo 8 caracteres e ao menos 1 letra maiúscula, 1 número e 1 caractere
-                especial.
-              </p>
+                <v-text-field label="Telefone*" v-model="form.telefone" variant="outlined" v-mask="'(##) #####-####'"
+                  required />
+                <v-text-field label="CPF*" v-model="form.cpf" variant="outlined" v-mask="'###.###.###-##'" required />
+                <v-text-field label="Data de nascimento*" v-model="form.dataNascimento" variant="outlined" type="date"
+                  required />
+                <v-select label="Sexo*" v-model="form.sexo" variant="outlined"
+                  :items="['Masculino', 'Feminino', 'Não informar']" required />
 
-              <v-text-field label="Confirme sua senha*" v-model="form.confirmarSenha" variant="outlined"
-                :type="mostrarConfirmarSenha ? 'text' : 'password'"
-                :append-inner-icon="mostrarConfirmarSenha ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append-inner="mostrarConfirmarSenha = !mostrarConfirmarSenha"
-                :class="{ 'is-invalid': form.confirmarSenha.length > 0 && form.confirmarSenha !== form.senha }"
-                required />
+                <h3 class="seguranca">Segurança</h3>
 
-              <p v-if="form.confirmarSenha.length > 0 && form.confirmarSenha !== form.senha" class="text-danger mt-1">As
-                senhas não coincidem.</p>
-            </v-col>
-          </v-row>
-          <!-- BOTÕES -->
-          <div class="d-flex justify-end mt-6">
-            <v-btn variant="outlined" color="orange" class="botao-secundario me-3" @click="$router.push('/')">
-              <template #append>
-                <span class="caption d-block">Voltar</span>
-              </template>
-            </v-btn>
-            <v-btn color="orange" class="botao-principal" type="submit">Criar </v-btn>
-          </div>
+                <v-text-field label="Senha*" v-model="form.senha" variant="outlined"
+                  :type="mostrarSenha ? 'text' : 'password'"
+                  :class="{ 'is-valid': senhaValida, 'is-invalid': erroSenha && form.senha.length > 0 }" required />
+
+                <img :src="mostrarSenha ? iconeOlhoAberto : iconeOlhoFechado" alt="Mostrar ou ocultar senha"
+                  class="icone-olho" @click="mostrarSenha = !mostrarSenha" />
+
+                <p v-if="!senhaValida && form.senha.length > 0" class="text-danger-senha">
+                  A senha deve conter no mínimo 8 caracteres e ao menos 1 letra maiúscula, 1 número e 1 caractere
+                  especial.
+                </p>
+
+                <v-text-field label="Confirme sua senha*" v-model="form.confirmarSenha" variant="outlined"
+                  :type="mostrarConfirmarSenha ? 'text' : 'password'"
+                  :class="{ 'is-invalid': form.confirmarSenha.length > 0 && form.confirmarSenha !== form.senha }"
+                  required />
+
+                <img :src="mostrarConfirmarSenha ? iconeOlhoAberto : iconeOlhoFechado"
+                  alt="Mostrar ou ocultar confirmação" class="icone-olho"
+                  @click="mostrarConfirmarSenha = !mostrarConfirmarSenha" />
+
+                <p v-if="form.confirmarSenha.length > 0 && form.confirmarSenha !== form.senha"
+                  class="text-danger-senha">
+                  As senhas não coincidem.</p>
+
+                <!-- Checkbox ajustado visualmente -->
+                <v-checkbox v-model="privacidade" density="compact" class="checkbox-privacidade"
+                  :rules="[v => !!v || 'É necessário aceitar a política de privacidade.']">
+                  <template #label>
+                    <span>
+                      Aceito as <a href="/politica-de-privacidade" target="_blank">políticas de privacidade</a>
+                    </span>
+                  </template>
+                </v-checkbox>
+
+                <v-btn variant="outlined" color="orange" class="botao-avancar me-3" @click="abaAtiva = 'endereco'">
+                  <template #append>
+                    <span class="caption d-block">Avançar</span>
+                  </template>
+                </v-btn>
+
+              </v-container>
+            </v-window-item>
+
+            <!-- Aba Endereço -->
+            <v-window-item value="endereco">
+              <v-container>
+                <v-text-field label="CEP*" v-model="form.cep" variant="outlined" v-mask="'#####-###'" @blur="buscarCep"
+                  required />
+                <v-text-field label="Endereço*" v-model="form.endereco.logradouro" variant="outlined" required />
+                <v-text-field label="Estado*" v-model="form.endereco.estado" variant="outlined" required />
+                <v-text-field label="País*" v-model="form.endereco.pais" variant="outlined" required />
+                <v-text-field label="Cidade*" v-model="form.endereco.cidade" variant="outlined" required />
+                <v-text-field label="Bairro*" v-model="form.endereco.bairro" variant="outlined" required />
+
+                <!-- BOTÕES -->
+                <div class="d-flex justify-end mt-6">
+                  <v-btn variant="outlined" color="orange" class="botao-secundario me-3" @click="$router.push('/')">
+                    <template #append>
+                      <span class="caption d-block">Voltar</span>
+                    </template>
+                  </v-btn>
+                  <v-btn color="orange" class="botao-principal" type="submit">Criar </v-btn>
+                </div>
+
+              </v-container>
+            </v-window-item>
+          </v-window>
+
         </v-form>
-        <small class="text-muted mt-2 d-block">*Informações obrigatórias</small>
+        <small class="infos">*Informações obrigatórias</small>
       </div>
       <!-- Modal de carregamento -->
       <div v-if="carregando" class="modal-loading">
@@ -105,6 +143,10 @@ export default {
       emailValido: false,
       senhaValida: false,
       erroSenha: false,
+      privacidade: false,
+      abaAtiva: 'pessoal',
+      iconeOlhoAberto: require('@/assets/icons/eyes-on.svg'),
+      iconeOlhoFechado: require('@/assets/icons/eyes-off.svg'),
       form: {
         nome: "",
         email: "",
@@ -256,7 +298,6 @@ export default {
         alert("Conta criada com sucesso!");
         this.$router.push("/");
       } catch (err) {
-        // 👇 Novo tratamento de erro com mais clareza
         if (err.response && err.response.data) {
           console.error("Erro do servidor:", err.response.data);
           const erroMensagem = typeof err.response.data === 'string'
@@ -316,14 +357,15 @@ export default {
 /* Caixa branca com scroll interno se necessário */
 .formulario-caixa {
   background-color: white;
-  border-radius: 20px;
+  border-radius: 10px;
   max-width: 1640px;
-  width: 100%;
-  height: 100%;
+  width: 102%;
+  height: 108%;
   max-height: 85vh;
   padding: 2rem 4rem;
   overflow-y: auto;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  margin-top: -30px;
 }
 
 /* Aumentar largura dos campos */
@@ -366,7 +408,6 @@ export default {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  /* fundo escuro translúcido */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -380,8 +421,61 @@ export default {
   width: 300px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
+
 .v-progress-linear {
-  background-color: #fff4e1; /* lilás bem claro */
+  background-color: #fff4e1;
+}
+
+.v-tabs {
+  border-bottom: 1px solid #ccc;
+}
+
+.v-tab {
+  color: #f46c20 !important;
+  font-weight: bold;
+}
+
+.v-tab--selected {
+  color: #f46c20 !important;
+  border-bottom: 2px solid #f46c20 !important;
+}
+
+.seguranca {
+  color: #f46c20;
+}
+
+.botao-avancar {
+  border: 2px solid;
+  color: darkgray !important;
+  border-radius: 30px;
+  margin-left: 1050px;
+}
+
+.icone-olho {
+  width: 24px;
+  height: 24px;
+  margin-top: -120px;
+  /* sobe o ícone para alinhar verticalmente */
+  margin-left: calc(100% - 36px);
+  /* posiciona à direita */
+}
+
+.text-danger-senha {
+  margin-top: -35px;
+  color: red;
+}
+
+.infos {
+  margin-top: -1000px;
+  margin-left: 0;
+  color: #ccc;
+}
+
+.checkbox-privacidade {
+  margin-top: -25px;
+  font-size: 14px;
+  transform: scale(0.9);
+  margin-left: -65px;
 }
 
 </style>

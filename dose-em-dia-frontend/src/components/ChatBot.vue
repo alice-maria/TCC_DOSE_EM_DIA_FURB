@@ -10,7 +10,7 @@
       <transition name="chat-fade">
         <div>
           <button class="fechar-chat" @click="fecharChat">
-            <img src="@/assets/icons/Icone-fechar-chatbot.png" alt="Fechar chatbot" />
+            <img src="@/assets/icons/Icone-fechar-chatbot.svg" alt="Fechar chatbot" />
           </button>
 
           <!-- Saudacao + Menu principal -->

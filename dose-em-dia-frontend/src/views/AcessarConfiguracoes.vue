@@ -89,6 +89,20 @@
           </template>
         </v-list-item>
 
+        <v-divider class="separador"></v-divider>
+
+        <!-- Excluir conta -->
+        <v-list-item @click="dialogExcluir = true" class="hoverableEXcluir">
+          <v-list-item-content>
+            <v-list-item-title class="secao-titulo">Excluir sua conta</v-list-item-title>
+            <v-list-item-subtitle>Clique aqui para excluir sua conta.
+            </v-list-item-subtitle>
+          </v-list-item-content>
+          <template #append>
+            <v-icon class="icon-sair">mdi-chevron-right</v-icon>
+          </template>
+        </v-list-item>
+
         <!-- Diálogo de confirmação -->
         <v-dialog v-model="dialogSair" max-width="320">
           <v-card class="popup-sair">
@@ -103,18 +117,40 @@
           </v-card>
         </v-dialog>
 
+        <v-dialog v-model="dialogExcluir" max-width="320">
+          <v-card class="popup-excluir">
+            <v-card-text class="popup-excluir__texto">
+              Tem certeza que deseja excluir sua conta?<br />
+              <span class="text-danger d-block mt-2">Essa ação é irreversível.</span>
+            </v-card-text>
+
+            <v-text-field v-model="email" label="E-mail" type="email" class="mt-4" variant="outlined" dense required />
+            <v-text-field v-model="senha" label="Senha" type="password" variant="outlined" dense required />
+
+            <v-card-actions class="popup-excluir__botoes">
+              <v-btn class="popup-excluir__cancelar" @click="dialogExcluir = false">Cancelar</v-btn>
+              <v-btn class="popup-excluir__confirmar" @click="confirmarExclusao">Confirmar</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
       </div>
     </div>
   </v-container>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: "AcessarConfiguracoes",
   data() {
     return {
       nomeUsuario: "",
       dialogSair: false,
+      dialogExcluir: false,
+      email: "",
+      senha: "",
       notificacoesAtivas: true,
       breadcrumbs: [
         { text: "Serviços e Informações", to: "/home", icon: "mdi-home" },
@@ -124,6 +160,7 @@ export default {
   },
   mounted() {
     this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
+    this.email = localStorage.getItem("usuarioEmail") || "";
   },
   methods: {
     confirmarSaida() {
@@ -134,6 +171,28 @@ export default {
     navegar(rota) {
       if (rota) this.$router.push(rota);
     },
+    async confirmarExclusao() {
+      if (!this.email || !this.senha) {
+        alert("Preencha o e-mail e a senha para continuar.");
+        return;
+      }
+
+      try {
+        await axios.post("http://localhost:5000/api/usuario/excluir-conta", {
+          email: this.email,
+          senha: this.senha
+        });
+
+        localStorage.clear();
+        this.dialogExcluir = false;
+        this.$router.push("/");
+        this.$nextTick(() => {
+          alert("Conta excluída com sucesso.");
+        });
+      } catch (error) {
+        alert(error.response?.data || "Erro ao excluir conta.");
+      }
+    }
   }
 };
 </script>
@@ -286,7 +345,6 @@ export default {
   height: 24px;
 }
 
-/* Mostra o ícone ✓ apenas quando o switch estiver ativo */
 .switch-material.v-selection-control--dirty .v-switch__thumb::before {
   content: "✓";
   color: #f97316;
@@ -297,5 +355,52 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.popup-excluir {
+  background-color: #f97316;
+  border-radius: 25px !important;
+  padding: 24px;
+  color: white;
+  text-align: center;
+  width: 355px;
+  min-height: 355px;
+  margin: auto;
+}
+
+.popup-excluir__texto {
+  font-weight: bold;
+  font-size: 1.3rem !important;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.popup-excluir__botoes {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.popup-excluir__cancelar,
+.popup-excluir__confirmar {
+  border-radius: 24px;
+  text-transform: none;
+  font-weight: 600;
+  padding: 10px 24px;
+  font-size: 1rem;
+  min-width: 120px;
+  text-align: center;
+  display: inline-block;
+}
+
+.popup-excluir__cancelar {
+  background-color: #fb923c;
+  color: white;
+}
+
+.popup-excluir__confirmar {
+  background-color: white;
+  color: #f97316;
 }
 </style>

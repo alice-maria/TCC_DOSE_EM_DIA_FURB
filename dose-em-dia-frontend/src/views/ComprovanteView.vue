@@ -43,7 +43,7 @@
           <p class="legenda-preview">Exemplo de como seu comprovante será gerado em PDF.</p>
         </div>
 
-        <v-btn class="botao-material" color="#2A836B" @click="baixarComprovante">Baixar Comprovante</v-btn>
+        <v-btn class="botao-material" color="#f97316" @click="baixarComprovante">Baixar Comprovante</v-btn>
 
         <div class="tooltip-container">
           <v-tooltip location="top" open-delay="100" close-delay="100">

@@ -5,7 +5,7 @@
       <div class="header d-flex justify-content-between align-items-center mb-3">
         <div class="logo-container" @click="$router.push('/home')" style="cursor: pointer;">
           <img src="@/imagens/logo.png" alt="Logo Dose em Dia" class="logo-img" />
-          <span class="mensagem-boas-vindas text-muted fw-bold">Seja bem-vindo(a) ao Dose em Dia!</span>
+          <span class="mensagem-boas-vindas text-muted fw-bold">Seja bem-vindo(a)!</span>
         </div>
 
         <div class="usuario d-flex align-items-center gap-2">

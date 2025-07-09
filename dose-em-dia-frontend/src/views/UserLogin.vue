@@ -1,8 +1,8 @@
 <template>
-  <v-container fluid class="login-container">
-    <v-row no-gutters class="login-row">
+  <v-container fluid class="login-container pa-0 fill-height">
+    <v-row no-gutters class="align-center justify-center">
       <!-- Coluna Esquerda -->
-      <v-col cols="12" md="6" class="coluna-esquerda">
+      <v-col cols="12" md="8" lg="6" xl="4" class="coluna-esquerda">
         <h1 class="titulo-principal">Dose em dia</h1>
         <h3 class="subtitulo">Bem-vindo!</h3>
         <p class="mensagem-criacao">
@@ -23,11 +23,17 @@
         </p>
 
         <v-form class="formulario-login">
-          <v-text-field v-model="email" label="E-mail*" prepend-inner-icon="mdi-email" type="email" required
-            variant="outlined" />
+          <v-text-field v-model="email" label="E-mail*" type="email" required variant="outlined">
+            <template #prepend-inner>
+              <img src="@/assets/icons/perfil.svg" alt="ícone de user" width="20" height="20" />
+            </template>
+          </v-text-field>
 
-          <v-text-field v-model="senha" label="Senha*" prepend-inner-icon="mdi-lock" type="password" required
-            variant="outlined" />
+          <v-text-field v-model="senha" label="Senha*" type="password" required variant="outlined">
+            <template #prepend-inner>
+              <img src="@/assets/icons/senha.svg" alt="ícone de senha" width="20" height="20" />
+            </template>
+          </v-text-field>
 
           <p v-if="mensagemErro" class="mensagem-erro">{{ mensagemErro }}</p>
 
@@ -131,11 +137,6 @@ export default {
   margin: 0;
   padding: 0;
   background-color: transparent;
-}
-
-.login-row {
-  width: 100%;
-  height: 100%;
 }
 
 .coluna-esquerda {
@@ -260,10 +261,8 @@ export default {
 .mensagem-erro {
   color: red;
   font-weight: bold;
-  margin: 0 0 55px 2px; /* Margem inferior para o próximo elemento (checkbox) */
+  margin: 0 0 55px 2px;
   font-size: 0.9rem;
   display: block;
 }
-
-
 </style>

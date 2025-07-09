@@ -5,26 +5,36 @@
     <div v-if="!isCollapsed" class="sidebar-overlay" @click="toggleSidebar"></div>
 
     <!-- Sidebar -->
-    <aside :class="['position-fixed h-100 bg-primary', { 'w-15': !isCollapsed, 'w-auto': isCollapsed }]" style="background-color: #f46c20 !important;">
-      <div class="menu-toggle">
-        <button @click="toggleSidebar" class="btn-toggle-menu">
-          <i class="fas fa-bars"></i>
-        </button>
-        <span v-if="!isCollapsed" class="text-white ms-2 fw-bold">Menu</span>
-      </div>
-
-      <!-- Menu Items -->
-      <ul class="list-unstyled px-3">
-        <li v-for="item in menuItems" :key="item.title" class="mb-2">
-          <div
-            class="d-flex align-items-center text-white text-decoration-none p-2 rounded hover-effect"
-            @click="handleMenuItem(item)"
-            style="cursor: pointer;"
-          >
-            <i :class="item.icon"></i>
-            <span v-if="!isCollapsed" class="ms-3">{{ item.title }}</span>
+    <aside :class="['sidebar', { 'sidebar--expanded': !isCollapsed, 'sidebar--collapsed': isCollapsed }]"
+      style="background-color: #f46c20 !important;">
+      <!-- Navigation Rail com Menu incluído -->
+      <ul class="navigation-rail">
+        <!-- Botão de Menu -->
+        <li class="rail-item rail-toggle" @click="toggleSidebar">
+          <div class="rail-content">
+            <img :src="isCollapsed ? menuCloseIcon : menuOpenIcon" alt="Menu" class="rail-img-icon" />
           </div>
         </li>
+
+        <!-- Demais Itens -->
+        <li v-for="item in menuItems" :key="item.title"
+          :class="['rail-item', { 'rail-item--active': isActiveRoute(item.route) }]" @click="handleMenuItem(item)">
+          <!-- Wrapper para ícone + label -->
+          <div class="rail-content">
+            <!-- Ícone -->
+            <template v-if="item.imgSrc">
+              <img :src="item.imgSrc" alt="" class="rail-img-icon" />
+            </template>
+            <template v-else>
+              <i :class="['rail-icon', item.icon]"></i>
+            </template>
+
+            <!-- Label -->
+            <span v-if="!isCollapsed" class="rail-label">{{ item.title }}</span>
+          </div>
+        </li>
+
+
       </ul>
     </aside>
 
@@ -44,20 +54,25 @@
 </template>
 
 <script>
+import menuOpenIcon from '@/assets/icons/sidebar/menu-aberto.svg';
+import menuCloseIcon from '@/assets/icons/sidebar/menu-fechado.svg';
+
 export default {
   data() {
     return {
       isCollapsed: true,
       showLogoutDialog: false,
+      menuOpenIcon,   // colapsado
+      menuCloseIcon,  // expandido
       menuItems: [
-        { title: 'Início', icon: 'fas fa-home', route: '/home' },
-        { title: 'Configurações', icon: 'fas fa-cog', route: '/configuracoes' },
-        { title: 'Exportar Comprovante', icon: 'fas fa-file-pdf', route: '/exportar-comprovante' },
-        { title: 'Vacinas pelo Mundo', icon: 'fas fa-globe-americas', route: '/vacinas-mundo' },
-        { title: 'Postos de Saúde', icon: 'fas fa-map-marker-alt', route: '/postos-saude' },
-        { title: 'Notificações', icon: 'fas fa-bell', route: '/historico-notificacoes' },
-        { title: 'Meu perfil', icon: 'fas fa-user', route: '/editar-perfil' },
-        { title: 'Sair', icon: 'fas fa-sign-out-alt', action: 'logout' }
+        { title: 'Início', imgSrc: require('@/assets/icons/sidebar/home.svg'), route: '/home' },
+        { title: 'Configurações', imgSrc: require('@/assets/icons/sidebar/config.svg'), route: '/configuracoes' },
+        { title: 'Exportar Comprovante', imgSrc: require('@/assets/icons/sidebar/pdf.svg'), route: '/exportar-comprovante' },
+        { title: 'Vacinas pelo Mundo', imgSrc: require('@/assets/icons/sidebar/mundo.svg'), route: '/vacinas-mundo' },
+        { title: 'Postos de Saúde', imgSrc: require('@/assets/icons/sidebar/localizacao.svg'), route: '/postos-saude' },
+        { title: 'Notificações', imgSrc: require('@/assets/icons/sidebar/notificacao.svg'), route: '/historico-notificacoes' },
+        { title: 'Meu perfil', imgSrc: require('@/assets/icons/sidebar/perfil.svg'), route: '/editar-perfil' },
+        { title: 'Sair', imgSrc: require('@/assets/icons/sidebar/sair.svg'), action: 'logout' }
       ]
     };
   },
@@ -71,21 +86,21 @@ export default {
       } else if (item.route) {
         this.$router.push(item.route);
       }
+      this.isCollapsed = true;
     },
     confirmarLogout() {
       localStorage.removeItem('token');
       localStorage.removeItem('usuarioNome');
       this.$router.push('/');
+    },
+    isActiveRoute(route) {
+      return this.$route.path === route;
     }
   }
 };
 </script>
 
 <style scoped>
-.hover-effect:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
 .sidebar-overlay {
   position: fixed;
   top: 0;
@@ -101,32 +116,34 @@ aside {
   transition: width 0.3s ease;
 }
 
+.sidebar {
+  background-color: #f46c20 !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: 1000;
+  transition: width 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar--expanded {
+  width: 280px;
+}
+
+.sidebar--collapsed {
+  width: 72px;
+  /* padrão de rail colapsado (M3) */
+}
+
 @media (max-width: 768px) {
-  aside {
+  .sidebar--expanded,
+  .sidebar--collapsed {
     width: 100% !important;
   }
 }
 
-.w-15 {
-  width: 15% !important;
-}
-
-.menu-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 70px;
-}
-
-.btn-toggle-menu {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 25px !important;
-  cursor: pointer;
-}
-
-/* Estilo do pop-up de saída */
 .popup-sair {
   background-color: #f97316;
   border-radius: 25px !important;
@@ -168,5 +185,74 @@ aside {
 .popup-sair__confirmar {
   background-color: white;
   color: #f97316;
+}
+
+.navigation-rail {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: flex-start;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.rail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s;
+}
+
+.rail-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.rail-item--active {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.rail-icon {
+  font-size: 20px;
+}
+
+.rail-label {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.rail-toggle {
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.rail-img-icon {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+
+.rail-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  padding-left: 12px;
+  transition: all 0.3s ease;
+}
+
+.sidebar--expanded .rail-content {
+  justify-content: flex-start;
 }
 </style>
