@@ -112,6 +112,14 @@ namespace DoseEmDia.Helpers
             await smtpClient.SendMailAsync(mailMessage);
         }
 
+        public string GerarToken()
+        {
+            using var rng = new RNGCryptoServiceProvider();
+            byte[] tokenData = new byte[32];
+            rng.GetBytes(tokenData);
+            return Convert.ToBase64String(tokenData);
+        }
+
         private static (string servidor, int porta) ObterServidorSmtp(string email)
         {
             var dominio = email.Split('@')[1].ToLower();
@@ -124,13 +132,6 @@ namespace DoseEmDia.Helpers
                 "icloud.com" => ("smtp.mail.me.com", 587),
                 _ => ("smtp.sendgrid.net", 587)
             };
-        }
-        public string GerarToken()
-        {
-            using var rng = new RNGCryptoServiceProvider();
-            byte[] tokenData = new byte[32];
-            rng.GetBytes(tokenData);
-            return Convert.ToBase64String(tokenData);
         }
 
     }

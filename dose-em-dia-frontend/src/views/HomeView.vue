@@ -68,7 +68,7 @@ export default {
       filtro: "",
       vacinas: [],
       breadcrumbs: [
-        { text: "Serviços e Informações", to: "/home", icon: "mdi-home" },
+        { text: "Início", to: "/home", icon: "mdi-home" },
       ],
     };
   },

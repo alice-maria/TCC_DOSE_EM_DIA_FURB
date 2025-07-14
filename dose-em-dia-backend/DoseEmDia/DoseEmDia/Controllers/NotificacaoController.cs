@@ -1,6 +1,4 @@
-﻿using DoseEmDia.Models.db;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace DoseEmDia.Controllers
 {
@@ -8,39 +6,25 @@ namespace DoseEmDia.Controllers
     [Route("api/notificacoes")]
     public class NotificacaoController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly NotificacaoService _service;
 
-        public NotificacaoController(ApplicationDbContext context)
+        public NotificacaoController(NotificacaoService service)
         {
-            _context = context;
+            _service = service;
         }
 
-        [HttpGet("{usuarioId}/listaNotificacoes")]
-        public async Task<IActionResult> ListarNotificacoes(int usuarioId)
-        {
-            var notificacoes = await _context.Notificacao
-                .Where(n => n.UsuarioId == usuarioId)
-                .OrderByDescending(n => n.DataEnvio)
-                .ToListAsync();
-
-            return Ok(notificacoes);
-        }
-        
-        [HttpGet("usuario/{cpf}/historico")] //endpoint novo para buscar notificações do usuário
+        [HttpGet("usuario/{cpf}/historico")]
         public async Task<IActionResult> ListarHistoricoPorCpf(string cpf)
         {
-            var usuario = await _context.Usuario
-                .FirstOrDefaultAsync(u => u.CPF == cpf);
-
-            if (usuario == null)
-                return NotFound("Usuário não encontrado.");
-
-            var notificacoes = await _context.Notificacao
-                .Where(n => n.UsuarioId == usuario.IdUser)
-                .OrderByDescending(n => n.DataEnvio)
-                .ToListAsync();
-
-            return Ok(notificacoes);
+            try
+            {
+                var notificacoes = await _service.ListarHistoricoPorCpf(cpf);
+                return Ok(notificacoes);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

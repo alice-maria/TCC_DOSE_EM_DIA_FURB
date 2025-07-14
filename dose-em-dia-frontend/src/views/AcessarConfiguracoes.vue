@@ -121,7 +121,7 @@
           <v-card class="popup-excluir">
             <v-card-text class="popup-excluir__texto">
               Tem certeza que deseja excluir sua conta?<br />
-              <span class="text-danger d-block mt-2">Essa ação é irreversível.</span>
+              <span class="texto_excluir_danger">Essa ação é irreversível!.</span>
             </v-card-text>
 
             <v-text-field v-model="email" label="E-mail" type="email" class="mt-4" variant="outlined" dense required />
@@ -129,7 +129,21 @@
 
             <v-card-actions class="popup-excluir__botoes">
               <v-btn class="popup-excluir__cancelar" @click="dialogExcluir = false">Cancelar</v-btn>
-              <v-btn class="popup-excluir__confirmar" @click="confirmarExclusao">Confirmar</v-btn>
+              <v-btn class="popup-excluir__confirmar" @click="abrirConfirmacaoFinal">Confirmar</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="dialogConfirmarExclusaoFinal" max-width="320">
+          <v-card class="popup-excluir">
+            <v-card-text class="popup-excluir__texto">
+              Essa ação não poderá ser desfeita!<br />
+              <span class="texto_excluir_danger">Deseja realmente excluir sua conta?</span>
+            </v-card-text>
+
+            <v-card-actions class="popup-excluir__botoes">
+              <v-btn class="popup-excluir__cancelar" @click="dialogConfirmarExclusaoFinal = false">Cancelar</v-btn>
+              <v-btn class="popup-excluir__confirmar" @click="confirmarExclusao">Excluir</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -152,6 +166,7 @@ export default {
       email: "",
       senha: "",
       notificacoesAtivas: true,
+      dialogConfirmarExclusaoFinal: false,
       breadcrumbs: [
         { text: "Serviços e Informações", to: "/home", icon: "mdi-home" },
         { text: "Configurações" } // este é o item atual, sem link
@@ -178,7 +193,7 @@ export default {
       }
 
       try {
-        await axios.post("http://localhost:5000/api/usuario/excluir-conta", {
+        await axios.post("http://localhost:5054/api/usuario/excluir-conta", {
           email: this.email,
           senha: this.senha
         });
@@ -192,7 +207,17 @@ export default {
       } catch (error) {
         alert(error.response?.data || "Erro ao excluir conta.");
       }
+    },
+    abrirConfirmacaoFinal() {
+      if (!this.email || !this.senha) {
+        alert("Preencha o e-mail e a senha para continuar.");
+        return;
+      }
+
+      this.dialogExcluir = false;
+      this.dialogConfirmarExclusaoFinal = true;
     }
+
   }
 };
 </script>
@@ -375,23 +400,26 @@ export default {
   line-height: 1.5;
 }
 
+.texto_excluir_danger {
+  font-weight: bold;
+  font-size: 1.0rem !important;
+  color: white;
+}
+
 .popup-excluir__botoes {
   display: flex;
   justify-content: center;
   gap: 16px;
-  text-align: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
 }
 
 .popup-excluir__cancelar,
 .popup-excluir__confirmar {
-  border-radius: 24px;
-  text-transform: none;
-  font-weight: 600;
-  padding: 10px 24px;
-  font-size: 1rem;
-  min-width: 120px;
+  width: 120px;
   text-align: center;
-  display: inline-block;
+  border-radius: 40px;
+  text-transform: none !important;
 }
 
 .popup-excluir__cancelar {

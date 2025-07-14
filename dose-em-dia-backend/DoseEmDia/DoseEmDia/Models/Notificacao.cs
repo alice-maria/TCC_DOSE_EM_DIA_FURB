@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DoseEmDia.Models
 {
+    [Table("Notificacoes")]
     public class Notificacao
     {
         [Key]

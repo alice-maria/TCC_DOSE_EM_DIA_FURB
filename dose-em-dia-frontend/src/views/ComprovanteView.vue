@@ -103,13 +103,19 @@ export default {
         const cpfLimpo = usuarioCPF.replace(/\D/g, '');
         const dataAgora = new Date();
         const dataFormatada = dataAgora.toISOString().slice(0, 10).replace(/-/g, ''); // yyyyMMdd
-        const nomeArquivo = `comprovante-vacinacao_${cpfLimpo}_${dataFormatada}.pdf`;
+
+        const hora = String(dataAgora.getHours()).padStart(2, '0');
+        const minutos = String(dataAgora.getMinutes()).padStart(2, '0');
+        const segundos = String(dataAgora.getSeconds()).padStart(2, '0');
+        const horaFormatada = `${hora}${minutos}${segundos}`;
+
+        const nomeArquivo = `comprovante-vacinacao_${cpfLimpo}_${dataFormatada}_${horaFormatada}.pdf`;
 
         const blob = new Blob([response.data], { type: 'application/pdf' });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', nomeArquivo); // ✅ nome gerado no frontend
+        link.setAttribute('download', nomeArquivo);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

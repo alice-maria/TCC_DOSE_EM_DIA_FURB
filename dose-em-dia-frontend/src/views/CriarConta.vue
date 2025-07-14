@@ -44,30 +44,38 @@
 
                 <h3 class="seguranca">Segurança</h3>
 
-                <v-text-field label="Senha*" v-model="form.senha" variant="outlined"
-                  :type="mostrarSenha ? 'text' : 'password'"
-                  :class="{ 'is-valid': senhaValida, 'is-invalid': erroSenha && form.senha.length > 0 }" required />
+                <v-text-field v-model="form.senha" label="Senha*" variant="outlined"
+                  :type="mostrarSenha ? 'text' : 'password'" required @input="validarSenha"
+                  :error="!senhaValida && form.senha.length > 0">
+                  <template #append-inner>
+                    <img :src="mostrarSenha ? iconeOlhoAberto : iconeOlhoFechado" class="icone-olho-custom"
+                      @click.stop="mostrarSenha = !mostrarSenha" alt="Mostrar ou ocultar senha" />
+                  </template>
+                </v-text-field>
 
-                <img :src="mostrarSenha ? iconeOlhoAberto : iconeOlhoFechado" alt="Mostrar ou ocultar senha"
-                  class="icone-olho" @click="mostrarSenha = !mostrarSenha" />
+                <div class="mensagem-erro-wrapper">
+                  <p v-if="form.senha.length > 0 && !senhaValida" class="text-danger-senha">
+                    A senha deve conter no mínimo 8 caracteres e ao menos 1 letra maiúscula, 1 número e 1 caractere
+                    especial.
+                  </p>
+                </div>
 
-                <p v-if="!senhaValida && form.senha.length > 0" class="text-danger-senha">
-                  A senha deve conter no mínimo 8 caracteres e ao menos 1 letra maiúscula, 1 número e 1 caractere
-                  especial.
-                </p>
+                <v-text-field v-model="form.confirmarSenha" label="Confirme sua senha*" variant="outlined"
+                  :type="mostrarConfirmarSenha ? 'text' : 'password'" required
+                  :error="form.confirmarSenha.length > 0 && form.confirmarSenha !== form.senha">
+                  <template #append-inner>
+                    <img :src="mostrarConfirmarSenha ? iconeOlhoAberto : iconeOlhoFechado" class="icone-olho-custom"
+                      alt="Mostrar ou ocultar confirmação"
+                      @click.stop="mostrarConfirmarSenha = !mostrarConfirmarSenha" />
+                  </template>
+                </v-text-field>
 
-                <v-text-field label="Confirme sua senha*" v-model="form.confirmarSenha" variant="outlined"
-                  :type="mostrarConfirmarSenha ? 'text' : 'password'"
-                  :class="{ 'is-invalid': form.confirmarSenha.length > 0 && form.confirmarSenha !== form.senha }"
-                  required />
-
-                <img :src="mostrarConfirmarSenha ? iconeOlhoAberto : iconeOlhoFechado"
-                  alt="Mostrar ou ocultar confirmação" class="icone-olho"
-                  @click="mostrarConfirmarSenha = !mostrarConfirmarSenha" />
-
-                <p v-if="form.confirmarSenha.length > 0 && form.confirmarSenha !== form.senha"
-                  class="text-danger-senha">
-                  As senhas não coincidem.</p>
+                <div class="mensagem-erro-wrapper">
+                  <p v-if="form.confirmarSenha.length > 0 && form.confirmarSenha !== form.senha"
+                    class="text-danger-senha">
+                    As senhas não coincidem.
+                  </p>
+                </div>
 
                 <!-- Checkbox ajustado visualmente -->
                 <v-checkbox v-model="privacidade" density="compact" class="checkbox-privacidade"
@@ -79,16 +87,17 @@
                   </template>
                 </v-checkbox>
 
-                <v-btn variant="outlined" color="orange" class="botao-avancar me-3" @click="abaAtiva = 'endereco'">
-                  <template #append>
-                    <span class="caption d-block">Avançar</span>
-                  </template>
-                </v-btn>
+                <div class="d-flex justify-end mt-6">
+                  <v-btn variant="outlined" color="orange" class="botao-secundario me-3" @click="abaAtiva = 'endereco'">
+                    <template #append>
+                      <span class="caption d-block">Avançar</span>
+                    </template>
+                  </v-btn>
+                </div>
 
               </v-container>
             </v-window-item>
 
-            <!-- Aba Endereço -->
             <v-window-item value="endereco">
               <v-container>
                 <v-text-field label="CEP*" v-model="form.cep" variant="outlined" v-mask="'#####-###'" @blur="buscarCep"
@@ -101,7 +110,7 @@
 
                 <!-- BOTÕES -->
                 <div class="d-flex justify-end mt-6">
-                  <v-btn variant="outlined" color="orange" class="botao-secundario me-3" @click="$router.push('/')">
+                  <v-btn variant="outlined" color="orange" class="botao-secundario me-3" @click="abaAtiva = 'pessoal'">
                     <template #append>
                       <span class="caption d-block">Voltar</span>
                     </template>
@@ -121,9 +130,26 @@
         <div class="modal-content text-white text-center p-4">
           <h4>Você está quase lá!</h4>
           <p>Criando conta...</p>
-          <button class="btn btn-light mt-3" @click="carregando = false">Cancelar</button>
         </div>
       </div>
+      <!-- Modal de sucesso -->
+      <div v-if="modalSucesso" class="modal-loading">
+        <div class="modal-content text-white text-center p-4">
+          <h4>Conta criada com sucesso!</h4>
+          <v-btn color="white" class="botao-redirecionamento" @click="fecharModalSucesso">OK</v-btn>
+        </div>
+      </div>
+      <!--Erro-->
+      <v-dialog v-model="dialogErro" max-width="400" class="dialog-centralizado">
+        <v-card class="popup-erro">
+          <h1>Erro!</h1>
+          <v-card-text class="popup-erro__texto">
+            {{ mensagemErro }}
+          </v-card-text>
+          <v-btn @click="fecharErro" class="botao-erro">OK</v-btn>
+        </v-card>
+      </v-dialog>
+
     </div>
   </div>
 </template>
@@ -145,6 +171,9 @@ export default {
       erroSenha: false,
       privacidade: false,
       abaAtiva: 'pessoal',
+      modalSucesso: false,
+      dialogErro: false,
+      mensagemErro: "",
       iconeOlhoAberto: require('@/assets/icons/eyes-on.svg'),
       iconeOlhoFechado: require('@/assets/icons/eyes-off.svg'),
       form: {
@@ -292,27 +321,34 @@ export default {
 
       try {
         this.carregando = true;
-        const response = await axios.post("http://localhost:5054/api/usuario/criar", payload);
+        const response = await axios.post("http://localhost:5054/api/usuario/criar-conta", payload);
         localStorage.setItem("usuarioNome", response.data.nome);
         console.log("Usuário criado:", response.data);
-        alert("Conta criada com sucesso!");
-        this.$router.push("/");
+        this.modalSucesso = true;
       } catch (err) {
         if (err.response && err.response.data) {
           console.error("Erro do servidor:", err.response.data);
           const erroMensagem = typeof err.response.data === 'string'
             ? err.response.data
             : JSON.stringify(err.response.data);
-          alert("Erro ao criar conta: " + erroMensagem);
+          this.mensagemErro = erroMensagem;
+          this.dialogErro = true;
         } else {
           console.error("Erro inesperado:", err);
-          alert("Erro desconhecido ao criar conta.");
+          this.mensagemErro = "Erro desconhecido ao criar conta.";
+          this.dialogErro = true;
         }
       } finally {
         this.carregando = false;
       }
-
     },
+    fecharModalSucesso() {
+      this.modalSucesso = false;
+      this.$router.push('/home');
+    },
+    fecharErro() {
+      this.dialogErro = false;
+    }
   },
 };
 </script>
@@ -444,13 +480,6 @@ export default {
   color: #f46c20;
 }
 
-.botao-avancar {
-  border: 2px solid;
-  color: darkgray !important;
-  border-radius: 30px;
-  margin-left: 1050px;
-}
-
 .icone-olho {
   width: 24px;
   height: 24px;
@@ -461,8 +490,14 @@ export default {
 }
 
 .text-danger-senha {
-  margin-top: -35px;
   color: red;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.mensagem-erro-wrapper {
+  margin-top: -10px;
+  margin-bottom: 24px;
 }
 
 .infos {
@@ -474,8 +509,50 @@ export default {
 .checkbox-privacidade {
   margin-top: -25px;
   font-size: 14px;
-  transform: scale(0.9);
-  margin-left: -65px;
+  margin-left: 0px;
 }
 
+.botao-redirecionamento {
+  background-color: white !important;
+  color: #f46c20 !important;
+  font-weight: bold;
+  border-radius: 30px;
+  padding: 10px 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.popup-erro {
+  background-color: #a20202;
+  border-radius: 100px;
+  padding: 50px 40px;
+  width: 300px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.popup-erro__texto {
+  color: white;
+  font-size: 18px !important;
+}
+
+.botao-erro {
+  background-color: white !important;
+  color: #a20202 !important;
+  font-weight: bold;
+  border-radius: 30px;
+  padding: 6px 18px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  max-width: 100px;
+  margin: 20px auto 0;
+  display: block;
+  text-align: center;
+  font-size: 1.0rem;
+}
+
+.dialog-centralizado>>>.v-overlay__content {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  border-radius: 20px !important;
+}
 </style>

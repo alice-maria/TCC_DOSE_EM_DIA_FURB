@@ -3,6 +3,7 @@ using DoseEmDia.Models.db;
 using DoseEmDia.Helpers;
 using DoseEmDia.Controllers.Helpers;
 using DoseEmDia.Services;
+using DoseEmDia.Controllers;
 
 namespace DoseEmDia
 {
@@ -25,8 +26,12 @@ namespace DoseEmDia
                 });
 
             services.AddScoped<EnvioEmail>();
-            services.AddHostedService<VacinaNotificacao>();
+            services.AddScoped<UsuarioService>();
+            services.AddScoped<VacinaService>();
+            services.AddScoped<NotificacaoService>();
+            //services.AddHostedService<VacinaNotificacao>();
             services.AddScoped<PaisService>();
+            services.AddScoped<ComprovanteService>();
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));

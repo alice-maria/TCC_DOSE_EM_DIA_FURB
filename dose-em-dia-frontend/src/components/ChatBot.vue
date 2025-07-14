@@ -27,10 +27,11 @@
           </div>
 
           <!-- Submenus -->
-           <div v-else-if="estado === 'vacinas'">
+          <div v-else-if="estado === 'vacinas'">
             <div class="mensagem bot">O que você quer saber mais sobre suas vacinas?</div>
             <div v-for="(item, index) in submenuVacinas" :key="index" class="opcao">
-              <button @click="mostrarResposta(item.resposta)">{{ item.label }}</button>
+              <button @click="item.acao ? executarAcaoDireta(item.acao) : mostrarResposta(item.resposta)">{{ item.label
+              }}</button>
             </div>
             <button class="voltar" @click="estado = 'inicio'">Voltar</button>
           </div>
@@ -38,7 +39,8 @@
           <div v-else-if="estado === 'conta'">
             <div class="mensagem bot">O que deseja fazer em sua conta?</div>
             <div v-for="(item, index) in submenuConta" :key="index" class="opcao">
-              <button @click="mostrarResposta(item.resposta)">{{ item.label }}</button>
+              <button @click="item.acao ? executarAcaoDireta(item.acao) : mostrarResposta(item.resposta)">{{ item.label
+              }}</button>
             </div>
             <button class="voltar" @click="estado = 'inicio'">Voltar</button>
           </div>
@@ -46,11 +48,30 @@
           <div v-else-if="estado === 'educacao'">
             <div class="mensagem bot">Sobre qual tema de saúde você quer saber mais?</div>
             <div v-for="(item, index) in submenuEducacao" :key="index" class="opcao">
-              <button @click="mostrarResposta(item.resposta)">{{ item.label }}</button>
+              <button @click="executarAcao(item)">{{ item.label }}</button>
             </div>
             <button class="voltar" @click="estado = 'inicio'">Voltar</button>
           </div>
-
+          <div v-else-if="estado === 'educacaoCrianca'" class="mensagem bot">
+            <p><strong>Bebês e crianças:</strong><br />
+              - Ao nascer: BCG e Hepatite B<br />
+              - 2 a 6 meses: Penta, VIP, Pneumocócica 10, Rotavírus, Meningocócica C<br />
+              - 6 meses: Influenza e COVID-19<br />
+              - 12 a 15 meses: Tríplice viral, Tetraviral, Hepatite A, DTP, Poliomielite, Febre Amarela</p>
+            <br /><a href="https://www.gov.br/saude/pt-br/vacinacao/calendario">Veja detalhes na página</a>.
+            <button class="voltar" @click="estado = 'educacao'">Voltar</button>
+          </div>
+          <div v-else-if="estado === 'educacaoAdolescente'" class="mensagem bot">
+            <p><strong>Adolescentes e jovens (10 a 24 anos):</strong><br />
+              - Hepatite B (3 doses, se não vacinado)<br />
+              - dT (reforço a cada 10 anos)<br />
+              - SCR (tríplice viral, 2 doses)<br />
+              - HPV (1 dose de 9 a 14 anos)<br />
+              - Meningocócica ACWY<br />
+              - Febre Amarela e Varicela (casos específicos)</p>
+              <br /><a href="https://www.gov.br/saude/pt-br/vacinacao/calendario">Veja detalhes na página</a>.
+              <button class="voltar" @click="estado = 'educacao'">Voltar</button>
+          </div>
           <div v-else-if="estado === 'suporte'">
             <div class="mensagem bot">Como podemos te ajudar?</div>
             <div v-for="(item, index) in submenuSuporte" :key="index" class="opcao">
@@ -60,7 +81,12 @@
           </div>
 
           <!-- Resposta final -->
-          <div v-if="resposta" class="mensagem resposta" v-html="resposta"></div>
+          <div v-for="(msg, index) in mensagens" :key="index" class="mensagem bot" v-html="msg"></div>
+
+          <div v-if="estado === 'menu-voltar'">
+            <button class="voltar" @click="estado = 'inicio'; mensagens = []">Voltar ao menu</button>
+          </div>
+
         </div>
       </transition>
     </div>
@@ -68,12 +94,15 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: "ChatBot",
   data() {
     return {
       visivel: false,
       estado: "boasVindas",
+      mensagens: [],
       resposta: null,
       opcoes: [
         { label: "Informações sobre minhas vacinas", acao: "irParaVacinas" },
@@ -82,23 +111,22 @@ export default {
         { label: "Suporte", acao: "abrirSuporte" }
       ],
       submenuVacinas: [
-        { label: "Minha cardeneta digital", resposta: "Veja o calendário completo em: /calendario-vacinas" },
-        { label: "Quais vacinas estão atrasadas?", resposta: "Acesse nossa tabela interativa em: /doencas-e-vacinas" },
-        { label: "Quais vacinas estão para atrasar?", resposta: "Confira campanhas de vacinação em andamento na sua região." },
-        { label: "Quais vacinas estão em dia?", resposta: "Veja respostas em: /faq-vacinas" }
+        { label: "Minha cardeneta digital", acao: "irParaHome" },
+        { label: "Quais vacinas estão atrasadas?", acao: "listarAtrasadas" },
+        { label: "Quais vacinas estão para atrasar?", acao: "listarAVencer" },
+        { label: "Quais vacinas estão em dia?", acao: "listarEmDia" }
       ],
-
       submenuConta: [
-        { label: "Alterar senha", resposta: "Acesse <a href='/perfil'>Perfil</a> e clique em 'Alterar Senha'." },
-        { label: "Editar dados pessoais", resposta: "Você pode editar seus dados no menu <a href='/perfil'>Perfil</a>." },
+        { label: "Alterar senha", acao: "redefinirSenha" },
+        { label: "Editar dados pessoais", acao: "editarPerfil" },
         { label: "Excluir minha conta", resposta: "Envie uma solicitação para <strong>privacidade@doseemdia.com.br</strong>." }
       ],
       submenuEducacao: [
-        { label: "Vacinas para bebês e crianças", resposta: "Veja mais em <a href='/educacao-infantil'>nossa página de vacinas infantis</a>." },
-        { label: "Vacinas para adultos", resposta: "Exemplos importantes: dT, Hepatite B, COVID-19." },
-        { label: "Vacinas para idosos", resposta: "Gripe, Pneumo 23, Herpes-zóster." },
-        { label: "Vacinas para gestantes", resposta: "dTpa e Influenza são essenciais durante a gestação." },
-        { label: "Atualizações sobre COVID-19", resposta: "Consulte campanhas ativas e reforços disponíveis." }
+        { label: "Vacinas para bebês e crianças", acao: "educacaoCrianca" },
+        { label: "Vacinas para adolescentes e jovens", acao: "educacaoAdolescente" },
+        { label: "Vacinas para adultos", acao: "educacaoAdulto" },
+        { label: "Vacinas para idosos", acao: "educacaoIdoso" },
+        { label: "Vacinas para gestantes", acao: "educacaoGestante" }
       ],
       submenuSuporte: [
         { label: "Esqueci minha senha", resposta: "Use a opção 'Recuperar senha' na tela de login." },
@@ -116,29 +144,167 @@ export default {
       this.visivel = false;
       this.estado = "boasVindas";
       this.resposta = null;
+      this.mensagens = [];
     },
     executarAcao(opcao) {
       this.resposta = null;
       switch (opcao.acao) {
         case "irParaVacinas":
+          this.mensagens = [];
           this.estado = "vacinas";
           break;
         case "abrirConta":
+          this.mensagens = [];
           this.estado = "conta";
           break;
         case "abrirEducacao":
+          this.mensagens = [];
           this.estado = "educacao";
           break;
         case "abrirSuporte":
+          this.mensagens = [];
           this.estado = "suporte";
+          break;
+        case "listarAtrasadas":
+          this.mensagens = [];
+          this.buscarVacinasAtrasadas();
+          break;
+        case "educacaoCrianca":
+          this.estado = "educacaoCrianca";
+          break;
+        case "educacaoAdolescente":
+          this.estado = "educacaoAdolescente";
+          break;
+        case "educacaoAdulto":
+          this.estado = "educacaoAdulto";
+          break;
+        case "educacaoIdoso":
+          this.estado = "educacaoIdoso";
+          break;
+        case "educacaoGestante":
+          this.estado = "educacaoGestante";
           break;
         default:
           this.mostrarResposta(opcao.resposta);
       }
     },
+    executarAcaoDireta(acao) {
+      if (acao === "irParaHome") {
+        this.$router.push("/home");
+      } else if (acao === "listarAtrasadas") {
+        this.buscarVacinasAtrasadas();
+      } else if (acao === "listarAVencer") {
+        this.buscarVacinasAVencer();
+      } else if (acao === "listarEmDia") {
+        this.buscarVacinasEmDia();
+      } else if (acao === "redefinirSenha") {
+        this.$router.push("/redefinir-senha");
+      } else if (acao === "editarPerfil") {
+        this.$router.push("/editar-perfil");
+      }
+    },
     mostrarResposta(msg) {
       this.resposta = msg;
       this.estado = "inicio";
+    },
+    mostrarMensagem(msg) {
+      this.mensagens.push(msg);
+    },
+    async buscarVacinasAtrasadas() {
+      this.mensagens = [];
+      this.estado = "resposta";
+
+      const cpf = localStorage.getItem("usuarioCPF");
+
+      if (!cpf) {
+        this.mostrarMensagem("! Não foi possível identificar seu CPF. Faça login novamente.");
+        return;
+      }
+
+      this.mostrarMensagem("Certo! Estou buscando suas vacinas...");
+
+      try {
+        const response = await axios.get(`http://localhost:5054/api/vacinas/listaVacinas/${cpf}`);
+        const vacinas = response.data;
+
+        const atrasadas = vacinas.filter(v => v.status === 2); // 2 = Vencida
+
+        if (atrasadas.length) {
+          const lista = atrasadas.map(v => `<li>${v.nome}</li>`).join("");
+          this.mostrarMensagem(`Você está com as seguintes vacinas atrasadas:<ul>${lista}</ul>`);
+        } else {
+          this.mostrarMensagem("Todas as suas vacinas estão em dia. Parabéns!");
+        }
+      } catch (erro) {
+        console.error(erro);
+        this.mostrarMensagem("Ocorreu um erro ao buscar suas vacinas. Tente novamente mais tarde.");
+      }
+
+      this.estado = "menu-voltar";
+    },
+    async buscarVacinasAVencer() {
+      this.mensagens = [];
+      this.estado = "resposta";
+
+      const cpf = localStorage.getItem("usuarioCPF");
+
+      if (!cpf) {
+        this.mostrarMensagem("! Não foi possível identificar seu CPF. Faça login novamente.");
+        return;
+      }
+
+      this.mostrarMensagem("Certo! Estou buscando suas vacinas...");
+
+      try {
+        const response = await axios.get(`http://localhost:5054/api/vacinas/listaVacinas/${cpf}`);
+        const vacinas = response.data;
+
+        const atrasadas = vacinas.filter(v => v.status === 1); // 1 = A Vencer
+
+        if (atrasadas.length) {
+          const lista = atrasadas.map(v => `<li>${v.nome}</li>`).join("");
+          this.mostrarMensagem(`Essas são as suas vacinas que estão prestes a vencer:<ul>${lista}</ul>`);
+        } else {
+          this.mostrarMensagem("Todas as suas vacinas estão em dia. Parabéns!");
+        }
+      } catch (erro) {
+        console.error(erro);
+        this.mostrarMensagem("Ocorreu um erro ao buscar suas vacinas. Tente novamente mais tarde.");
+      }
+
+      this.estado = "menu-voltar";
+    },
+    async buscarVacinasEmDia() {
+      this.mensagens = [];
+      this.estado = "resposta";
+
+      const cpf = localStorage.getItem("usuarioCPF");
+
+      if (!cpf) {
+        this.mostrarMensagem("! Não foi possível identificar seu CPF. Faça login novamente.");
+        return;
+      }
+
+      this.mostrarMensagem("Certo! Estou buscando suas vacinas...");
+
+      try {
+        const response = await axios.get(`http://localhost:5054/api/vacinas/listaVacinas/${cpf}`);
+        const vacinas = response.data;
+
+        const atrasadas = vacinas.filter(v => v.status === 0); // 0 = Aplicadas em dia
+
+        if (atrasadas.length) {
+          const lista = atrasadas.map(v => `<li>${v.nome}</li>`).join("");
+          this.mostrarMensagem(`Parabéns por focar na sua sáude, olha quantas vacinas em dia!:<ul>${lista}</ul>`);
+        } else {
+          this.mostrarMensagem("Todas as suas vacinas estão em dia. Parabéns!");
+        }
+      } catch (erro) {
+        console.error(erro);
+        this.mostrarMensagem("Ocorreu um erro ao buscar suas vacinas. Tente novamente mais tarde.");
+      }
+
+      this.estado = "menu-voltar";
     }
   }
 };
@@ -212,6 +378,10 @@ export default {
   background: #f0f0f0;
 }
 
+.voltar {
+  margin-top: 25px;
+}
+
 .opcao button:hover,
 .voltar:hover {
   background: #e0e0e0;
@@ -246,5 +416,17 @@ export default {
 .fechar-chat img {
   width: 20px;
   height: 20px;
+}
+
+.mensagem.bot {
+  background: #f1f1f1;
+  padding: 10px 15px;
+  border-radius: 15px;
+  margin-bottom: 10px;
+  max-width: 90%;
+  word-wrap: break-word;
+  font-size: 0.95rem;
+  color: #333;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.08);
 }
 </style>

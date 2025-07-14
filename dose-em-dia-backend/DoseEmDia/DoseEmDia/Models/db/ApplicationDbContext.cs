@@ -69,6 +69,8 @@ namespace DoseEmDia.Models.db
             modelBuilder.Entity<ContadorRequisicoes>()
                .Property(e => e.Requisicoes)
                .HasColumnName("Requisicoes");
+
+            modelBuilder.Entity<Notificacao>().ToTable("Notificacoes");
         }
     }
 }

@@ -1,8 +1,5 @@
-﻿using DoseEmDia.Models.db;
-using DoseEmDia.Models.Enums;
-using DoseEmDia.Models.Exceptions;
+﻿using DoseEmDia.Models.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DoseEmDia.Controllers
 {
@@ -10,35 +7,33 @@ namespace DoseEmDia.Controllers
     [Route("api/vacinas")]
     public class VacinaController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly VacinaService _vacinaService;
 
-        public VacinaController(ApplicationDbContext context)
+        public VacinaController(VacinaService vacinaService)
         {
-            _context = context;
+            _vacinaService = vacinaService;
         }
 
         [HttpGet("listaVacinas/{cpf}")]
         public async Task<IActionResult> ObterVacinasPorCpf(string cpf)
         {
-            var usuario = await _context.Usuario
-                .Include(u => u.Vacinas)
-                .FirstOrDefaultAsync(u => u.CPF == cpf);
-
-            if (usuario == null)
-                throw UsuarioException.UsuarioNaoEncontradoPorCpf(cpf);
-
-            if (usuario.Vacinas == null || !usuario.Vacinas.Any())
-                throw VacinaException.NenhumaVacinaEncontrada(usuario.IdUser);
-
-            var vacinasOrdenadas = usuario.Vacinas
-                .OrderByDescending(v =>
-                    v.Status == StatusVacina.EmAtraso ? 1 :
-                    v.Status == StatusVacina.AVencer ? 2 :
-                    3)
-                .ThenBy(v => v.DataAplicacao)
-                .ToList();
-
-            return Ok(vacinasOrdenadas);
+            try
+            {
+                var vacinas = await _vacinaService.ObterVacinasPorCpf(cpf);
+                return Ok(vacinas);
+            }
+            catch (UsuarioException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (VacinaException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500, "Erro interno ao buscar vacinas.");
+            }
         }
     }
 }

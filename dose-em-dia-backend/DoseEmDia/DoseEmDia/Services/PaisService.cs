@@ -1,5 +1,7 @@
 using DoseEmDia.Models.db;
 using DoseEmDia.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DoseEmDia.Services
 {
@@ -37,6 +39,13 @@ namespace DoseEmDia.Services
 
             _context.Paises.AddRange(paises);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Pais>> ListarPaisesVacinasObrigatorias()
+        {
+            return await _context.Paises
+                .OrderBy(p => p.Nome)
+                .ToListAsync();
         }
     }
 }

@@ -115,7 +115,7 @@ namespace DoseEmDia.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Notificacao");
+                    b.ToTable("Notificacoes", (string)null);
                 });
 
             modelBuilder.Entity("DoseEmDia.Models.Pais", b =>
