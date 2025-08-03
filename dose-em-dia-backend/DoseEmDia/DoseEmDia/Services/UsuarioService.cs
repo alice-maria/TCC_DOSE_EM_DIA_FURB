@@ -6,17 +6,19 @@ using DoseEmDia.Controllers.Helpers;
 using DoseEmDia.Helpers;
 using DoseEmDia.Models.Exceptions;
 using DoseEmDia.Controllers.DTO;
-using DoseEmDia.Models.Enums;
+using DoseEmDia.Controllers;
 
 public class UsuarioService
 {
     private readonly ApplicationDbContext _context;
     private readonly EnvioEmail _envioEmail;
+    private readonly VacinaService _vacinaService;
 
-    public UsuarioService(ApplicationDbContext context, EnvioEmail envioEmail)
+    public UsuarioService(ApplicationDbContext context, EnvioEmail envioEmail, VacinaService vacinaService)
     {
         _context = context;
         _envioEmail = envioEmail;
+        _vacinaService = vacinaService; 
     }
 
     public async Task<Usuario> BuscarPorCpf(string cpf)
@@ -44,7 +46,6 @@ public class UsuarioService
 
         _context.Endereco.Add(endereco);
 
-        // Remover espaço final do nome
         request.Nome = request.Nome?.TrimEnd();
 
         var salt = CriptografiaHelper.GerarSalt();
@@ -65,13 +66,8 @@ public class UsuarioService
         _context.Usuario.Add(usuario);
         await _context.SaveChangesAsync();
 
-        var vacinas = GerarVacinasFicticiasParaUsuario();
-        foreach (var vacina in vacinas)
-        {
-            vacina.UsuarioId = usuario.IdUser;
-            _context.Vacina.Add(vacina);
-        }
-        await _context.SaveChangesAsync();
+        int idade = CalcularIdade(usuario.DataNascimento);
+        await _vacinaService.GerarEVincularVacinas(usuario.IdUser, idade, usuario.Sexo);
 
         return usuario;
     }
@@ -91,18 +87,9 @@ public class UsuarioService
     {
         var usuario = await _context.Usuario
             .Include(u => u.Endereco)
+            .Include(u => u.Vacinas)
+            .Include(u => u.Notificacoes)
             .FirstOrDefaultAsync(u => u.Email == request.Email);
-
-        if (usuario != null)
-        {
-            usuario.Vacinas = await _context.Vacina
-                .Where(v => v.UsuarioId == usuario.IdUser)
-                .ToListAsync();
-
-             usuario.Notificacoes = await _context.Notificacao
-                .Where(n => n.UsuarioId == usuario.IdUser)
-                .ToListAsync();
-        }
 
         if (usuario == null)
             throw new UsuarioException.UsuarioNaoEncontradoException(request.Email);
@@ -111,10 +98,10 @@ public class UsuarioService
         if (!senhaValida)
             throw new UnauthorizedAccessException("Senha incorreta.");
 
-        if (usuario.Notificacoes != null && usuario.Notificacoes.Any())
+        if (usuario.Notificacoes?.Any() == true)
             _context.Notificacao.RemoveRange(usuario.Notificacoes);
 
-        if (usuario.Vacinas != null && usuario.Vacinas.Any())
+        if (usuario.Vacinas?.Any() == true)
             _context.Vacina.RemoveRange(usuario.Vacinas);
 
         if (usuario.Endereco != null)
@@ -124,6 +111,7 @@ public class UsuarioService
 
         await _context.SaveChangesAsync();
     }
+
 
     public async Task EsqueciSenha(string email)
     {
@@ -158,6 +146,30 @@ public class UsuarioService
 
         await _context.SaveChangesAsync();
     }
+
+    public async Task AlterarSenha(AlterarSenhaRequest request)
+    {
+        var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Email == request.Email);
+        if (usuario == null)
+            throw new UsuarioException.UsuarioNaoEncontradoException(usuario.IdUser);
+
+        var hashSenhaAtual = CriptografiaHelper.GerarHash(request.SenhaAtual, usuario.Salt);
+        if (usuario.Senha != hashSenhaAtual)
+            throw new UnauthorizedAccessException("Senha incorreta.");
+
+        var hashNovaSenhaComSaltAntigo = CriptografiaHelper.GerarHash(request.NovaSenha, usuario.Salt);
+        if (usuario.Senha == hashNovaSenhaComSaltAntigo)
+            throw new InvalidOperationException("A nova senha deve ser diferente da atual.");
+
+        var novoSalt = CriptografiaHelper.GerarSalt();
+        var novoHash = CriptografiaHelper.GerarHash(request.NovaSenha, novoSalt);
+
+        usuario.Salt = novoSalt;
+        usuario.Senha = novoHash;
+
+        await _context.SaveChangesAsync();
+    }
+
 
     public async Task AtualizarUsuario(int id, AtualizarUsuario request)
     {
@@ -220,111 +232,12 @@ public class UsuarioService
         return usuario;
     }
 
-    private List<Vacina> GerarVacinasFicticiasParaUsuario()
+    private int CalcularIdade(DateTime dataNascimento)
     {
-        var listaVacinas = new Dictionary<string, string>
-        {
-            { "BCG", "Única" },
-            { "Hepatite B", "0-1-6 meses" },
-            { "Penta", "2, 4 e 6 meses" },
-            { "Pólio inativada", "2, 4 e 6 meses" },
-            { "Rotavírus", "2 e 4 meses" },
-            { "Pneumo 10", "2 e 4 meses + reforço com 12 meses" },
-            { "Meningo C", "3 e 5 meses + reforço com 12 meses" },
-            { "Febre amarela", "Dose única aos 9 meses" },
-            { "Tríplice viral", "12 e 15 meses" },
-            { "Tetra viral", "15 meses" },
-            { "DTP", "15 meses e 4 anos" },
-            { "Hepatite A", "15 meses" },
-            { "Varicela", "15 meses" },
-            { "Difteria e tétano adulto (dT)", "Reforço a cada 10 anos" },
-            { "Meningocócica ACWY", "11 e 12 anos" },
-            { "HPV quadrivalente", "2 doses a partir dos 9 anos" },
-            { "dTpa", "Gestante / substituto do dT" },
-            { "Covid-19", "2 ou 3 doses + reforços" },
-            { "Pneumocócica 23-valente (Pneumo 23)", "Única após 60 anos" }
-        };
-
-        var validadeMeses = new Dictionary<string, int>
-        {
-            { "BCG", 999 },
-            { "Hepatite B", 6 },
-            { "Penta", 6 },
-            { "Pólio inativada", 6 },
-            { "Rotavírus", 6 },
-            { "Pneumo 10", 12 },
-            { "Meningo C", 12 },
-            { "Febre amarela", 999 },
-            { "Tríplice viral", 12 },
-            { "Tetra viral", 12 },
-            { "DTP", 48 },
-            { "Hepatite A", 12 },
-            { "Varicela", 12 },
-            { "Difteria e tétano adulto (dT)", 120 },
-            { "Meningocócica ACWY", 24 },
-            { "HPV quadrivalente", 12 },
-            { "dTpa", 120 },
-            { "Covid-19", 12 },
-            { "Pneumocócica 23-valente (Pneumo 23)", 999 }
-        };
-
-        var fabricantes = new[] { "Pfizer", "Butantan", "MSD", "Fiocruz", "AstraZeneca", "GSK", "Moderna" };
-        var nomesSorteio = listaVacinas.Keys.ToList();
-        var rand = new Random();
-        var vacinas = new List<Vacina>();
-
-        // Geração das vacinas aplicadas
-        for (int i = 0; i < 10; i++)
-        {
-            var nome = nomesSorteio[rand.Next(nomesSorteio.Count)];
-            vacinas.Add(new Vacina(
-                nome,
-                fabricantes[rand.Next(fabricantes.Length)],
-                rand.Next(1, 4),
-                rand.Next(100000, 999999),
-                listaVacinas[nome],
-                DateTime.Today.AddMonths(-rand.Next(1, 48)),
-                StatusVacina.Aplicada)
-            {
-                ValidadeMeses = validadeMeses.ContainsKey(nome) ? validadeMeses[nome] : 12
-            });
-        }
-
-        // Geração das vacinas em atraso
-        for (int i = 0; i < 5; i++)
-        {
-            var nome = nomesSorteio[rand.Next(nomesSorteio.Count)];
-            vacinas.Add(new Vacina(
-                nome,
-                fabricantes[rand.Next(fabricantes.Length)],
-                rand.Next(1, 4),
-                rand.Next(100000, 999999),
-                listaVacinas[nome],
-                DateTime.Today.AddDays(-rand.Next(10, 90)),
-                StatusVacina.EmAtraso)
-            {
-                ValidadeMeses = validadeMeses.ContainsKey(nome) ? validadeMeses[nome] : 12
-            });
-        }
-
-        // Geração das vacinas a vencer
-        for (int i = 0; i < 4; i++)
-        {
-            var nome = nomesSorteio[rand.Next(nomesSorteio.Count)];
-            vacinas.Add(new Vacina(
-                nome,
-                fabricantes[rand.Next(fabricantes.Length)],
-                rand.Next(1, 4),
-                rand.Next(100000, 999999),
-                listaVacinas[nome],
-                DateTime.Today.AddDays(rand.Next(1, 15)),
-                StatusVacina.AVencer)
-            {
-                ValidadeMeses = validadeMeses.ContainsKey(nome) ? validadeMeses[nome] : 12
-            });
-        }
-
-        return vacinas;
+        var hoje = DateTime.Today;
+        var idade = hoje.Year - dataNascimento.Year;
+        if (dataNascimento > hoje.AddYears(-idade)) idade--;
+        return idade;
     }
 
 }
@@ -351,4 +264,12 @@ public class ExcluirContaRequest
     public string Email { get; set; }
     public string Senha { get; set; }
 }
+
+public class AlterarSenhaRequest
+{
+    public string Email { get; set; }
+    public string SenhaAtual { get; set; }
+    public string NovaSenha { get; set; }
+}
+
 

@@ -26,7 +26,11 @@
               </v-form>
 
               <!-- Mensagem -->
-              <v-alert v-if="mensagem" type="info" class="mt-4">{{ mensagem }}</v-alert>
+              <v-alert v-if="mensagem" type="error" color="red-darken-2" class="mt-4" border="start" elevation="2"
+                icon="mdi-alert-circle">
+                {{ mensagem }}
+              </v-alert>
+
             </v-card>
           </v-col>
         </v-row>

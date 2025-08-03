@@ -55,7 +55,6 @@ public class UsuarioController : ControllerBase
         {
             return Unauthorized("Usuário ou senha inválidos.");
         }
-
     }
 
     [HttpPost("excluir-conta")]
@@ -79,14 +78,21 @@ public class UsuarioController : ControllerBase
     [HttpPost("esqueciSenha")]
     public async Task<IActionResult> EsqueciSenha([FromBody] EsqueciSenhaRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request?.Email))
+            return BadRequest("E-mail não fornecido.");
+
         try
         {
             await _usuarioService.EsqueciSenha(request.Email);
             return Ok("Se o e-mail estiver cadastrado, um link será enviado.");
         }
-        catch
+        catch (UsuarioException.UsuarioNaoEncontradoException)
         {
             return NotFound("E-mail não encontrado.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Erro interno: {ex.Message}");
         }
     }
 
@@ -101,6 +107,39 @@ public class UsuarioController : ControllerBase
         catch
         {
             return BadRequest("Token inválido ou expirado.");
+        }
+    }
+
+    [HttpPut("alterar-senha")]
+    public async Task<IActionResult> AlterarSenha([FromBody] AlterarSenhaRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.SenhaAtual) ||
+            string.IsNullOrWhiteSpace(request.NovaSenha))
+        {
+            return BadRequest("Todos os campos são obrigatórios.");
+        }
+
+        try
+        {
+            await _usuarioService.AlterarSenha(request);
+            return Ok("Senha alterada com sucesso.");
+        }
+        catch (UsuarioException.UsuarioNaoEncontradoException)
+        {
+            return NotFound("Usuário não encontrado.");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized("Senha atual incorreta.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "Erro interno ao tentar alterar a senha.");
         }
     }
 

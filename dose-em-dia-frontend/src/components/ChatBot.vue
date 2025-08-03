@@ -16,7 +16,7 @@
           <!-- Saudacao + Menu principal -->
           <div v-if="estado === 'boasVindas' || estado === 'inicio'">
             <div class="mensagem bot">
-              <div class="saudacao">Olá! Bem-vindo ao Dose em Dia!</div>
+              <div class="saudacao">Olá, {{ nomeUsuario }}!</div>
               <p>Eu sou a Vitta, sua assistente virtual. Estou aqui para te ajudar com vacinas, informações de saúde,
                 sua conta e suporte técnico. Será um prazer te auxiliar!</p>
               <p>Como posso te ajudar hoje?</p>
@@ -52,15 +52,26 @@
             </div>
             <button class="voltar" @click="estado = 'inicio'">Voltar</button>
           </div>
-          <div v-else-if="estado === 'educacaoCrianca'" class="mensagem bot">
-            <p><strong>Bebês e crianças:</strong><br />
-              - Ao nascer: BCG e Hepatite B<br />
-              - 2 a 6 meses: Penta, VIP, Pneumocócica 10, Rotavírus, Meningocócica C<br />
-              - 6 meses: Influenza e COVID-19<br />
-              - 12 a 15 meses: Tríplice viral, Tetraviral, Hepatite A, DTP, Poliomielite, Febre Amarela</p>
-            <br /><a href="https://www.gov.br/saude/pt-br/vacinacao/calendario">Veja detalhes na página</a>.
+          <div v-else-if="estado === 'educacaoCrianca'">
+            <div class="mensagem bot">
+              <h3 class="titulo-vacina">Bebês e crianças</h3>
+              <ul>
+                <li><strong>Ao nascer:</strong> BCG, Hepatite B</li>
+                <li><strong>2 a 6 meses:</strong> Penta, VIP, Pneumo 10, Rotavírus, Meningo C</li>
+                <li><strong>6 meses:</strong> Influenza, COVID-19</li>
+                <li><strong>12 a 15 meses:</strong> Tríplice viral, Tetraviral, Hepatite A, DTP, Polio, Febre Amarela
+                </li>
+              </ul>
+              <a href="https://www.gov.br/saude/pt-br/vacinacao/calendario" target="_blank" class="btn-saiba-mais">
+                Clique aqui para acessar mais informações sobre as vacinações!
+              </a>
+            </div>
+          </div>
+          <div v-if="estado === 'educacaoCrianca'">
             <button class="voltar" @click="estado = 'educacao'">Voltar</button>
           </div>
+
+
           <div v-else-if="estado === 'educacaoAdolescente'" class="mensagem bot">
             <p><strong>Adolescentes e jovens (10 a 24 anos):</strong><br />
               - Hepatite B (3 doses, se não vacinado)<br />
@@ -69,8 +80,42 @@
               - HPV (1 dose de 9 a 14 anos)<br />
               - Meningocócica ACWY<br />
               - Febre Amarela e Varicela (casos específicos)</p>
-              <br /><a href="https://www.gov.br/saude/pt-br/vacinacao/calendario">Veja detalhes na página</a>.
-              <button class="voltar" @click="estado = 'educacao'">Voltar</button>
+            <br /><a href="https://www.gov.br/saude/pt-br/vacinacao/calendario">Veja detalhes na página</a>.
+            <button class="voltar" @click="estado = 'educacao'">Voltar</button>
+          </div>
+          <div v-else-if="estado === 'educacaoAdulto'" class="mensagem bot">
+            <p><strong>Adultos (25 a 59 anos):</strong><br />
+              - Hepatite B (3 doses)<br />
+              - dT (reforço a cada 10 anos)<br />
+              - SCR (1 ou 2 doses, se não vacinado)<br />
+              - Febre Amarela (dose única)<br />
+              - Pneumocócica 23v e Varicela (grupos específicos)</p>
+            <br /><a href="https://www.gov.br/saude/pt-br/vacinacao/calendario">Veja detalhes na página</a>.
+            <button class="voltarEducacao" @click="estado = 'educacao'">Voltar</button>
+          </div>
+          <div v-else-if="estado === 'educacaoIdoso'" class="mensagem bot">
+            <p><strong>Idosos (60+):</strong><br />
+              - Hepatite B (3 doses)<br />
+              - dT (reforço a cada 10 anos)<br />
+              - Influenza (anual)<br />
+              - COVID-19 (semestral)<br />
+              - Pneumocócica 23v e Varicela<br />
+              - Febre Amarela (para residentes ou viajantes a áreas de risco)<br /></p>
+            <br /><a href="https://www.gov.br/saude/pt-br/vacinacao/calendario">Veja detalhes na página</a>.
+            <button class="voltar" @click="estado = 'educacao'">Voltar</button>
+          </div>
+          <div v-else-if="estado === 'educacaoGestante'" class="mensagem bot">
+            <p><strong>Gestantes:</strong><br />
+              - dTpa (única a partir da 20ª semana)<br />
+              - Influenza (anual)<br />
+              - Hepatite B (3 doses, se necessário)<br />
+              - COVID-19 (1 dose por gestação)
+              <br />Vacinas protegem a gestante e o bebê. Consulte sua equipe de pré-natal!
+            </p>
+            <br /><a href="https://www.gov.br/saude/pt-br/vacinacao/calendario" target="_blank" class="link-educacao">
+              Clique aqui para acessar mais informações sobre as vacinações.
+            </a>
+            <button class="voltar" @click="estado = 'educacao'">Voltar</button>
           </div>
           <div v-else-if="estado === 'suporte'">
             <div class="mensagem bot">Como podemos te ajudar?</div>
@@ -104,6 +149,7 @@ export default {
       estado: "boasVindas",
       mensagens: [],
       resposta: null,
+      nomeUsuario: localStorage.getItem("usuarioNome") || "Usuário",
       opcoes: [
         { label: "Informações sobre minhas vacinas", acao: "irParaVacinas" },
         { label: "Conta do usuário", acao: "abrirConta" },
@@ -305,6 +351,10 @@ export default {
       }
 
       this.estado = "menu-voltar";
+    },
+    async selecionarOpcao(opcao) {
+      this.mensagens.push({ texto: opcao.label, tipo: 'usuario' });
+      await this.executarAcao(opcao);
     }
   }
 };
@@ -339,23 +389,46 @@ export default {
   bottom: 90px;
   right: 20px;
   z-index: 999;
-  max-width: 450px;
-  width: 95vw;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  padding: 25px;
+  width: 410px;
+  height: 555px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  padding: 30px 20px 20px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 480px) {
+  .chatbot-popup {
+    width: 95vw;
+    height: 90vh;
+  }
 }
 
 .fechar-chat {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
+  top: 12px;
+  right: 12px;
+  background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 4px;
+  transition: transform 0.2s ease;
 }
+
+.fechar-chat img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+}
+
+.fechar-chat:hover img {
+  transform: rotate(90deg);
+  opacity: 1;
+}
+
 
 .mensagem {
   margin-bottom: 15px;
@@ -419,14 +492,65 @@ export default {
 }
 
 .mensagem.bot {
-  background: #f1f1f1;
-  padding: 10px 15px;
-  border-radius: 15px;
-  margin-bottom: 10px;
+  background: #e8f0fe;
+  padding: 12px 16px;
+  border-radius: 18px 18px 18px 4px;
+  margin-bottom: 12px;
   max-width: 90%;
   word-wrap: break-word;
   font-size: 0.95rem;
-  color: #333;
-  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.08);
+  color: #1f1f1f;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  font-family: 'Segoe UI', 'Roboto', sans-serif;
 }
+
+.opcoes-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn-opcao {
+  background: #f0f0f0;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.opcao button,
+.voltar {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #f6f6f6;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  font-family: 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.opcao button:hover,
+.voltar:hover {
+  background-color: #e0e0e0;
+}
+
+.titulo-vacina {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #de2e03;
+  margin-bottom: 10px;
+}
+
+.voltarEducacao {
+  margin-top: -80px !important;
+}
+
 </style>

@@ -11,16 +11,16 @@ namespace DoseEmDia.Controllers
     public class CampanhaVacinacaoController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly EnvioEmail _envioEmail;
+        private readonly NotificacaoService _notificacaoService;
 
-        public CampanhaVacinacaoController(ApplicationDbContext context, EnvioEmail envioEmail)
+        public CampanhaVacinacaoController(ApplicationDbContext context, NotificacaoService notificacaoService)
         {
             _context = context;
-            _envioEmail = envioEmail;
+            _notificacaoService = notificacaoService;
         }
 
         [HttpPost("enviar")]
-        public async Task<IActionResult> EnviarCampanha([FromForm] CampanhaRequest request)
+        public async Task<IActionResult> EnviarCampanha([FromForm] CampanhaUploadRequest request)
         {
             if (request.Imagem == null || request.Imagem.Length == 0) //A imagem é enviada pelo front
                 return BadRequest("Imagem da campanha obrigatória.");
@@ -32,14 +32,17 @@ namespace DoseEmDia.Controllers
                 imagemBytes = ms.ToArray();
             }
 
-            var usuarios = await _context.Usuario.ToListAsync();
+            var corpoHtml = GerarHtmlCampanha(
+                request.Titulo,
+                request.Descricao,
+                request.LinkMaisInformacoes
+            );
 
+            var usuarios = await _context.Usuario.ToListAsync();
             foreach (var usuario in usuarios)
             {
-                var corpoHtml = GerarHtmlCampanha(request.Titulo, request.Descricao, request.LinkMaisInformacoes);
-
-                await _envioEmail.EnviarEmailCampanhaAsync(
-                    usuario.Email,
+                await _notificacaoService.EnviarCampanhaSePermitidoAsync(
+                    usuario.IdUser,
                     request.Titulo,
                     corpoHtml,
                     imagemBytes
@@ -62,7 +65,7 @@ namespace DoseEmDia.Controllers
         }
     }
 
-    public class CampanhaRequest
+    public class CampanhaUploadRequest
     {
         public string Titulo { get; set; }
         public string Descricao { get; set; }

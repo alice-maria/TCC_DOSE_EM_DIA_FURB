@@ -26,7 +26,7 @@
             <!-- Navegação e Filtro -->
             <div class="navegacao-filtro">
                 <v-btn class="botao-round-laranja" @click="mostrarFiltro = !mostrarFiltro">
-                    FILTRO
+                    Filtro
                 </v-btn>
 
             </div>
@@ -144,11 +144,12 @@ export default {
 }
 
 .navegacao-filtro {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: -53px;
+  display: flex;
+  justify-content: flex-end; /* Alinha botão à direita */
+  padding: 0 1rem;
+  margin-top: 0.5rem;
 }
+
 
 .navegacao {
     display: flex;
@@ -156,26 +157,17 @@ export default {
 }
 
 .botao-round-laranja {
-    background-color: transparent;
-    border: 1.5px solid #f97316;
-    color: #f97316;
-    border-radius: 999px;
-    /* deixa bem arredondado */
-    text-transform: none;
-    font-weight: 500;
-    font-size: 14px;
-    padding: 6px 20px;
-    min-height: 40px;
-    min-width: 80px;
-    box-shadow: none;
-    transition: background-color 0.2s ease;
-    margin-left: 1450px;
-    margin-top: -12px;
-}
-
-.botao-round-laranja:hover {
-    background-color: rgba(249, 115, 22, 0.08);
-    /* preenchimento leve no hover */
+  background-color: transparent;
+  border: 1.5px solid #f97316;
+  color: #f97316;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: none;
+  padding: 6px 20px;
+  min-height: 40px;
+  min-width: 80px;
+  transition: background-color 0.2s ease;
 }
 
 .lista-paises {

@@ -46,10 +46,10 @@ export default {
     },
     aumentarFonte() {
       this.fonteNivel = (this.fonteNivel + 1) % 4;
-      document.body.classList.remove("fonte-baixa", "fonte-média", "fonte-alta");
+      document.body.classList.remove("fonte-baixa", "fonte-media", "fonte-alta");
 
       if (this.fonteNivel === 1) document.body.classList.add("fonte-baixa");
-      else if (this.fonteNivel === 2) document.body.classList.add("fonte-média");
+      else if (this.fonteNivel === 2) document.body.classList.add("fonte-media");
       else if (this.fonteNivel === 3) document.body.classList.add("fonte-alta");
     },
     toggleFonteDislexia() {

@@ -24,7 +24,7 @@
 
       <div class="conteudo-configuracoes px-4">
         <!-- Notificações -->
-        <v-list-item class="hoverable">
+        <v-list-item class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Notificações</v-list-item-title>
             <v-list-item-subtitle class="secao-descricao">
@@ -40,7 +40,7 @@
         <v-divider class="separador"></v-divider>
 
         <!-- Informações Cadastrais -->
-        <v-list-item @click="navegar('informacoes-cadastrais')" class="hoverable">
+        <v-list-item @click="navegar('informacoes-cadastrais')" class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Informações cadastrais</v-list-item-title>
             <v-list-item-subtitle>Informações sobre seu perfil e dados cadastrais.</v-list-item-subtitle>
@@ -53,7 +53,7 @@
         <v-divider class="separador"></v-divider>
 
         <!-- Segurança -->
-        <v-list-item @click="navegar('redefinir-senha')" class="hoverable">
+       <v-list-item @click="navegar('redefinir-senha')" class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Segurança</v-list-item-title>
             <v-list-item-subtitle>Altere aqui a sua senha.</v-list-item-subtitle>
@@ -66,7 +66,7 @@
         <v-divider class="separador"></v-divider>
 
         <!-- Política de Privacidade -->
-        <v-list-item @click="navegar('politica-privacidade')" class="hoverable">
+        <v-list-item @click="navegar('visualizar-politica-privacidade')" class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Política de Privacidade</v-list-item-title>
             <v-list-item-subtitle>Regras de privacidade de dados pessoais.</v-list-item-subtitle>
@@ -79,7 +79,7 @@
         <v-divider class="separador"></v-divider>
 
         <!-- Sair -->
-        <v-list-item @click="dialogSair = true" class="hoverable">
+        <v-list-item @click="dialogSair = true" class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Sair</v-list-item-title>
             <v-list-item-subtitle>Desconecte da conta em que você está.</v-list-item-subtitle>
@@ -92,7 +92,7 @@
         <v-divider class="separador"></v-divider>
 
         <!-- Excluir conta -->
-        <v-list-item @click="dialogExcluir = true" class="hoverableEXcluir">
+        <v-list-item @click="dialogExcluir = true" class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Excluir sua conta</v-list-item-title>
             <v-list-item-subtitle>Clique aqui para excluir sua conta.
@@ -147,6 +147,17 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        <!-- Diálogo de sucesso de exclusão -->
+        <v-dialog v-model="dialogContaExcluida" max-width="320">
+          <v-card class="popup-sair">
+            <v-card-text class="popup-sair__texto">
+              Conta excluída com sucesso.
+            </v-card-text>
+            <v-card-actions class="popup-sair__botoes centralizado">
+              <v-btn class="popup-sair__confirmar" @click="redirecionarLogin">OK</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
 
       </div>
     </div>
@@ -167,6 +178,7 @@ export default {
       senha: "",
       notificacoesAtivas: true,
       dialogConfirmarExclusaoFinal: false,
+      dialogContaExcluida: false,
       breadcrumbs: [
         { text: "Serviços e Informações", to: "/home", icon: "mdi-home" },
         { text: "Configurações" } // este é o item atual, sem link
@@ -176,6 +188,17 @@ export default {
   mounted() {
     this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
     this.email = localStorage.getItem("usuarioEmail") || "";
+    const idUser = localStorage.getItem("usuarioId"); // você deve garantir que salvou isso no login
+
+    if (idUser) {
+      axios.get(`http://localhost:5054/api/usuario/${idUser}`)
+        .then(res => {
+          this.notificacoesAtivas = res.data.receberNotificacoes;
+        })
+        .catch(err => {
+          console.error("Erro ao carregar preferências:", err);
+        });
+    }
   },
   methods: {
     confirmarSaida() {
@@ -200,14 +223,17 @@ export default {
 
         localStorage.clear();
         this.dialogExcluir = false;
-        this.$router.push("/");
-        this.$nextTick(() => {
-          alert("Conta excluída com sucesso.");
-        });
+        this.dialogConfirmarExclusaoFinal = false;
+        this.dialogContaExcluida = true;
       } catch (error) {
         alert(error.response?.data || "Erro ao excluir conta.");
       }
     },
+    redirecionarLogin() {
+      this.dialogContaExcluida = false;
+      this.$router.push("/");
+    },
+
     abrirConfirmacaoFinal() {
       if (!this.email || !this.senha) {
         alert("Preencha o e-mail e a senha para continuar.");
@@ -217,7 +243,19 @@ export default {
       this.dialogExcluir = false;
       this.dialogConfirmarExclusaoFinal = true;
     }
+  },
+  watch: {
+    notificacoesAtivas(novoValor) {
+      const idUser = localStorage.getItem("usuarioId");
 
+      if (!idUser) return;
+
+      axios.put(
+        `http://localhost:5054/api/notificacoes/usuario/${idUser}/recebernotificacoes`,
+        { receberNotificacoes: novoValor }
+      );
+
+    }
   }
 };
 </script>
@@ -273,11 +311,64 @@ export default {
   color: #555;
 }
 
+.secao-titulo,
+.secao-descricao,
+.breadcrumb-link {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
+.meus-breadcrumbs {
+  flex-wrap: wrap;
+}
+
+.conteudo-configuracoes,
+.v-list-item,
+.v-list-item-content {
+  height: auto;
+}
+
+/* Itens de configuração com 2 linhas: conteúdo começa no topo e cresce */
+.item-config {
+  align-items: flex-start;
+}
+
+/* Conteúdo interno do Vuetify (necessário por ser scoped) */
+:deep(.v-list-item__content) {
+  height: auto;
+  overflow: visible;
+}
+
+/* Título e subtítulo com quebra e respiro */
+:deep(.v-list-item-title),
+:deep(.v-list-item-subtitle) {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+:deep(.v-list-item-title)    { margin-bottom: 0.25rem; }
+:deep(.v-list-item-subtitle) { margin-top: 0.1rem; }
+
+/* Ícone à direita alinhado ao topo */
+.item-append {
+  align-self: flex-start;
+  margin-left: 0.75rem;
+  line-height: 1;
+  font-size: 1.1em;
+}
+
 .hoverable {
   cursor: pointer;
   transition: background-color 0.2s ease;
-  min-height: 12vh;
+  min-height: unset;        /* remove 12vh */
+  padding-block: 1.1rem;    /* espaçamento vertical confortável */
 }
+
+
+/* Mais respiro entre itens */
+.separador { margin: 1rem 0; }
 
 .hoverable:hover {
   background-color: #f9f9f9;
@@ -430,5 +521,9 @@ export default {
 .popup-excluir__confirmar {
   background-color: white;
   color: #f97316;
+}
+
+.centralizado {
+  justify-content: center !important;
 }
 </style>

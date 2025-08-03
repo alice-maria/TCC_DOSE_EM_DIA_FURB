@@ -26,13 +26,13 @@ export default {
   },
   setup() {
     const route = useRoute();
-    const rotasSemSidebar = ['/', '/criar-conta', '/esqueci-minha-senha'];
+    const rotasSemSidebar = ['/', '/criar-conta', '/esqueci-minha-senha', '/aceitar-politica-privacidade'];
     const exibirSidebar = computed(() =>
       !rotasSemSidebar.includes(route.path)
     );
 
     const mostrarChat = ref(false);
-    const rotasSemChatBot = ['/', '/criar-conta', '/esqueci-minha-senha'];
+    const rotasSemChatBot = ['/', '/criar-conta', '/esqueci-minha-senha', '/aceitar-politica-privacidade'];
     const exibirChatBot = computed(() =>
       !rotasSemChatBot.includes(route.path)
     );

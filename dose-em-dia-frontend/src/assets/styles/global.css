@@ -78,15 +78,100 @@ body.contraste-alto hr {
 }
 
 body.fonte-baixa * {
+  font-size: 1.03em;
+}
+
+body.fonte-media * {
   font-size: 1.05em;
 }
 
-body.fonte-média * {
-  font-size: 1.10em;
+body.fonte-alta * {
+  font-size: 1.07em;
 }
 
-body.fonte-alta * {
-  font-size: 1.15em;
+/* Tamanhos de fonte por elemento sem depender do * */
+body.fonte-baixa h1     { font-size: 3.7rem !important; }
+body.fonte-baixa h2     { font-size: 2rem !important; }
+body.fonte-baixa h3     { font-size: 1.8rem !important; }
+body.fonte-baixa h4     { font-size: 1.5rem !important; }
+body.fonte-baixa h5     { font-size: 1.3rem !important; }
+body.fonte-baixa h6     { font-size: 1.1rem !important; }
+body.fonte-baixa p      { font-size: 1.03em !important; }
+
+body.fonte-media h1     { font-size: 3.9rem !important; }
+body.fonte-media h2     { font-size: 2.2rem !important; }
+body.fonte-media h3     { font-size: 2rem !important; }
+body.fonte-media h4     { font-size: 1.7rem !important; }
+body.fonte-media h5     { font-size: 1.5rem !important; }
+body.fonte-media h6     { font-size: 1.2rem !important; }
+body.fonte-media p      { font-size: 1.05em !important; }
+
+body.fonte-alta h1      { font-size: 4.0rem !important; }
+body.fonte-alta h2      { font-size: 2.4rem !important; }
+body.fonte-alta h3      { font-size: 2.2rem !important; }
+body.fonte-alta h4      { font-size: 1.9rem !important; }
+body.fonte-alta h5      { font-size: 1.6rem !important; }
+body.fonte-alta h6      { font-size: 1.3rem !important; }
+body.fonte-alta p       { font-size: 1.07em !important; }
+
+/* BOTÕES COMUNS */
+body.fonte-baixa button,
+body.fonte-media button,
+body.fonte-alta button {
+  font-size: inherit !important;
+}
+
+/* BOTÕES PERSONALIZADOS */
+body.fonte-baixa .btn-login,
+body.fonte-baixa .btn-criar-conta,
+body.fonte-media .btn-login,
+body.fonte-media .btn-criar-conta,
+body.fonte-alta .btn-login,
+body.fonte-alta .btn-criar-conta {
+  font-size: inherit !important;
+}
+
+body.fonte-baixa .v-btn {
+  font-size: 0.8em !important;
+}
+body.fonte-media .v-btn {
+  font-size: 1.0em !important;
+}
+body.fonte-alta .v-btn {
+  font-size: 1.03em !important;
+}
+
+body.fonte-baixa .v-breadcrumbs,
+body.fonte-baixa .v-breadcrumbs-item,
+body.fonte-baixa .v-icon {
+  font-size: 1.3em !important;
+}
+
+body.fonte-media .v-breadcrumbs,
+body.fonte-media .v-breadcrumbs-item,
+body.fonte-media .v-icon {
+  font-size: 1.5em !important;
+}
+
+body.fonte-alta .v-breadcrumbs,
+body.fonte-alta .v-breadcrumbs-item,
+body.fonte-alta .v-icon {
+  font-size: 1.7em !important;
+}
+
+body.fonte-baixa .aviso-comprovante,
+body.fonte-baixa .icone-aviso {
+  font-size: 1.03em !important;
+}
+
+body.fonte-media .aviso-comprovante,
+body.fonte-media .icone-aviso {
+  font-size: 1.05em !important;
+}
+
+body.fonte-alta .aviso-comprovante,
+body.fonte-alta .icone-aviso {
+  font-size: 1.1em !important;
 }
 
 body.fonte-dislexia * {

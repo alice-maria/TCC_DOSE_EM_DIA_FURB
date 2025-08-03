@@ -5,16 +5,11 @@
       <div class="header d-flex justify-content-between align-items-center mb-3">
         <div class="logo-container" @click="$router.push('/home')" style="cursor: pointer;">
           <img src="@/imagens/logo.png" alt="Logo Dose em Dia" class="logo-img" />
-          <span class="mensagem-boas-vindas text-muted fw-bold">Seja bem-vindo(a)!</span>
+          <span class="mensagem-boas-vindas fw-bold">Seja bem-vindo(a)!</span>
         </div>
 
-        <div class="usuario d-flex align-items-center gap-2">
-          <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario"
-            @click="$router.push('/editar-perfil')" />
-          <span class="saudacao" @click="$router.push('/editar-perfil')">
-            Olá, {{ nomeUsuario }}!
-          </span>
-        </div>
+        <UsuarioMenu />
+
       </div>
 
       <!-- Breadcrumbs -->
@@ -28,30 +23,49 @@
         </template>
       </v-breadcrumbs>
 
-      <!-- Filtros -->
-      <div class="d-flex flex-wrap gap-2 mb-4">
-        <button class="btn btn-outline-dark" :class="{ active: filtro === '' }" @click="filtro = ''">Todas</button>
-        <button class="btn btn-outline-success" :class="{ active: filtro === 'Aplicada' }" @click="filtro = 'Aplicada'">
-          Aplicadas
-        </button>
-        <button class="btn btn-outline-warning" :class="{ active: filtro === 'A vencer' }" @click="filtro = 'A vencer'">
-          A vencer
-        </button>
-        <button class="btn btn-outline-danger" :class="{ active: filtro === 'Vencida' }" @click="filtro = 'Vencida'">
-          Vencidas
-        </button>
+      <div class="aviso-vacinas">
+        <img src="@/assets/icons/aviso.svg" alt="Ícone de aviso" class="me-3" style="width: 24px; height: 24px;" />
+        As vacinas exibidas são fictícias e foram geradas automaticamente pelo sistema. Não substituem documentos oficiais.
       </div>
 
+      <!-- Filtros -->
+      <div class="d-flex flex-wrap gap-2 mb-4">
+        <button class="btn" :class="filtro === '' ? 'btn-dark text-white' : 'btn-outline-dark'" @click="filtro = ''">
+          TODAS
+        </button>
+
+        <button class="btn" :class="filtro === 'Aplicada' ? 'btn-success text-white' : 'btn-outline-success'"
+          @click="filtro = 'Aplicada'">
+          APLICADAS
+        </button>
+
+        <button class="btn" :class="filtro === 'A vencer' ? 'btn-warning text-white' : 'btn-outline-warning'"
+          @click="filtro = 'A vencer'">
+          A VENCER
+        </button>
+
+        <button class="btn" :class="filtro === 'Vencida' ? 'btn-danger text-white' : 'btn-outline-danger'"
+          @click="filtro = 'Vencida'">
+          VENCIDAS
+        </button>
+      </div>
       <!-- Vacinas -->
-      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 gx-4">
-        <div class="col mb-4" v-for="vacina in vacinasFiltradas" :key="vacina.id">
-          <div class="vacina-card d-flex flex-column justify-content-center p-3 shadow-sm rounded h-100"
-            :class="definirClasse(mapearStatus(vacina.status))">
-            <h5 class="fw-bold mb-1">{{ vacina.nome }}</h5>
-            <p class="mb-0 small">Aplicada em: {{ formatarData(vacina.dataAplicacao) }}</p>
-            <p class="mb-0 small">Status: {{ mapearStatus(vacina.status) }}</p>
+      <div class="row row-cols-1 row-cols-md-3 gx-4">
+        <template v-for="vacina in vacinasFiltradas" :key="vacina.id">
+          <div class="col mb-4">
+            <v-card class="vacina-card h-100 d-flex flex-column justify-space-between" variant="elevated"
+              :class="definirClasse(mapearStatus(vacina.status))">
+              <v-card-title class="d-flex justify-space-between align-center pb-0">
+                <span class="text-h6 fw-bold">{{ vacina.nome }}</span>
+              </v-card-title>
+
+              <v-card-text class="pt-1">
+                <p class="mb-1 text-body-1">Aplicada em: {{ formatarData(vacina.dataAplicacao) }}</p>
+                <p class="mb-0 text-body-1">Status: {{ mapearStatus(vacina.status) }}</p>
+              </v-card-text>
+            </v-card>
           </div>
-        </div>
+        </template>
       </div>
     </div>
   </v-container>
@@ -59,8 +73,10 @@
 
 <script>
 import axios from 'axios';
+import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
 export default {
+  components: { UsuarioMenu },
   name: "HomeView",
   data() {
     return {
@@ -74,8 +90,9 @@ export default {
   },
   computed: {
     vacinasFiltradas() {
-      if (!this.filtro) return this.vacinas;
-      return this.vacinas.filter(v => this.mapearStatus(v.status) === this.filtro);
+      const vacinasValidas = this.vacinas.filter(v => v && typeof v.status !== 'undefined');
+      if (!this.filtro) return vacinasValidas;
+      return vacinasValidas.filter(v => this.mapearStatus(v.status) === this.filtro);
     }
   },
   mounted() {
@@ -101,6 +118,7 @@ export default {
       }
     },
     mapearStatus(codigo) {
+      if (codigo === undefined || codigo === null) return 'Desconhecido';
       switch (codigo) {
         case 0: return 'Aplicada';
         case 1: return 'A vencer';
@@ -134,6 +152,9 @@ export default {
         alert("Erro ao buscar vacinas.");
       }
     },
+    navegar(to) {
+      this.$router.push(to);
+    }
   }
 };
 </script>
@@ -205,47 +226,41 @@ export default {
   margin-right: 0.6rem;
 }
 
-.home-container {
-  background-color: transparent;
-  width: 100%;
-  padding: 2rem 2rem;
-  margin-left: 95px;
-}
-
-.bg-aplicada {
-  background-color: #d1f7d1;
-}
-
-.bg-avencer {
-  background-color: #fff9c4;
-}
-
-.bg-vencida {
-  background-color: #ffcdd2;
-}
-
 .btn.active {
   font-weight: bold;
   border: 2px solid !important;
 }
 
 .vacina-card {
-  border-left: 8px solid transparent;
-  background-color: #fff;
-  transition: all 0.2s ease-in-out;
-  min-height: 120px;
+  border-radius: 12px;
+  background-color: #fbfbf8;
+  min-height: 200px;
 }
 
-/* Barras laterais conforme status */
 .vacina-aplicada {
-  border-left-color: #4caf50;
+  border-left: 8px solid #4caf50;
 }
 
 .vacina-avencer {
-  border-left-color: #ffeb3b;
+  border-left: 8px solid #ffeb3b;
 }
 
 .vacina-vencida {
-  border-left-color: #f44336;
+  border-left: 8px solid #f44336;
 }
+
+.aviso-vacinas {
+  background-color: #fef3e2;
+  color: #92400e;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #fcd9b6;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
 </style>

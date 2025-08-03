@@ -1,12 +1,16 @@
 <template>
   <div class="pagina">
-    <!-- TOPO BRANCO COM TÍTULOS -->
-    <div class="cabecalho-branco">
-      <h1 class="titulo-principal" @click="$router.push('/')">Dose em dia </h1>
-      <h2 class="segundo-titulo">Crie sua conta</h2>
-      <p class="terceiro-titulo">Mantenha sua vacinação em dia!</p>
-    </div>
 
+    <header class="header" role="banner">
+      <div class="logo-container" role="link" tabindex="0" aria-label="Ir para a página inicial"
+        @click="$router.push('/')" @keydown.enter="$router.push('/')">
+        <img src="@/imagens/logo.png" alt="Logo Dose em Dia" class="logo-img" />
+        <div class="header-texts">
+          <h1 class="titulo-principal">Crie sua conta</h1>
+          <p class="subtitulo">Mantenha sua vacinação em dia!</p>
+        </div>
+      </div>
+    </header>
     <!-- FUNDO LARANJA COM FORMULÁRIO -->
     <div class="container-laranja">
       <div class="formulario-caixa">
@@ -82,13 +86,18 @@
                   :rules="[v => !!v || 'É necessário aceitar a política de privacidade.']">
                   <template #label>
                     <span>
-                      Aceito as <a href="/politica-de-privacidade" target="_blank">políticas de privacidade</a>
+                      Aceito as <a href="/aceitar-politica-privacidade" target="_blank">políticas de privacidade</a>
                     </span>
                   </template>
                 </v-checkbox>
 
                 <div class="d-flex justify-end mt-6">
-                  <v-btn variant="outlined" color="orange" class="botao-secundario me-3" @click="abaAtiva = 'endereco'">
+                  <v-btn variant="outlined" color="orange" class="botao-japossuiconta me-3" @click="$router.push('/')">
+                    <template #append>
+                      <span class="caption d-block">Entrar! Já possuo uma conta</span>
+                    </template>
+                  </v-btn>
+                  <v-btn variant="outlined" color="orange" class="botao-secundario" @click="abaAtiva = 'endereco'">
                     <template #append>
                       <span class="caption d-block">Avançar</span>
                     </template>
@@ -140,16 +149,17 @@
         </div>
       </div>
       <!--Erro-->
-      <v-dialog v-model="dialogErro" max-width="400" class="dialog-centralizado">
-        <v-card class="popup-erro">
-          <h1>Erro!</h1>
-          <v-card-text class="popup-erro__texto">
-            {{ mensagemErro }}
-          </v-card-text>
-          <v-btn @click="fecharErro" class="botao-erro">OK</v-btn>
+      <v-dialog v-model="mostrarErro" max-width="400">
+        <v-card>
+          <v-alert type="error" color="red-darken-2" icon="mdi-alert-circle" class="pa-5" border="start" elevation="2"
+            title="Erro ao salvar">
+            {{ erro }}
+          </v-alert>
+          <v-card-actions class="justify-end">
+            <v-btn color="red-darken-2" variant="flat" @click="mostrarErro = false">OK</v-btn>
+          </v-card-actions>
         </v-card>
       </v-dialog>
-
     </div>
   </div>
 </template>
@@ -172,8 +182,8 @@ export default {
       privacidade: false,
       abaAtiva: 'pessoal',
       modalSucesso: false,
-      dialogErro: false,
-      mensagemErro: "",
+      erro: '',
+      mostrarErro: false,
       iconeOlhoAberto: require('@/assets/icons/eyes-on.svg'),
       iconeOlhoFechado: require('@/assets/icons/eyes-off.svg'),
       form: {
@@ -331,12 +341,12 @@ export default {
           const erroMensagem = typeof err.response.data === 'string'
             ? err.response.data
             : JSON.stringify(err.response.data);
-          this.mensagemErro = erroMensagem;
-          this.dialogErro = true;
+          this.erro = erroMensagem;
+          this.mostrarErro = true;
         } else {
           console.error("Erro inesperado:", err);
-          this.mensagemErro = "Erro desconhecido ao criar conta.";
-          this.dialogErro = true;
+          this.erro = "Erro desconhecido ao criar conta.";
+          this.mostrarErro = true;
         }
       } finally {
         this.carregando = false;
@@ -361,25 +371,48 @@ export default {
   overflow: hidden;
 }
 
-.cabecalho-branco {
-  background-color: white;
-  border-bottom: none;
-  padding: 2rem 2.5rem 1rem;
-  text-align: left;
+.header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #eee;
+  padding: 1.25rem 2rem; 
+  min-height: 120px;     
+  display: flex;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.logo-img {
+  width: auto;
+  object-fit: contain;
+  height: 155px;
+  margin-top: -30px;
 }
 
 .titulo-principal {
-  font-size: 40px;
-  font-weight: 900;
+  font-weight: 800;
   color: #f46c20;
-  margin-bottom: 0.5rem;
-  margin-top: -1.5rem;
+  margin: 0;
+  line-height: 1.1;
+  font-size: 1.5rem;
+  margin-top: -18px;
 }
 
-/* Container laranja ocupa o restante da tela */
+.subtitulo {
+  color: #6b7280;
+  margin: 0.15rem 0 0 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
 .container-laranja {
   background-color: #f46c20;
-  flex: 1;
   display: flex;
   justify-content: center;
   align-items: start;
@@ -387,10 +420,8 @@ export default {
   padding: 2rem 1rem;
   overflow: hidden;
   border-top: 8px solid #f46c20;
-  /* linha laranja contínua, opcional */
 }
 
-/* Caixa branca com scroll interno se necessário */
 .formulario-caixa {
   background-color: white;
   border-radius: 10px;
@@ -404,37 +435,9 @@ export default {
   margin-top: -30px;
 }
 
-/* Aumentar largura dos campos */
 .v-text-field,
 .v-select {
   width: 100%;
-}
-
-.botao-principal {
-  background-color: #f46c20 !important;
-  color: white !important;
-  font-weight: bold;
-  border-radius: 30px;
-  padding: 10px 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
-
-.botao-secundario {
-  border: 2px solid;
-  color: darkgray !important;
-  border-radius: 30px;
-}
-
-.segundo-titulo {
-  font-size: 23px;
-  color: darkgray;
-  margin-top: -0.5rem;
-}
-
-.terceiro-titulo {
-  font-size: 18px;
-  color: darkgray;
-  margin-top: -0.7rem;
 }
 
 .modal-loading {
@@ -484,9 +487,7 @@ export default {
   width: 24px;
   height: 24px;
   margin-top: -120px;
-  /* sobe o ícone para alinhar verticalmente */
   margin-left: calc(100% - 36px);
-  /* posiciona à direita */
 }
 
 .text-danger-senha {
@@ -512,47 +513,48 @@ export default {
   margin-left: 0px;
 }
 
+.botao-principal,
+.botao-redirecionamento,
+.botao-secundario,
+.botao-japossuiconta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border-radius: 30px;
+  line-height: 1.2;
+  padding: 12px 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.botao-principal {
+  background-color: #f46c20 !important;
+  color: white !important;
+}
+
 .botao-redirecionamento {
   background-color: white !important;
   color: #f46c20 !important;
-  font-weight: bold;
-  border-radius: 30px;
-  padding: 10px 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.popup-erro {
-  background-color: #a20202;
-  border-radius: 100px;
-  padding: 50px 40px;
-  width: 300px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  text-align: center;
+.botao-secundario {
+  border: 2px solid;
+  color: darkgray !important;
+  background-color: transparent !important;
 }
 
-.popup-erro__texto {
-  color: white;
-  font-size: 18px !important;
+.botao-japossuiconta {
+
+  background-color: transparent !important;
 }
 
-.botao-erro {
-  background-color: white !important;
-  color: #a20202 !important;
-  font-weight: bold;
-  border-radius: 30px;
-  padding: 6px 18px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  max-width: 100px;
-  margin: 20px auto 0;
-  display: block;
-  text-align: center;
-  font-size: 1.0rem;
+.v-alert {
+  font-size: 1rem;
 }
 
-.dialog-centralizado>>>.v-overlay__content {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  border-radius: 20px !important;
+.v-card-actions .v-btn {
+  font-weight: normal;
+  border-radius: 20px;
+  padding: 6px 16px;
 }
 </style>

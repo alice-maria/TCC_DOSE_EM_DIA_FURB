@@ -10,7 +10,8 @@ import Configuracoes from '@/views/AcessarConfiguracoes.vue';
 import HistoricoNotificacoes from "@/views/HistoricoNotificacoes.vue";
 import EdicaoUsuario from "@/views/EdicaoUsuario.vue";
 import PostosSaude from "@/views/PostosSaude.vue";
-import PoliticaPrivacidade from "@/views/PoliticaPrivacidade.vue";
+import AceitarPoliticaPrivacidade from "@/views/AceitarPoliticaPrivacidade.vue";
+import VisualizarPoliticaPrivacidade from "@/views/VisualizarPoliticaPrivacidade.vue";
 
 const routes = [
   { path: "/", component: UserLogin },
@@ -26,7 +27,8 @@ const routes = [
   { path: '/editar-perfil', component: EdicaoUsuario },
   { path: '/informacoes-cadastrais', component: EdicaoUsuario },
   { path: '/postos-saude', component: PostosSaude },
-    { path: '/politica-privacidade', component: PoliticaPrivacidade },
+  { path: '/aceitar-politica-privacidade', component: AceitarPoliticaPrivacidade },
+  { path: '/visualizar-politica-privacidade', component: VisualizarPoliticaPrivacidade },
 ];
 
 const router = createRouter({

@@ -19,7 +19,7 @@ namespace DoseEmDia.Models
         public bool Visualizada { get; set; } = false;
 
         [Column("EmailEnviado")]
-        public bool EmailEnviado { get; set; } = false; //atualização: validação de Email enviado
+        public bool EmailEnviado { get; set; } = false;
 
         public Notificacao() { }
     }

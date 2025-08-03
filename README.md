@@ -7,6 +7,8 @@ Projeto universitário que integra:
 - 🗄️ **Banco de dados**: SQL Server
 - 🐳 **Orquestração**: Docker + Docker Compose
 
+O sistema Dose em Dia é uma plataforma web desenvolvida para conscientização, controle e notificação de vacinas. Dentre suas funcionalidades está cadastros de usuários, notificações por e-mail, integração com chatbot, localização de postos de vacinação além de usar padõres de usabilidade e acessibilidade.
+
 ---
 
 ## 🚀 Requisitos

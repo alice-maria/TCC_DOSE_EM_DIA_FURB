@@ -1,44 +1,45 @@
-<!-- Sidebar.vue -->
 <template>
   <div>
-    <!-- Overlay -->
     <div v-if="!isCollapsed" class="sidebar-overlay" @click="toggleSidebar"></div>
-
-    <!-- Sidebar -->
     <aside :class="['sidebar', { 'sidebar--expanded': !isCollapsed, 'sidebar--collapsed': isCollapsed }]"
       style="background-color: #f46c20 !important;">
-      <!-- Navigation Rail com Menu incluído -->
       <ul class="navigation-rail">
-        <!-- Botão de Menu -->
         <li class="rail-item rail-toggle" @click="toggleSidebar">
           <div class="rail-content">
             <img :src="isCollapsed ? menuCloseIcon : menuOpenIcon" alt="Menu" class="rail-img-icon" />
           </div>
         </li>
-
-        <!-- Demais Itens -->
         <li v-for="item in menuItems" :key="item.title"
           :class="['rail-item', { 'rail-item--active': isActiveRoute(item.route) }]" @click="handleMenuItem(item)">
-          <!-- Wrapper para ícone + label -->
           <div class="rail-content">
-            <!-- Ícone -->
-            <template v-if="item.imgSrc">
-              <img :src="item.imgSrc" alt="" class="rail-img-icon" />
+            <template v-if="isCollapsed">
+              <v-tooltip location="right">
+                <template #activator="{ props }">
+                  <div v-bind="props">
+                    <template v-if="item.imgSrc">
+                      <img :src="item.imgSrc" alt="" class="rail-img-icon" />
+                    </template>
+                    <template v-else>
+                      <i :class="['rail-icon', item.icon]"></i>
+                    </template>
+                  </div>
+                </template>
+                <span>{{ item.title }}</span>
+              </v-tooltip>
             </template>
             <template v-else>
-              <i :class="['rail-icon', item.icon]"></i>
+              <template v-if="item.imgSrc">
+                <img :src="item.imgSrc" alt="" class="rail-img-icon" />
+              </template>
+              <template v-else>
+                <i :class="['rail-icon', item.icon]"></i>
+              </template>
+              <span class="rail-label">{{ item.title }}</span>
             </template>
-
-            <!-- Label -->
-            <span v-if="!isCollapsed" class="rail-label">{{ item.title }}</span>
           </div>
         </li>
-
-
       </ul>
     </aside>
-
-    <!-- Diálogo de confirmação de saída -->
     <v-dialog v-model="showLogoutDialog" max-width="320">
       <v-card class="popup-sair">
         <v-card-text class="popup-sair__texto">
@@ -123,7 +124,6 @@ aside {
   left: 0;
   height: 100%;
   z-index: 1000;
-  transition: width 0.3s ease;
   display: flex;
   flex-direction: column;
 }
@@ -134,13 +134,19 @@ aside {
 
 .sidebar--collapsed {
   width: 72px;
-  /* padrão de rail colapsado (M3) */
 }
 
-@media (max-width: 768px) {
-  .sidebar--expanded,
+@media (min-width: 769px) and (max-width: 1200px) {
+  .sidebar {
+    transform: none !important;
+  }
+
   .sidebar--collapsed {
-    width: 100% !important;
+    width: 56px !important;
+  }
+
+  .sidebar--expanded {
+    width: 280px !important;
   }
 }
 

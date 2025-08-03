@@ -7,7 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\Dto\**" />
+    <Compile Remove="Views\**" />
+    <Content Remove="Models\Dto\**" />
+    <Content Remove="Views\**" />
+    <EmbeddedResource Remove="Models\Dto\**" />
+    <EmbeddedResource Remove="Views\**" />
+    <None Remove="Models\Dto\**" />
+    <None Remove="Views\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Controllers\HomeController.cs" />
+    <Compile Remove="Services\CampanhaVacinacaoService.cs" />
   </ItemGroup>
 
   <ItemGroup>

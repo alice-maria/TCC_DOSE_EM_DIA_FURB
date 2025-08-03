@@ -23,7 +23,7 @@
       </v-breadcrumbs>
 
       <div class="aviso-comprovante">
-        <v-icon left class="icone-aviso">mdi-information-outline</v-icon>
+        <img src="@/assets/icons/aviso.svg" alt="Ícone de aviso" class="me-3" style="width: 24px; height: 24px;" />
         No certificado de vacinação você terá acesso apenas às vacinas que já foram aplicadas.
       </div>
 
@@ -43,7 +43,8 @@
           <p class="legenda-preview">Exemplo de como seu comprovante será gerado em PDF.</p>
         </div>
 
-        <v-btn class="botao-material" color="#f97316" @click="baixarComprovante">Baixar Comprovante</v-btn>
+        <v-btn class="botao-material" color="#f97316" @click="baixarComprovante" :loading="carregando"
+          :disabled="carregando">Baixar Comprovante</v-btn>
 
         <div class="tooltip-container">
           <v-tooltip location="top" open-delay="100" close-delay="100">
@@ -60,7 +61,21 @@
             </div>
           </v-tooltip>
         </div>
-
+        <!-- Overlay de carregamento -->
+        <v-overlay v-model="carregando" :persistent="true" class="d-flex align-center justify-center">
+          <div class="loading-card">
+            <v-progress-circular indeterminate size="36" width="4"></v-progress-circular>
+            <div class="mt-3 text-center">
+              <div class="fw-600">Gerando seu PDF…</div>
+              <div class="text-caption text-medium-emphasis" v-if="progresso > 0 && progresso < 100">
+                {{ progresso }}%
+              </div>
+              <div class="text-caption text-medium-emphasis" v-else>
+                Isso pode levar alguns segundos.
+              </div>
+            </div>
+          </div>
+        </v-overlay>
 
       </div>
     </div>
@@ -76,6 +91,8 @@ export default {
     return {
       nomeUsuario: '',
       mostrarDialogo: false,
+      carregando: false,
+      progresso: 0,
       breadcrumbs: [
         { text: 'Serviços e Informações', to: '/home', icon: 'mdi-home' },
         { text: 'Exportar comprovante' }
@@ -93,10 +110,17 @@ export default {
         alert("Usuário não identificado. Faça login novamente.");
         return;
       }
-
+      this.carregando = true;
+      this.progresso = 0;
       try {
         const response = await axios.get(`http://localhost:5054/api/comprovante/${usuarioId}/gerarComprovante`, {
-          responseType: 'blob'
+          responseType: 'blob',
+          onDownloadProgress: (e) => {
+            if (e.total) {
+              const pct = Math.round((e.loaded / e.total) * 100);
+              this.progresso = pct;
+            }
+          }
         });
 
         // Gera nome do arquivo localmente
@@ -119,9 +143,13 @@ export default {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error("Erro ao gerar comprovante:", error);
         alert("Erro ao gerar comprovante. Tente novamente mais tarde.");
+      } finally {
+        this.carregando = false;
+        this.progresso = 0;
       }
     },
     navegar(rota) {
@@ -181,11 +209,6 @@ export default {
   font-size: 0.95rem;
 }
 
-.icone-aviso {
-  margin-right: 0.75rem;
-  color: #f97316;
-}
-
 .text-orange {
   color: #f97316;
 }
@@ -215,20 +238,18 @@ export default {
 }
 
 .botao-material {
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-transform: none;
   font-weight: 500;
   font-size: 0.95rem;
   padding: 10px 24px;
-  box-shadow: none;
-  letter-spacing: 0.25px;
   height: 40px;
   line-height: 1;
-}
-
-.botao-material .v-icon {
-  font-size: 20px;
-  margin-right: 8px;
+  letter-spacing: 0.25px;
+  border-radius: 999px;
+  box-shadow: none;
 }
 
 .frase-reforco {
@@ -279,5 +300,20 @@ export default {
   font-size: 0.85rem;
   line-height: 1.3;
   color: #fff;
+}
+
+.loading-card {
+  background: rgb(255, 119, 0);
+  color: black;
+  padding: 16px 20px;
+  border-radius: 12px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fw-600 {
+  font-weight: 600;
 }
 </style>

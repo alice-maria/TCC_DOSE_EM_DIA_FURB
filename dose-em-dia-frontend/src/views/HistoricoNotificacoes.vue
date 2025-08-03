@@ -27,9 +27,10 @@
       </div>
 
       <div v-else class="d-flex flex-column gap-4">
-        <v-card v-for="notificacao in notificacoes" :key="notificacao.idNotificacao" class="pa-4 elevation-1" rounded>
+        <v-card v-for="notificacao in notificacoes" :key="notificacao.idNotificacao" class="outlined-card"
+          variant="outlined" rounded="lg">
           <div class="d-flex align-center mb-2">
-            <v-icon color="grey-darken-1" class="me-2">mdi-email</v-icon>
+            <img src="@/assets/icons/email.svg" alt="Notificação" class="icone-notificacao me-2" />
             <h5 class="text-orange-darken-2 font-weight-bold mb-0">
               {{ notificacao.titulo }}
             </h5>
@@ -139,5 +140,15 @@ export default {
   color: #f97316 !important;
   font-weight: 900;
   font-size: 1.1rem;
+}
+
+.outlined-card {
+  border: 1px solid #CFCFCF;
+  background-color: #fdfcff;
+  padding: 8px;
+  max-width: 1400px;
+  min-height: 180px;
+  margin-left: 20px;
+  transition: border-color 0.5s;
 }
 </style>

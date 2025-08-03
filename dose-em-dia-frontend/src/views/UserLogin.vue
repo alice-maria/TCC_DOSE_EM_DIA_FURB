@@ -156,7 +156,7 @@ export default {
 }
 
 .subtitulo {
-  margin-top: 40px;
+  margin-top: 2.8rem;
   font-weight: bold;
   font-size: 1.5rem;
 }
@@ -170,10 +170,27 @@ export default {
   margin-top: 30px;
   color: #f46c20;
   background-color: white;
-  font-weight: bold;
-  padding: 10px 30px;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
+
+.btn-login {
+  background-color: #f46c20;
+  color: white;
+  width: 100%;
+}
+
+.btn-login,
+.btn-criar-conta {
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  font-weight: bold;
+  padding: 12px 16px;
+  line-height: 1.2;
+
+  /* NOVO: alinhamento vertical absoluto */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 
 .coluna-direita {
   display: flex;
@@ -201,19 +218,9 @@ export default {
 }
 
 .texto-obrigatorio {
-  display: block;
   color: #999;
   margin-bottom: 10px;
   font-size: 13px;
-}
-
-.btn-login {
-  background-color: #f46c20;
-  color: white;
-  font-weight: bold;
-  width: 100%;
-  padding: 10px;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .btn-login:hover {
