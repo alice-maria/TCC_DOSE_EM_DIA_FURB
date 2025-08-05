@@ -16,7 +16,7 @@
         <template v-slot:item="{ item }">
           <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
             style="cursor: pointer;">
-            <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+            <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>
@@ -235,6 +235,10 @@ export default {
   color: #f97316 !important;
   font-weight: 900;
   font-size: 1.1rem;
+}
+
+.breadcrumb-home-img {
+    margin-top: -5px;
 }
 
 .botao-material {

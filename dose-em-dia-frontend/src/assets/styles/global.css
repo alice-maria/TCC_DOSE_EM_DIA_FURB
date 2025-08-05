@@ -1,81 +1,116 @@
 body.contraste-alto {
   background-color: #000000 !important;
-  /* Fundo preto */
-  color: #00ff66 !important;
-  /* Texto verde claro */
+  color: #00cc88  !important;
   filter: contrast(150%) brightness(110%);
-  /* Aumenta o contraste e o brilho */
 }
 
-/* Ajustes para texto e links */
 body.contraste-alto * {
-  color: #00ff66 !important;
-  /* Verde claro para texto e links */
+  color: #00cc88  !important;
   background-color: transparent !important;
-  /* Remove fundo de elementos */
-  border-color: #00ff66 !important;
-  /* Bordas verdes */
+  border-color: #00cc88  !important;
 }
 
-/* Ajuste para links específicos */
 body.contraste-alto a {
-  color: #ffff00 !important;
-  /* Links em amarelo */
+  color: #ffcc00 !important;
   text-decoration: underline;
 }
 
-/* Botões e links com fundo em verde escuro */
 body.contraste-alto button {
   background-color: #003300 !important;
-  /* Fundo verde escuro */
-  color: #00ff66 !important;
-  /* Texto verde claro */
-  border: 1px solid #00ff66 !important;
+  color: #00cc88  !important;
+  border: 1px solid #00cc88 !important;
 }
 
-/* Campos de formulário (input, textarea, select) */
 body.contraste-alto input,
 body.contraste-alto textarea,
 body.contraste-alto select {
   background-color: #003300 !important;
-  /* Fundo verde escuro */
-  color: #00ff66 !important;
-  border: 1px solid #00ff66 !important;
+  color: #00cc88  !important;
+  border: 1px solid #00cc88  !important;
 }
 
-/* Ajuste para foco nos elementos (acessibilidade) */
 body.contraste-alto *:focus {
-  outline: 2px solid #ffff00 !important;
-  /* Foco em amarelo */
+  outline: 2px solid #ffcc00 !important;
 }
 
-/* Ajuste para imagens (filtro de contraste) */
 body.contraste-alto img {
   filter: brightness(0.9) contrast(1.2) !important;
 }
 
-/* Títulos em verde claro */
 body.contraste-alto h1,
 body.contraste-alto h2,
 body.contraste-alto h3,
 body.contraste-alto h4,
 body.contraste-alto h5,
 body.contraste-alto h6 {
-  color: #00ff66 !important;
+  color: #00cc88 !important;
 }
 
-/* Ajuste para as bordas dos botões */
 body.contraste-alto button {
-  border: 1px solid #00ff66 !important;
-  box-shadow: 0 0 5px #00ff66;
+  border: 1px solid #00cc88 !important;
+  box-shadow: 0 0 5px #00cc88;
 }
 
-/* Ajuste para linhas e separadores */
 body.contraste-alto hr {
-  border-color: #00ff66;
+  border-color: #00cc88;
   height: 1px;
-  background: #00ff66;
+  background: #00cc88;
 }
+
+body.contraste-alto {
+  --sidebar-bg: #000000;
+  --sidebar-fg: #00cc88;               /* aqui você controla o verde */
+  --sidebar-hover: rgba(0, 204, 136, 0.15);
+  --sidebar-active: rgba(0, 204, 136, 0.3);
+
+  --dialog-bg: #000000;
+  --dialog-fg: #00cc88;
+
+  --btn-cancel-bg: #003322;
+  --btn-cancel-fg: #00cc88;
+  --btn-confirm-bg: #000000;
+  --btn-confirm-fg: #ffff00;           /* destaque de ação */
+
+  --tooltip-bg: #000000;
+  --tooltip-fg: #ffff00;
+
+  --focus-outline: 2px solid #ffff00;
+}
+
+body.contraste-alto .sidebar {
+  background-color: var(--sidebar-bg) !important;
+  color: var(--sidebar-fg) !important;
+}
+body.contraste-alto .rail-item,
+body.contraste-alto .rail-content,
+body.contraste-alto .rail-label {
+  color: var(--sidebar-fg) !important;
+}
+body.contraste-alto .popup-sair {
+  background-color: var(--dialog-bg) !important;
+  color: var(--dialog-fg) !important;
+}
+body.contraste-alto .popup-sair__cancelar {
+  background-color: var(--btn-cancel-bg) !important;
+  color: var(--btn-cancel-fg) !important;
+  border-color: var(--btn-cancel-fg) !important;
+}
+body.contraste-alto .popup-sair__confirmar {
+  background-color: var(--btn-confirm-bg) !important;
+  color: var(--btn-confirm-fg) !important;
+  border-color: var(--btn-confirm-fg) !important;
+}
+
+/* 4) Coringa MAIS seguro: NÃO zera containers estruturais */
+body.contraste-alto :not(.sidebar):not(.popup-sair):not(.v-overlay__content):not(.v-card) {
+  color: #00cc88 !important;
+  border-color: #00cc88 !important;
+  background-color: transparent !important;
+}
+body.contraste-alto a { color: #ffcc00 !important; text-decoration: underline; }
+body.contraste-alto *:focus { outline: 2px solid #ffcc00 !important; }
+body.contraste-alto img { filter: brightness(0.9) contrast(1.2) !important; }
+body.contraste-alto hr { border-color: #00cc88; height: 1px; background: #00cc88; }
 
 body.fonte-baixa * {
   font-size: 1.03em;
@@ -89,39 +124,96 @@ body.fonte-alta * {
   font-size: 1.07em;
 }
 
-/* Tamanhos de fonte por elemento sem depender do * */
-body.fonte-baixa h1     { font-size: 3.7rem !important; }
-body.fonte-baixa h2     { font-size: 2rem !important; }
-body.fonte-baixa h3     { font-size: 1.8rem !important; }
-body.fonte-baixa h4     { font-size: 1.5rem !important; }
-body.fonte-baixa h5     { font-size: 1.3rem !important; }
-body.fonte-baixa h6     { font-size: 1.1rem !important; }
-body.fonte-baixa p      { font-size: 1.03em !important; }
+body.fonte-baixa h1 {
+  font-size: 3.7rem !important;
+}
 
-body.fonte-media h1     { font-size: 3.9rem !important; }
-body.fonte-media h2     { font-size: 2.2rem !important; }
-body.fonte-media h3     { font-size: 2rem !important; }
-body.fonte-media h4     { font-size: 1.7rem !important; }
-body.fonte-media h5     { font-size: 1.5rem !important; }
-body.fonte-media h6     { font-size: 1.2rem !important; }
-body.fonte-media p      { font-size: 1.05em !important; }
+body.fonte-baixa h2 {
+  font-size: 2rem !important;
+}
 
-body.fonte-alta h1      { font-size: 4.0rem !important; }
-body.fonte-alta h2      { font-size: 2.4rem !important; }
-body.fonte-alta h3      { font-size: 2.2rem !important; }
-body.fonte-alta h4      { font-size: 1.9rem !important; }
-body.fonte-alta h5      { font-size: 1.6rem !important; }
-body.fonte-alta h6      { font-size: 1.3rem !important; }
-body.fonte-alta p       { font-size: 1.07em !important; }
+body.fonte-baixa h3 {
+  font-size: 1.8rem !important;
+}
 
-/* BOTÕES COMUNS */
+body.fonte-baixa h4 {
+  font-size: 1.5rem !important;
+}
+
+body.fonte-baixa h5 {
+  font-size: 1.3rem !important;
+}
+
+body.fonte-baixa h6 {
+  font-size: 1.1rem !important;
+}
+
+body.fonte-baixa p {
+  font-size: 1.03em !important;
+}
+
+body.fonte-media h1 {
+  font-size: 3.9rem !important;
+}
+
+body.fonte-media h2 {
+  font-size: 2.2rem !important;
+}
+
+body.fonte-media h3 {
+  font-size: 2rem !important;
+}
+
+body.fonte-media h4 {
+  font-size: 1.7rem !important;
+}
+
+body.fonte-media h5 {
+  font-size: 1.5rem !important;
+}
+
+body.fonte-media h6 {
+  font-size: 1.2rem !important;
+}
+
+body.fonte-media p {
+  font-size: 1.05em !important;
+}
+
+body.fonte-alta h1 {
+  font-size: 4.0rem !important;
+}
+
+body.fonte-alta h2 {
+  font-size: 2.4rem !important;
+}
+
+body.fonte-alta h3 {
+  font-size: 2.2rem !important;
+}
+
+body.fonte-alta h4 {
+  font-size: 1.9rem !important;
+}
+
+body.fonte-alta h5 {
+  font-size: 1.6rem !important;
+}
+
+body.fonte-alta h6 {
+  font-size: 1.3rem !important;
+}
+
+body.fonte-alta p {
+  font-size: 1.07em !important;
+}
+
 body.fonte-baixa button,
 body.fonte-media button,
 body.fonte-alta button {
   font-size: inherit !important;
 }
 
-/* BOTÕES PERSONALIZADOS */
 body.fonte-baixa .btn-login,
 body.fonte-baixa .btn-criar-conta,
 body.fonte-media .btn-login,
@@ -134,9 +226,11 @@ body.fonte-alta .btn-criar-conta {
 body.fonte-baixa .v-btn {
   font-size: 0.8em !important;
 }
+
 body.fonte-media .v-btn {
   font-size: 1.0em !important;
 }
+
 body.fonte-alta .v-btn {
   font-size: 1.03em !important;
 }
@@ -174,6 +268,92 @@ body.fonte-alta .icone-aviso {
   font-size: 1.1em !important;
 }
 
+body.fonte-baixa .usa-escala {
+  font-size: 1.05em !important;
+}
+
+body.fonte-media .usa-escala {
+  font-size: 1.07em !important;
+}
+
+body.fonte-alta .usa-escala {
+  font-size: 1.1em !important;
+}
+
+body.fonte-baixa .secao-titulo {
+  font-size: 1.10em !important;
+}
+
+body.fonte-media .secao-titulo {
+  font-size: 1.20em !important;
+}
+
+body.fonte-alta .secao-titulo {
+  font-size: 1.30em !important;
+}
+
+html {
+  font-size: 16px;
+}
+
+html.fonte-baixa {
+  font-size: 17px;
+}
+
+html.fonte-media {
+  font-size: 18px;
+}
+
+html.fonte-alta {
+  font-size: 19px;
+}
+
+body.fonte-baixa .lista,
+body.fonte-baixa .lista li,
+body.fonte-baixa .lista ul {
+  font-size: 1.03em !important;
+}
+
+body.fonte-media .lista,
+body.fonte-media .lista li,
+body.fonte-baixa .lista ul {
+  font-size: 1.05em !important;
+}
+
+body.fonte-alta .lista,
+body.fonte-alta .lista li {
+  font-size: 1.07em !important;
+}
+
+/* Se o style for scoped, use :deep(). Se NÃO for scoped, remova :deep() */
+.meus-breadcrumbs :deep(.v-breadcrumbs-item),
+.meus-breadcrumbs :deep(.v-breadcrumbs-item a),
+.meus-breadcrumbs :deep(.v-breadcrumbs-item span),
+.meus-breadcrumbs :deep(.v-breadcrumbs-divider) {
+  font-size: 1.125rem;     /* 18px */
+  line-height: 1.75rem;    /* 28px: melhora a legibilidade */
+}
+
+/* Seu span custom já recebe clique; garanta que herda o tamanho */
+.breadcrumb-link {
+  font-size: 1.125rem;     /* 18px */
+  font-weight: 500;        /* opcional, dá mais contraste */
+}
+
+/* Ajuste o ícone para acompanhar o novo tamanho */
+.breadcrumb-home-img {
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  transform: translateY(1px); /* alinha verticalmente ao texto maior */
+}
+
+/* Opcional: ajuste o espaçamento horizontal entre itens/divisor */
+.meus-breadcrumbs :deep(.v-breadcrumbs-divider) {
+  margin: 0 10px;
+}
+
+
 body.fonte-dislexia * {
   font-family: 'OpenDyslexic', Arial, sans-serif;
 }
@@ -188,6 +368,15 @@ body.espacamento-letras-medio * {
 
 body.espacamento-letras-alto * {
   letter-spacing: 0.3em;
+}
+
+body.espacamento-letras-baixo { --card-tracking: 0.1em; }
+body.espacamento-letras-medio { --card-tracking: 0.2em; }
+body.espacamento-letras-alto  { --card-tracking: 0.3em; }
+
+body[class*="espacamento-letras-"] .vacina-card,
+body[class*="espacamento-letras-"] .vacina-card * {
+  letter-spacing: var(--card-tracking) !important;
 }
 
 body.espacamento-linhas-baixo * {

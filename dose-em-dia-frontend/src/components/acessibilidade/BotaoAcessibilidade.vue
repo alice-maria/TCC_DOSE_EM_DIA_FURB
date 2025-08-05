@@ -79,11 +79,11 @@ export default {
 .acessibilidade-container {
   position: fixed;
   right: 10px;
-  bottom: 335px;
-  /* altura alinhada com o botão do VLibras */
+  bottom: 405px; /* distancia VLibras */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  z-index: 9999;
 }
 
 .acessibilidade-botao {
@@ -101,18 +101,15 @@ export default {
 }
 
 .icone {
+  background-color: #3084ee;
   width: 32px;
   height: 32px;
   width: 32px !important;
-  /* Tamanho fixo da imagem */
   height: 32px !important;
-  /* Tamanho fixo da imagem */
   object-fit: contain;
   pointer-events: none;
-  /* Impede interação com a imagem */
 }
 
-/* Menu flutuante à esquerda do botão */
 .acessibilidade-menu {
   position: absolute;
   right: 50px;
@@ -153,7 +150,7 @@ export default {
 }
 
 .icone-dislexia {
- width: 35px;
+  width: 35px;
   height: 35px;
   margin-right: 5px;
 }
@@ -165,9 +162,8 @@ export default {
 }
 
 .icone-linhas {
- width: 35px;
+  width: 35px;
   height: 35px;
   margin-right: 5px;
 }
-
 </style>

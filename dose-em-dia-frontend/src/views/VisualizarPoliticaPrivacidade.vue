@@ -18,7 +18,7 @@
                         'breadcrumb-link',
                         index === breadcrumbs.length - 1 ? 'breadcrumb-laranja' : ''
                     ]" @click="item.to && navegar(item.to)" style="cursor: pointer;">
-                        <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+                        <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
                         {{ item.text }}
                     </span>
                 </template>
@@ -331,6 +331,10 @@ export default {
     font-size: 1.1rem;
 }
 
+.breadcrumb-home-img {
+    margin-top: -5px;
+}
+
 .logo-container {
     display: flex;
     justify-content: center;
@@ -389,32 +393,8 @@ export default {
     color: #4b5563;
 }
 
-.lista-politica {
-    padding-left: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
 .lista-politica li {
-    margin-bottom: 8px;
-    font-size: 1.05rem;
     color: #4b5563;
-    line-height: 1.6;
-}
-
-.lista {
-    list-style: none;
-    padding-left: 0;
-    margin-top: 12px;
-    margin-bottom: 1.5rem;
-}
-
-.lista li {
-    margin-bottom: 8px;
-    font-size: 1.05rem;
-    color: #4b5563;
-    text-indent: -1.5em;
-    padding-left: 1.5em;
-    line-height: 1.6;
 }
 
 .voltar-topo {

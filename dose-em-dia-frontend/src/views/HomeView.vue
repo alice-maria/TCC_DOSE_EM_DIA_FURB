@@ -5,7 +5,7 @@
       <div class="header d-flex justify-content-between align-items-center mb-3">
         <div class="logo-container" @click="$router.push('/home')" style="cursor: pointer;">
           <img src="@/imagens/logo.png" alt="Logo Dose em Dia" class="logo-img" />
-          <span class="mensagem-boas-vindas fw-bold">Seja bem-vindo(a)!</span>
+          <h3 class="mensagem-boas-vindas fw-bold">Seja bem-vindo(a)!</h3>
         </div>
 
         <UsuarioMenu />
@@ -17,7 +17,7 @@
         <template v-slot:item="{ item }">
           <span :class="['breadcrumb-laranja', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
             style="cursor: pointer;">
-            <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+            <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>
@@ -30,23 +30,23 @@
 
       <!-- Filtros -->
       <div class="d-flex flex-wrap gap-2 mb-4">
-        <button class="btn" :class="filtro === '' ? 'btn-dark text-white' : 'btn-outline-dark'" @click="filtro = ''">
-          TODAS
+        <button class="btn-filtro" :class="filtro === '' ? 'btn-dark text-white' : 'btn-outline-dark'" @click="filtro = ''">
+          Todas
         </button>
 
-        <button class="btn" :class="filtro === 'Aplicada' ? 'btn-success text-white' : 'btn-outline-success'"
+        <button class="btn-filtro" :class="filtro === 'Aplicada' ? 'btn-success text-white' : 'btn-outline-success'"
           @click="filtro = 'Aplicada'">
-          APLICADAS
+          Aplicadas
         </button>
 
-        <button class="btn" :class="filtro === 'A vencer' ? 'btn-warning text-white' : 'btn-outline-warning'"
+        <button class="btn-filtro" :class="filtro === 'A vencer' ? 'btn-warning text-white' : 'btn-outline-warning'"
           @click="filtro = 'A vencer'">
-          A VENCER
+          A vencer
         </button>
 
-        <button class="btn" :class="filtro === 'Vencida' ? 'btn-danger text-white' : 'btn-outline-danger'"
+        <button class="btn-filtro" :class="filtro === 'Vencida' ? 'btn-danger text-white' : 'btn-outline-danger'"
           @click="filtro = 'Vencida'">
-          VENCIDAS
+          Vencidas
         </button>
       </div>
       <!-- Vacinas -->
@@ -178,7 +178,7 @@ export default {
 }
 
 .mensagem-boas-vindas {
-  font-size: 25px;
+  font-size: inherit;
   margin-top: -110px;
   margin-left: 200px;
 }
@@ -201,6 +201,10 @@ export default {
   margin-top: 40px;
 }
 
+.breadcrumb-home-img {
+    margin-top: -5px;
+}
+
 .titulo {
   font-size: 1.8rem;
   font-weight: bold;
@@ -212,20 +216,6 @@ export default {
   align-items: center;
 }
 
-.icone-usuario {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  margin-right: 0.1rem;
-  margin-top: 37px;
-}
-
-.saudacao {
-  font-weight: 500;
-  margin-top: 38px;
-  margin-right: 0.6rem;
-}
-
 .btn.active {
   font-weight: bold;
   border: 2px solid !important;
@@ -234,7 +224,7 @@ export default {
 .vacina-card {
   border-radius: 12px;
   background-color: #fbfbf8;
-  min-height: 200px;
+  min-height: 100px;
 }
 
 .vacina-aplicada {
@@ -260,7 +250,15 @@ export default {
   justify-content: center;
   align-items: center;
   text-align: center;
-  font-size: 0.95rem;
+  font-size: inherit;
+}
+
+.btn-filtro {
+  border-radius: 9999px !important;
+  text-transform: none !important;
+  padding: 6px 16px;              
+  line-height: 1.25;
+  font-weight: 500;               
 }
 
 </style>

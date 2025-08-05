@@ -18,13 +18,13 @@
             'breadcrumb-link',
             index === breadcrumbs.length - 1 ? 'breadcrumb-laranja' : ''
           ]" @click="item.to && navegar(item.to)" style="cursor: pointer;">
-            <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+            <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>
       </v-breadcrumbs>
 
-      <p class="text-muted mb-4 px-6 subtitulo">Informações sobre seu perfil e dados cadastrais.</p>
+      <p class="px-5 subtitulo">Informações sobre seu perfil e dados cadastrais.</p>
 
       <div class="linha-dado">
         <label>Nome:</label>
@@ -326,6 +326,10 @@ export default {
   text-decoration: underline;
 }
 
+.breadcrumb-home-img {
+    margin-top: -5px;
+}
+
 .breadcrumb-laranja {
   color: #f97316 !important;
   font-weight: 900;
@@ -334,7 +338,7 @@ export default {
 
 .subtitulo {
   margin-top: -10px;
-  font-size: 18px;
+  font-size: 15px;
 }
 
 .linha-dado {

@@ -16,13 +16,13 @@
         <template v-slot:item="{ item }">
           <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
             style="cursor: pointer;">
-            <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+           <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>
       </v-breadcrumbs>
 
-      <div v-if="notificacoes.length === 0" class="text-muted py-4">
+      <div v-if="notificacoes.length === 0" class="mensagem-nenhuma-notificacao">
         Nenhuma notificação encontrada.
       </div>
 
@@ -142,6 +142,10 @@ export default {
   font-size: 1.1rem;
 }
 
+.breadcrumb-home-img {
+    margin-top: -5px;
+}
+
 .outlined-card {
   border: 1px solid #CFCFCF;
   background-color: #fdfcff;
@@ -150,5 +154,10 @@ export default {
   min-height: 180px;
   margin-left: 20px;
   transition: border-color 0.5s;
+}
+
+.mensagem-nenhuma-notificacao {
+    text-align: center;
+    color: #6b7280;
 }
 </style>

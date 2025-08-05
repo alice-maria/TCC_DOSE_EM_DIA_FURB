@@ -129,11 +129,11 @@ aside {
 }
 
 .sidebar--expanded {
-  width: 280px;
+  width: clamp(16em, 18em, 28em);
 }
 
 .sidebar--collapsed {
-  width: 72px;
+   width: 4.5em;
 }
 
 @media (min-width: 769px) and (max-width: 1200px) {
@@ -142,11 +142,10 @@ aside {
   }
 
   .sidebar--collapsed {
-    width: 56px !important;
+    width: 3.5em !important;
   }
-
   .sidebar--expanded {
-    width: 280px !important;
+    width: clamp(16em, 18em, 28em) !important;
   }
 }
 

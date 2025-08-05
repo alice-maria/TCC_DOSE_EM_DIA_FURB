@@ -1,6 +1,6 @@
 <template>
   <v-container fluid class="pa-0">
-    <div class="pagina-config">
+    <div class="pagina-config usa-escala">
       <!-- Cabeçalho -->
       <div class="header">
         <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
@@ -16,7 +16,7 @@
         <template v-slot:item="{ item }">
           <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
             style="cursor: pointer;">
-            <v-icon left small v-if="item.icon">{{ item.icon }}</v-icon>
+            <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>
@@ -27,7 +27,7 @@
         <v-list-item class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Notificações</v-list-item-title>
-            <v-list-item-subtitle class="secao-descricao">
+            <v-list-item-subtitle>
               Você receberá comunicações por e-mail sobre suas vacinas.
             </v-list-item-subtitle>
           </v-list-item-content>
@@ -46,7 +46,7 @@
             <v-list-item-subtitle>Informações sobre seu perfil e dados cadastrais.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <v-icon>mdi-chevron-right</v-icon>
+            <img src="@/assets/icons/seta.svg" alt="infosCadastrais" class="icones" />
           </template>
         </v-list-item>
 
@@ -59,7 +59,7 @@
             <v-list-item-subtitle>Altere aqui a sua senha.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <v-icon>mdi-chevron-right</v-icon>
+            <img src="@/assets/icons/seta.svg" alt="seguranca" class="icones" />
           </template>
         </v-list-item>
 
@@ -72,7 +72,7 @@
             <v-list-item-subtitle>Regras de privacidade de dados pessoais.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <v-icon>mdi-chevron-right</v-icon>
+            <img src="@/assets/icons/seta.svg" alt="politicaPrivacidade" class="icones" />
           </template>
         </v-list-item>
 
@@ -85,7 +85,7 @@
             <v-list-item-subtitle>Desconecte da conta em que você está.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <v-icon class="icon-sair">mdi-logout</v-icon>
+            <img src="@/assets/icons/sair.svg" alt="sair" class="icones" />
           </template>
         </v-list-item>
 
@@ -99,7 +99,7 @@
             </v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <v-icon class="icon-sair">mdi-chevron-right</v-icon>
+            <img src="@/assets/icons/seta.svg" alt="excluir" class="icones" />
           </template>
         </v-list-item>
 
@@ -275,7 +275,6 @@ export default {
 }
 
 .titulo {
-  font-size: 1.8rem;
   font-weight: bold;
   color: #f97316;
 }
@@ -301,18 +300,12 @@ export default {
 }
 
 .secao-titulo {
-  font-size: 1.5rem;
+ font-size: clamp(1.2rem, 0.7vw + 1.0rem, 1.6rem);
   font-weight: 600;
   color: #f97316;
 }
 
-.secao-descricao {
-  font-size: 0.9rem;
-  color: #555;
-}
-
 .secao-titulo,
-.secao-descricao,
 .breadcrumb-link {
   white-space: normal;
   overflow-wrap: anywhere;
@@ -440,6 +433,10 @@ export default {
   color: #f97316 !important;
   font-weight: 900;
   font-size: 1.1rem;
+}
+
+.breadcrumb-home-img {
+    margin-top: -5px;
 }
 
 .switch-material .v-selection-control__wrapper {
