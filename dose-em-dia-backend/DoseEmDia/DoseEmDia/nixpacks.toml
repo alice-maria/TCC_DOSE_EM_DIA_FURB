@@ -1,5 +1,8 @@
 [phases.setup]
-nixPkgs = ["dotnet-sdk_8"]
+# SDK para compilar (8 funciona para compilar net6), mais curl/bash para rodar o install script
+nixPkgs = ["dotnet-sdk_8", "curl", "bash"]
+# Instala o RUNTIME ASP.NET Core 6 (LTS) para rodar a app net6
+cmds = ['bash -lc "curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 6.0 --runtime aspnetcore"']
 
 [phases.install]
 cmds = ["dotnet restore"]
@@ -8,4 +11,5 @@ cmds = ["dotnet restore"]
 cmds = ["dotnet publish -c Release -o out"]
 
 [start]
+# Agora o runtime 6 está disponível, então podemos iniciar normalmente com 'dotnet'
 cmd = "dotnet out/DoseEmDia.dll"
