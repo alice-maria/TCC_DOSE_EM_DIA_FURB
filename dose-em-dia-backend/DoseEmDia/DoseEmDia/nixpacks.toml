@@ -1,4 +1,3 @@
-# Força o Nixpacks a instalar o SDK do .NET 8
 [phases.setup]
 nixPkgs = ["dotnet-sdk_8"]
 
