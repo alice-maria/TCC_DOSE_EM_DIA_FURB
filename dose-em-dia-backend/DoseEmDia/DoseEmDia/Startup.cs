@@ -34,26 +34,28 @@ namespace DoseEmDia
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                var cs = Configuration.GetConnectionString("DefaultConnection");
+                var pgHost = Environment.GetEnvironmentVariable("PGHOST");
 
-                if (string.IsNullOrWhiteSpace(cs))
+                string cs;
+                if (!string.IsNullOrWhiteSpace(pgHost))
                 {
-                    var host = Environment.GetEnvironmentVariable("PGHOST");
-                    var port = Environment.GetEnvironmentVariable("PGPORT");
-                    var db = Environment.GetEnvironmentVariable("PGDATABASE");
-                    var user = Environment.GetEnvironmentVariable("PGUSER");
-                    var pwd = Environment.GetEnvironmentVariable("PGPASSWORD");
+                    var pgPort = Environment.GetEnvironmentVariable("PGPORT") ?? "5432";
+                    var pgDb = Environment.GetEnvironmentVariable("PGDATABASE");
+                    var pgUser = Environment.GetEnvironmentVariable("PGUSER");
+                    var pgPwd = Environment.GetEnvironmentVariable("PGPASSWORD");
 
-                    cs = $"Host={host};Port={port};Database={db};Username={user};Password={pwd};SSL Mode=Require;Trust Server Certificate=true";
+                    cs = $"Host={pgHost};Port={pgPort};Database={pgDb};Username={pgUser};Password={pgPwd};SSL Mode=Require;Trust Server Certificate=true";
+                }
+                else
+                {
+                    // Ambiente local: usa appsettings.json
+                    cs = Configuration.GetConnectionString("DefaultConnection");
                 }
 
                 options.UseNpgsql(cs);
 
-                // ATENÇÃO: só ligue em DEV
                 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-                {
                     options.EnableSensitiveDataLogging();
-                }
             });
 
             services.AddEndpointsApiExplorer();
