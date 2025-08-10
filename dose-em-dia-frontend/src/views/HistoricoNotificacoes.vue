@@ -66,7 +66,7 @@ export default {
       return date.toLocaleDateString('pt-BR') + ' às ' + date.toLocaleTimeString('pt-BR');
     },
     async carregarNotificacoes() {
-      const cpf = localStorage.getItem("usuarioCPF");
+      const cpf = localStorage.getItem("usuarioCpf");
       if (!cpf) {
         alert("Usuário não identificado. Faça login novamente.");
         return;

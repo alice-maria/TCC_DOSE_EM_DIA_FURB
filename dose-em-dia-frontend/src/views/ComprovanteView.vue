@@ -105,7 +105,7 @@ export default {
   methods: {
     async baixarComprovante() {
       const usuarioId = localStorage.getItem("usuarioId");
-      const usuarioCPF = localStorage.getItem("usuarioCPF"); // você deve armazenar isso no login
+      const usuarioCPF = localStorage.getItem("usuarioCpf"); 
       if (!usuarioId || !usuarioCPF) {
         alert("Usuário não identificado. Faça login novamente.");
         return;

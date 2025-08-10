@@ -30,7 +30,7 @@ export default {
     logout() {
       localStorage.removeItem("token");
       localStorage.removeItem("usuarioNome");
-      localStorage.removeItem("usuarioCPF");
+      localStorage.removeItem("usuarioCpf");
       this.$router.push("/");
     }
   }

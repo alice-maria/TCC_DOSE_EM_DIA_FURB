@@ -90,7 +90,7 @@ export default {
 
         localStorage.setItem("usuarioEmail", this.email);
         localStorage.setItem("usuarioNome", response.data.nome);
-        localStorage.setItem("usuarioCPF", response.data.cpf);
+        localStorage.setItem("usuarioCpf", response.data.cpf);
         localStorage.setItem("usuarioId", response.data.id);
 
         if (this.lembrarDeMim) {

@@ -61,7 +61,38 @@ namespace DoseEmDia.Helpers
             {
                 From = new MailAddress(_remetente),
                 Subject = "Redefinição de Senha",
-                Body = $"Clique no link para redefinir sua senha: http://localhost:8080/redefinir-senha?token={tokenEncoded}",
+                Body = $@"
+<html>
+  <body style='font-family: Roboto, Arial, sans-serif; background-color: #FAFAFA; color: #202124; padding: 20px;'>
+    <div style='max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
+      <h2 style='color: #f46c20;'>Redefinição de Senha</h2>
+      <p>Olá,</p>
+      <p>
+        Recebemos uma solicitação para redefinir sua senha no sistema <strong>Dose em Dia</strong>,
+        a plataforma de conscientização e acompanhamento de vacinas.
+      </p>
+      <p>
+        Para prosseguir com a redefinição, clique no botão abaixo:
+      </p>
+      <p style='text-align: center; margin: 30px 0;'>
+        <a href='http://localhost:8080/redefinir-senha?token={tokenEncoded}'
+           style='background-color: #f46c20; color: white; padding: 14px 28px; text-decoration: none;
+                  font-weight: 500; border-radius: 6px; display: inline-block;'>
+          Redefinir senha
+        </a>
+      </p>
+      <p>
+        Caso não tenha solicitado esta redefinição, apenas ignore este e-mail. Nenhuma ação será realizada.
+      </p>
+      <hr style='border: none; border-top: 1px solid #eee; margin: 30px 0;' />
+      <p style='font-size: 14px; color: #666;'>
+        Atenciosamente,<br/>
+        <strong>Equipe Dose em Dia</strong>
+      </p>
+    </div>
+  </body>
+</html>",
+
                 IsBodyHtml = true
             };
 

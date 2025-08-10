@@ -127,7 +127,7 @@ export default {
       }
     },
     async carregarVacinas() {
-      const cpf = localStorage.getItem('usuarioCPF');
+      const cpf = localStorage.getItem('usuarioCpf'); 
       if (!cpf) {
         alert('CPF não encontrado. Faça login novamente.');
         return;

@@ -18,7 +18,7 @@ public class UsuarioService
     {
         _context = context;
         _envioEmail = envioEmail;
-        _vacinaService = vacinaService; 
+        _vacinaService = vacinaService;
     }
 
     public async Task<Usuario> BuscarPorCpf(string cpf)
@@ -35,41 +35,53 @@ public class UsuarioService
         if (_context.Usuario.Any(u => u.Email == request.Email))
             throw new UsuarioException.EmailJaCadastradoException(request.Email);
 
-        var endereco = new Endereco(
-            request.Endereco.Logradouro,
-            request.Endereco.Bairro,
-            request.Endereco.Cidade,
-            request.Endereco.Estado,
-            FormatacaoHelper.FormataCEP(request.Endereco.CEP),
-            request.Endereco.Pais
-        );
+        using var transaction = await _context.Database.BeginTransactionAsync();
 
-        _context.Endereco.Add(endereco);
-
-        request.Nome = request.Nome?.TrimEnd();
-
-        var salt = CriptografiaHelper.GerarSalt();
-
-        var usuario = new Usuario
+        try
         {
-            Nome = request.Nome,
-            DataNascimento = request.DataNascimento,
-            Email = request.Email,
-            Telefone = FormatacaoHelper.FormataTelefone(request.Telefone),
-            CPF = FormatacaoHelper.FormataCPF(request.CPF),
-            Sexo = request.Sexo,
-            Senha = CriptografiaHelper.GerarHash(request.Senha, salt),
-            Salt = salt,
-            Endereco = endereco
-        };
+            var endereco = new Endereco(
+                        request.Endereco.Logradouro,
+                        request.Endereco.Bairro,
+                        request.Endereco.Cidade,
+                        request.Endereco.Estado,
+                        FormatacaoHelper.FormataCEP(request.Endereco.CEP),
+                        request.Endereco.Pais
+                    );
 
-        _context.Usuario.Add(usuario);
-        await _context.SaveChangesAsync();
+            _context.Endereco.Add(endereco);
 
-        int idade = CalcularIdade(usuario.DataNascimento);
-        await _vacinaService.GerarEVincularVacinas(usuario.IdUser, idade, usuario.Sexo);
+            request.Nome = request.Nome?.TrimEnd();
 
-        return usuario;
+            var salt = CriptografiaHelper.GerarSalt();
+
+            var usuario = new Usuario
+            {
+                Nome = request.Nome,
+                DataNascimento = request.DataNascimento,
+                Email = request.Email,
+                Telefone = FormatacaoHelper.FormataTelefone(request.Telefone),
+                CPF = FormatacaoHelper.FormataCPF(request.CPF),
+                Sexo = request.Sexo,
+                Senha = CriptografiaHelper.GerarHash(request.Senha, salt),
+                Salt = salt,
+                Endereco = endereco
+            };
+
+            _context.Usuario.Add(usuario);
+            await _context.SaveChangesAsync();
+
+            int idade = CalcularIdade(usuario.DataNascimento);
+            await _vacinaService.GerarEVincularVacinas(usuario.IdUser, idade, usuario.Sexo);
+
+            await transaction.CommitAsync();
+
+            return usuario;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<Usuario> Login(LoginRequest request)
@@ -120,7 +132,7 @@ public class UsuarioService
             throw new UsuarioException.UsuarioNaoEncontradoException(email);
 
         usuario.TokenRedefinicaoSenha = _envioEmail.GerarToken();
-        usuario.TokenExpiracao = DateTime.UtcNow.AddMinutes(15);
+        usuario.TokenExpiracao = DateTime.Now.AddMinutes(15);
 
         await _context.SaveChangesAsync();
 

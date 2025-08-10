@@ -53,7 +53,7 @@
         <v-divider class="separador"></v-divider>
 
         <!-- Segurança -->
-       <v-list-item @click="navegar('redefinir-senha')" class="item-config hoverable" lines="two">
+        <v-list-item @click="navegar('redefinir-senha')" class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Segurança</v-list-item-title>
             <v-list-item-subtitle>Altere aqui a sua senha.</v-list-item-subtitle>
@@ -124,7 +124,7 @@
               <span class="texto_excluir_danger">Essa ação é irreversível!.</span>
             </v-card-text>
 
-            <v-text-field v-model="email" label="E-mail" type="email" class="mt-4" variant="outlined" dense required />
+            <v-text-field v-model="email" label="E-mail" type="email" variant="outlined" dense readonly />
             <v-text-field v-model="senha" label="Senha" type="password" variant="outlined" dense required />
 
             <v-card-actions class="popup-excluir__botoes">
@@ -158,6 +158,18 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        <!--Erro-->
+        <v-dialog v-model="mostrarErro" max-width="400">
+          <v-card>
+            <v-alert type="error" color="red-darken-2" icon="mdi-alert-circle" class="pa-5" border="start" elevation="2"
+              title="Erro ao salvar">
+              {{ erro }}
+            </v-alert>
+            <v-card-actions class="justify-end">
+              <v-btn color="red-darken-2" variant="flat" @click="mostrarErro = false">OK</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
 
       </div>
     </div>
@@ -179,16 +191,18 @@ export default {
       notificacoesAtivas: true,
       dialogConfirmarExclusaoFinal: false,
       dialogContaExcluida: false,
+      mostrarErro: false, // para o popup de erro
+      erro: "",
       breadcrumbs: [
         { text: "Serviços e Informações", to: "/home", icon: "mdi-home" },
-        { text: "Configurações" } // este é o item atual, sem link
+        { text: "Configurações" }
       ],
     };
   },
   mounted() {
     this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
     this.email = localStorage.getItem("usuarioEmail") || "";
-    const idUser = localStorage.getItem("usuarioId"); // você deve garantir que salvou isso no login
+    const idUser = localStorage.getItem("usuarioId");
 
     if (idUser) {
       axios.get(`http://localhost:5054/api/usuario/${idUser}`)
@@ -210,8 +224,9 @@ export default {
       if (rota) this.$router.push(rota);
     },
     async confirmarExclusao() {
-      if (!this.email || !this.senha) {
-        alert("Preencha o e-mail e a senha para continuar.");
+      if (!this.senha) {
+        this.erro = "Digite sua senha para continuar.";
+        this.mostrarErro = true;
         return;
       }
 
@@ -226,7 +241,8 @@ export default {
         this.dialogConfirmarExclusaoFinal = false;
         this.dialogContaExcluida = true;
       } catch (error) {
-        alert(error.response?.data || "Erro ao excluir conta.");
+        this.mensagemErroExcluir = error.response?.data || "Erro ao excluir conta.";
+        this.dialogErroExcluir = true;
       }
     },
     redirecionarLogin() {
@@ -300,7 +316,7 @@ export default {
 }
 
 .secao-titulo {
- font-size: clamp(1.2rem, 0.7vw + 1.0rem, 1.6rem);
+  font-size: clamp(1.2rem, 0.7vw + 1.0rem, 1.6rem);
   font-weight: 600;
   color: #f97316;
 }
@@ -322,18 +338,15 @@ export default {
   height: auto;
 }
 
-/* Itens de configuração com 2 linhas: conteúdo começa no topo e cresce */
 .item-config {
   align-items: flex-start;
 }
 
-/* Conteúdo interno do Vuetify (necessário por ser scoped) */
 :deep(.v-list-item__content) {
   height: auto;
   overflow: visible;
 }
 
-/* Título e subtítulo com quebra e respiro */
 :deep(.v-list-item-title),
 :deep(.v-list-item-subtitle) {
   display: block;
@@ -341,10 +354,15 @@ export default {
   overflow-wrap: anywhere;
   line-height: 1.45;
 }
-:deep(.v-list-item-title)    { margin-bottom: 0.25rem; }
-:deep(.v-list-item-subtitle) { margin-top: 0.1rem; }
 
-/* Ícone à direita alinhado ao topo */
+:deep(.v-list-item-title) {
+  margin-bottom: 0.25rem;
+}
+
+:deep(.v-list-item-subtitle) {
+  margin-top: 0.1rem;
+}
+
 .item-append {
   align-self: flex-start;
   margin-left: 0.75rem;
@@ -355,13 +373,13 @@ export default {
 .hoverable {
   cursor: pointer;
   transition: background-color 0.2s ease;
-  min-height: unset;        /* remove 12vh */
-  padding-block: 1.1rem;    /* espaçamento vertical confortável */
+  min-height: unset;
+  padding-block: 1.1rem;
 }
 
-
-/* Mais respiro entre itens */
-.separador { margin: 1rem 0; }
+.separador {
+  margin: 1rem 0;
+}
 
 .hoverable:hover {
   background-color: #f9f9f9;
@@ -377,7 +395,6 @@ export default {
 .popup-sair {
   background-color: #f97316;
   border-radius: 25px !important;
-  /* mais arredondado */
   padding: 32px 24px;
   color: white;
   text-align: center;
@@ -436,7 +453,7 @@ export default {
 }
 
 .breadcrumb-home-img {
-    margin-top: -5px;
+  margin-top: -5px;
 }
 
 .switch-material .v-selection-control__wrapper {
@@ -446,7 +463,6 @@ export default {
 
 .switch-material .v-switch__track {
   background-color: #e1d7f0 !important;
-  /* cor quando inativo */
   border-radius: 999px;
   height: 32px;
 }

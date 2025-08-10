@@ -22,55 +22,68 @@ namespace DoseEmDia.Models.db
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuração da tabela Usuario
-            modelBuilder.Entity<Usuario>().ToTable("Usuario")
-                .HasKey(u => u.IdUser);
+            // Endereco
+            modelBuilder.Entity<Endereco>().ToTable("Endereco");
+            modelBuilder.Entity<Endereco>().HasKey(e => e.IdEndereco);
 
-            modelBuilder.Entity<Usuario>()
-                .Property(u => u.IdUser)
-                .HasColumnName("IdUser");
-
-            modelBuilder.Entity<Usuario>()
-                .Property(u => u.EnderecoId)
-                .HasColumnName("IdEndereco");
-
+            // Usuario
+            modelBuilder.Entity<Usuario>().ToTable("Usuario");
+            modelBuilder.Entity<Usuario>().HasKey(u => u.IdUser);
             modelBuilder.Entity<Usuario>()
                 .HasOne(u => u.Endereco)
-                .WithOne()
-                .HasForeignKey<Usuario>(u => u.EnderecoId);
+                .WithMany()
+                .HasForeignKey(u => u.EnderecoId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Configuração da tabela Vacina
-            modelBuilder.Entity<Vacina>().ToTable("Vacina")
+            modelBuilder.Entity<Usuario>()
+                .Property(u => u.DataNascimento)
+                .HasColumnType("timestamp without time zone");
+
+            modelBuilder.Entity<Usuario>()
+                .Property(u => u.TokenExpiracao)
+                .HasColumnType("timestamp without time zone");
+
+            // Vacina
+            modelBuilder.Entity<Vacina>().ToTable("Vacina");
+            modelBuilder.Entity<Vacina>().HasKey(v => v.IdVacina);
+            modelBuilder.Entity<Vacina>()
                 .HasOne(v => v.Usuario)
                 .WithMany(u => u.Vacinas)
-                .HasForeignKey(v => v.UsuarioId);
+                .HasForeignKey(v => v.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Vacina>()
+                .Property(v => v.DataAplicacao)
+                .HasColumnType("timestamp without time zone");
 
             modelBuilder.Entity<Vacina>()
                 .Property(v => v.Status)
+                .HasConversion<string>(); // isso converte enum para texto
+
+            // Notificacoes
+            modelBuilder.Entity<Notificacao>().ToTable("Notificacoes");
+            modelBuilder.Entity<Notificacao>().HasKey(n => n.IdNotificacao);
+            modelBuilder.Entity<Notificacao>()
+                .HasOne(n => n.Usuario)
+                .WithMany(u => u.Notificacoes)
+                .HasForeignKey(n => n.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Notificacao>()
+                .Property(n => n.DataEnvio)
+                .HasColumnType("timestamp without time zone");
+
+            modelBuilder.Entity<Notificacao>()
+                .Property(n => n.Tipo)
                 .HasConversion<string>();
 
-            // Configuração da tabela Endereco
-            modelBuilder.Entity<Endereco>().ToTable("Endereco")
-                .Property(e => e.IdEndereco)
-                .HasColumnName("IdEndereco");
+            // Paises
+            modelBuilder.Entity<Pais>().ToTable("Paises");
+            modelBuilder.Entity<Pais>().HasKey(p => p.IdPais);
 
-            modelBuilder.Entity<Endereco>()
-                .Property(e => e.CEP)
-                .HasColumnName("Cep");
-
-            modelBuilder.Entity<Pais>().ToTable("Paises")
-                .HasKey(p => p.IdPais);
-
-            modelBuilder.Entity<Pais>()
-                .Property(p => p.IdPais)
-                .HasColumnName("IdPais")
-                .IsRequired();
-
-            modelBuilder.Entity<ContadorRequisicoes>()
-               .Property(e => e.Requisicoes)
-               .HasColumnName("Requisicoes");
-
-            modelBuilder.Entity<Notificacao>().ToTable("Notificacoes");
+            // Contador de Requisições
+            modelBuilder.Entity<ContadorRequisicoes>().ToTable("ContadorRequisicoes");
+            modelBuilder.Entity<ContadorRequisicoes>().HasKey(c => c.Id);
         }
     }
 }

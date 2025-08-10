@@ -201,7 +201,7 @@ export default {
       return new Date(data).toLocaleDateString('pt-BR');
     },
     async carregarUsuario() {
-      const cpf = localStorage.getItem("usuarioCPF");
+      const cpf = localStorage.getItem('usuarioCpf'); 
       if (!cpf) return;
       try {
         const response = await axios.get(`http://localhost:5054/api/usuario/buscarPorCpf/${cpf}`);

@@ -12,6 +12,7 @@ import EdicaoUsuario from "@/views/EdicaoUsuario.vue";
 import PostosSaude from "@/views/PostosSaude.vue";
 import AceitarPoliticaPrivacidade from "@/views/AceitarPoliticaPrivacidade.vue";
 import VisualizarPoliticaPrivacidade from "@/views/VisualizarPoliticaPrivacidade.vue";
+import RedefinirEsqueciMinhaSenha from "@/views/RedefinirEsqueciMinhaSenha";
 
 const routes = [
   { path: "/", component: UserLogin },
@@ -29,6 +30,7 @@ const routes = [
   { path: '/postos-saude', component: PostosSaude },
   { path: '/aceitar-politica-privacidade', component: AceitarPoliticaPrivacidade },
   { path: '/visualizar-politica-privacidade', component: VisualizarPoliticaPrivacidade },
+  { path: '/esqueci-redefinir-minha-senha', component: RedefinirEsqueciMinhaSenha},
 ];
 
 const router = createRouter({

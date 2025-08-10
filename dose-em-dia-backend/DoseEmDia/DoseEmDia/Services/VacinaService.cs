@@ -75,7 +75,8 @@ namespace DoseEmDia.Controllers
                     NumeroDoses = esquema.NumeroDoses,
                     NumeroLote = rand.Next(100000, 999999),
                     DataAplicacao = dataAplicacao,
-                    ValidadeMeses = esquema.ValidadeMeses
+                    ValidadeMeses = esquema.ValidadeMeses,
+                    Fabricante = esquema.Fabricante
                 });
             }
 
@@ -107,37 +108,37 @@ namespace DoseEmDia.Controllers
 
         private readonly List<EsquemaVacinal> _tabelaVacinas = new()
         {
-            // --- Criança ---
-            new EsquemaVacinal { Nome = "BCG", IdadeMinima = 0, Intervalo = "Única ao nascer", NumeroDoses = 1, ValidadeMeses = 999 },
-            new EsquemaVacinal { Nome = "Hepatite B", IdadeMinima = 0, Intervalo = "0, 1 e 6 meses", NumeroDoses = 3, ValidadeMeses = 240 },
-            new EsquemaVacinal { Nome = "Penta", IdadeMinima = 0, Intervalo = "2, 4 e 6 meses", NumeroDoses = 3, ValidadeMeses = 6 },
-            new EsquemaVacinal { Nome = "Poliomielite (VIP)", IdadeMinima = 0, Intervalo = "2, 4, 6 meses + reforços", NumeroDoses = 5, ValidadeMeses = 48 },
-            new EsquemaVacinal { Nome = "Rotavírus", IdadeMinima = 0, IdadeMaxima = 1, Intervalo = "2 e 4 meses", NumeroDoses = 2, ValidadeMeses = 6 },
-            new EsquemaVacinal { Nome = "Pneumo 10", IdadeMinima = 0, Intervalo = "2, 4 meses + reforço 12 meses", NumeroDoses = 3, ValidadeMeses = 12 },
-            new EsquemaVacinal { Nome = "Meningo C", IdadeMinima = 0, Intervalo = "3, 5 meses + reforço 12 meses", NumeroDoses = 3, ValidadeMeses = 12 },
-            new EsquemaVacinal { Nome = "Febre Amarela", IdadeMinima = 0, Intervalo = "9 meses + reforço aos 4 anos", NumeroDoses = 2, ValidadeMeses = 999 },
-            new EsquemaVacinal { Nome = "Tríplice Viral (SCR)", IdadeMinima = 1, Intervalo = "12 e 15 meses", NumeroDoses = 2, ValidadeMeses = 120 },
-            new EsquemaVacinal { Nome = "Tetraviral (SCRV)", IdadeMinima = 1, IdadeMaxima = 5, Intervalo = "15 meses", NumeroDoses = 1, ValidadeMeses = 120 },
-            new EsquemaVacinal { Nome = "DTP", IdadeMinima = 1, Intervalo = "15 meses + 4 anos", NumeroDoses = 2, ValidadeMeses = 48 },
-            new EsquemaVacinal { Nome = "Hepatite A", IdadeMinima = 1, Intervalo = "15 meses", NumeroDoses = 1, ValidadeMeses = 999 },
-            new EsquemaVacinal { Nome = "Varicela", IdadeMinima = 1, Intervalo = "15 meses", NumeroDoses = 1, ValidadeMeses = 999 },
-        
-            // --- Adolescente ---
-            new EsquemaVacinal { Nome = "HPV quadrivalente", IdadeMinima = 9, IdadeMaxima = 14, Sexo = "F", Intervalo = "2 doses com 6 meses de intervalo", NumeroDoses = 2, ValidadeMeses = 120 },
-            new EsquemaVacinal { Nome = "HPV quadrivalente", IdadeMinima = 9, IdadeMaxima = 14, Sexo = "M", Intervalo = "2 doses com 6 meses de intervalo", NumeroDoses = 2, ValidadeMeses = 120 },
-            new EsquemaVacinal { Nome = "Meningocócica ACWY", IdadeMinima = 11, IdadeMaxima = 14, Intervalo = "Dose única", NumeroDoses = 1, ValidadeMeses = 999 },
-        
-            // --- Adulto ---
-            new EsquemaVacinal { Nome = "dT (Dupla adulto)", IdadeMinima = 10, Intervalo = "Reforço a cada 10 anos", NumeroDoses = 1, ValidadeMeses = 120 },
-            new EsquemaVacinal { Nome = "Febre Amarela", IdadeMinima = 9, Intervalo = "Dose única ou reforço a depender da região", NumeroDoses = 1, ValidadeMeses = 999 },
-            new EsquemaVacinal { Nome = "Tríplice Viral (SCR)", IdadeMinima = 20, Intervalo = "2 doses se não vacinado na infância", NumeroDoses = 2, ValidadeMeses = 240 },
-            new EsquemaVacinal { Nome = "Hepatite B", IdadeMinima = 20, Intervalo = "3 doses", NumeroDoses = 3, ValidadeMeses = 240 },
-            new EsquemaVacinal { Nome = "Covid-19", IdadeMinima = 6, Intervalo = "2 ou 3 doses + reforços anuais", NumeroDoses = 3, ValidadeMeses = 12 },
-        
-            // --- Idoso ---
-            new EsquemaVacinal { Nome = "Pneumocócica 23-valente", IdadeMinima = 60, Intervalo = "Dose única ou esquema em 2 doses", NumeroDoses = 2, ValidadeMeses = 999 },
-            new EsquemaVacinal { Nome = "Influenza (trivalente)", IdadeMinima = 60, Intervalo = "Dose anual", NumeroDoses = 1, ValidadeMeses = 12 },
-            new EsquemaVacinal { Nome = "Covid-19", IdadeMinima = 60, Intervalo = "Reforço a cada 6 meses", NumeroDoses = 4, ValidadeMeses = 6 }
+            new EsquemaVacinal { Nome = "BCG", IdadeMinima = 0, Intervalo = "Única ao nascer", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "Bio-Manguinhos" },
+            new EsquemaVacinal { Nome = "Hepatite B", IdadeMinima = 0, Intervalo = "0, 1 e 6 meses", NumeroDoses = 3, ValidadeMeses = 240, Fabricante = "Butantan" },
+            new EsquemaVacinal { Nome = "Penta", IdadeMinima = 0, Intervalo = "2, 4 e 6 meses", NumeroDoses = 3, ValidadeMeses = 6, Fabricante = "Serum Institute" },
+            new EsquemaVacinal { Nome = "Poliomielite (VIP)", IdadeMinima = 0, Intervalo = "2, 4, 6 meses + reforços", NumeroDoses = 5, ValidadeMeses = 48, Fabricante = "Sanofi Pasteur" },
+            new EsquemaVacinal { Nome = "Rotavírus", IdadeMinima = 0, IdadeMaxima = 1, Intervalo = "2 e 4 meses", NumeroDoses = 2, ValidadeMeses = 6, Fabricante = "GSK" },
+            new EsquemaVacinal { Nome = "Pneumo 10", IdadeMinima = 0, Intervalo = "2, 4 meses + reforço 12 meses", NumeroDoses = 3, ValidadeMeses = 12, Fabricante = "Pfizer" },
+            new EsquemaVacinal { Nome = "Meningo C", IdadeMinima = 0, Intervalo = "3, 5 meses + reforço 12 meses", NumeroDoses = 3, ValidadeMeses = 12, Fabricante = "Novartis" },
+            new EsquemaVacinal { Nome = "Febre Amarela", IdadeMinima = 0, Intervalo = "9 meses + reforço aos 4 anos", NumeroDoses = 2, ValidadeMeses = 999, Fabricante = "Bio-Manguinhos" },
+            new EsquemaVacinal { Nome = "Tríplice Viral (SCR)", IdadeMinima = 1, Intervalo = "12 e 15 meses", NumeroDoses = 2, ValidadeMeses = 120, Fabricante = "Fiocruz" },
+            new EsquemaVacinal { Nome = "Tetraviral (SCRV)", IdadeMinima = 1, IdadeMaxima = 5, Intervalo = "15 meses", NumeroDoses = 1, ValidadeMeses = 120, Fabricante = "MSD" },
+            new EsquemaVacinal { Nome = "DTP", IdadeMinima = 1, Intervalo = "15 meses + 4 anos", NumeroDoses = 2, ValidadeMeses = 48, Fabricante = "Butantan" },
+            new EsquemaVacinal { Nome = "Hepatite A", IdadeMinima = 1, Intervalo = "15 meses", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "GSK" },
+            new EsquemaVacinal { Nome = "Varicela", IdadeMinima = 1, Intervalo = "15 meses", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "MSD" },
+            
+            // Adolescente
+            new EsquemaVacinal { Nome = "HPV quadrivalente", IdadeMinima = 9, IdadeMaxima = 14, Sexo = "F", Intervalo = "2 doses com 6 meses de intervalo", NumeroDoses = 2, ValidadeMeses = 120, Fabricante = "MSD" },
+            new EsquemaVacinal { Nome = "HPV quadrivalente", IdadeMinima = 9, IdadeMaxima = 14, Sexo = "M", Intervalo = "2 doses com 6 meses de intervalo", NumeroDoses = 2, ValidadeMeses = 120, Fabricante = "MSD" },
+            new EsquemaVacinal { Nome = "Meningocócica ACWY", IdadeMinima = 11, IdadeMaxima = 14, Intervalo = "Dose única", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "Sanofi" },
+            
+            // Adulto
+            new EsquemaVacinal { Nome = "dT (Dupla adulto)", IdadeMinima = 10, Intervalo = "Reforço a cada 10 anos", NumeroDoses = 1, ValidadeMeses = 120, Fabricante = "Butantan" },
+            new EsquemaVacinal { Nome = "Febre Amarela", IdadeMinima = 9, Intervalo = "Dose única ou reforço a depender da região", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "Bio-Manguinhos" },
+            new EsquemaVacinal { Nome = "Tríplice Viral (SCR)", IdadeMinima = 20, Intervalo = "2 doses se não vacinado na infância", NumeroDoses = 2, ValidadeMeses = 240, Fabricante = "Fiocruz" },
+            new EsquemaVacinal { Nome = "Hepatite B", IdadeMinima = 20, Intervalo = "3 doses", NumeroDoses = 3, ValidadeMeses = 240, Fabricante = "Butantan" },
+            new EsquemaVacinal { Nome = "Covid-19", IdadeMinima = 6, Intervalo = "2 ou 3 doses + reforços anuais", NumeroDoses = 3, ValidadeMeses = 12, Fabricante = "Pfizer" },
+            
+            // Idoso
+            new EsquemaVacinal { Nome = "Pneumocócica 23-valente", IdadeMinima = 60, Intervalo = "Dose única ou esquema em 2 doses", NumeroDoses = 2, ValidadeMeses = 999, Fabricante = "GSK" },
+            new EsquemaVacinal { Nome = "Influenza (trivalente)", IdadeMinima = 60, Intervalo = "Dose anual", NumeroDoses = 1, ValidadeMeses = 12, Fabricante = "Butantan" },
+            new EsquemaVacinal { Nome = "Covid-19", IdadeMinima = 60, Intervalo = "Reforço a cada 6 meses", NumeroDoses = 4, ValidadeMeses = 6, Fabricante = "Pfizer" },
+
         };
 
         public class EsquemaVacinal
@@ -149,7 +150,7 @@ namespace DoseEmDia.Controllers
             public string Intervalo { get; set; }
             public int NumeroDoses { get; set; }
             public int ValidadeMeses { get; set; }
+            public string Fabricante { get; set; }
         }
-
     }
 }

@@ -311,11 +311,13 @@ export default {
         return;
       }
 
+      const cpfLimpo = this.form.cpf.replace(/\D/g, "").padStart(11, "0"); 
+
       const payload = {
         nome: this.form.nome,
         email: this.form.email,
         telefone: this.form.telefone,
-        cpf: this.form.cpf,
+        cpf: cpfLimpo,
         dataNascimento: this.form.dataNascimento,
         sexo: this.form.sexo,
         senha: this.form.senha,
@@ -333,6 +335,9 @@ export default {
         this.carregando = true;
         const response = await axios.post("http://localhost:5054/api/usuario/criar-conta", payload);
         localStorage.setItem("usuarioNome", response.data.nome);
+        localStorage.setItem("usuarioCpf", cpfLimpo);
+        localStorage.setItem("usuarioId", response.data.idUser); 
+        localStorage.setItem("usuarioEmail", response.data.email); 
         console.log("Usuário criado:", response.data);
         this.modalSucesso = true;
       } catch (err) {
