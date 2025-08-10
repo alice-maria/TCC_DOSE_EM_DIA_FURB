@@ -65,7 +65,7 @@ namespace DoseEmDia
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public async Task Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // Ambiente de desenvolvimento
             if (env.IsDevelopment())
@@ -96,10 +96,10 @@ namespace DoseEmDia
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                 db.Database.MigrateAsync();
+                await db.Database.MigrateAsync();
 
                 var paisService = scope.ServiceProvider.GetRequiredService<PaisService>();
-                 paisService.PopularPaisesSeNecessarioAsync();
+                await paisService.PopularPaisesSeNecessarioAsync();
             }
         }
     }
