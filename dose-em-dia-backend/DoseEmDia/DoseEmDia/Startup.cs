@@ -65,7 +65,7 @@ namespace DoseEmDia
             });
         }
 
-        public async Task Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // Ambiente de desenvolvimento
             if (env.IsDevelopment())
@@ -79,12 +79,10 @@ namespace DoseEmDia
                 });
             }
 
-            // Middleware
-            app.UseRouting();
-
-            app.UseCors("Default");
-
-            app.UseAuthorization();
+            app.UseCors(policy => policy
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader());
 
             app.UseAuthorization();
 
@@ -96,10 +94,10 @@ namespace DoseEmDia
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                await db.Database.MigrateAsync();
+                db.Database.MigrateAsync();
 
                 var paisService = scope.ServiceProvider.GetRequiredService<PaisService>();
-                await paisService.PopularPaisesSeNecessarioAsync();
+                paisService.PopularPaisesSeNecessarioAsync().GetAwaiter().GetResult();
             }
         }
     }
