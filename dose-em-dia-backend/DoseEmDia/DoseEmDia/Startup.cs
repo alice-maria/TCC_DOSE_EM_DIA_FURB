@@ -52,7 +52,8 @@ namespace DoseEmDia
                     cs = Configuration.GetConnectionString("DefaultConnection");
                 }
 
-                options.UseNpgsql(cs);
+                options.UseNpgsql(cs, b =>
+                    b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
 
                 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
                     options.EnableSensitiveDataLogging();
@@ -111,7 +112,13 @@ namespace DoseEmDia
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                db.Database.MigrateAsync();
+
+                var applied = db.Database.GetAppliedMigrations().ToList();
+                var pending = db.Database.GetPendingMigrations().ToList();
+                Console.WriteLine($"Applied: {applied.Count} => {string.Join(",", applied)}");
+                Console.WriteLine($"Pending: {pending.Count} => {string.Join(",", pending)}");
+
+                db.Database.Migrate(); // <-- aplica antes do seed
 
                 var paisService = scope.ServiceProvider.GetRequiredService<PaisService>();
                 paisService.PopularPaisesSeNecessarioAsync().GetAwaiter().GetResult();
