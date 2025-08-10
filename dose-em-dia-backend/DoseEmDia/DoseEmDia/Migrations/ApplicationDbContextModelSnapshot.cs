@@ -86,7 +86,7 @@ namespace DoseEmDia.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdNotificacao"));
 
                     b.Property<DateTime>("DataEnvio")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("EmailEnviado")
                         .HasColumnType("boolean")
@@ -96,8 +96,9 @@ namespace DoseEmDia.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Tipo")
-                        .HasColumnType("integer");
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
@@ -148,7 +149,7 @@ namespace DoseEmDia.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdVacina"));
 
                     b.Property<DateTime>("DataAplicacao")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Fabricante")
                         .IsRequired()
@@ -168,8 +169,9 @@ namespace DoseEmDia.Migrations
                     b.Property<int>("NumeroLote")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer");
@@ -198,7 +200,7 @@ namespace DoseEmDia.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("DataNascimento")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -228,7 +230,7 @@ namespace DoseEmDia.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("TokenExpiracao")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("TokenRedefinicaoSenha")
                         .HasColumnType("text");

@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DoseEmDia.Migrations
 {
-    public partial class InitPostgres : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -62,7 +62,7 @@ namespace DoseEmDia.Migrations
                     IdUser = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Nome = table.Column<string>(type: "text", nullable: false),
-                    DataNascimento = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DataNascimento = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     Telefone = table.Column<string>(type: "text", nullable: false),
                     CPF = table.Column<string>(type: "text", nullable: false),
@@ -71,7 +71,7 @@ namespace DoseEmDia.Migrations
                     Salt = table.Column<string>(type: "text", nullable: true),
                     EnderecoId = table.Column<int>(type: "integer", nullable: false),
                     TokenRedefinicaoSenha = table.Column<string>(type: "text", nullable: true),
-                    TokenExpiracao = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    TokenExpiracao = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     ReceberNotificacoes = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -94,8 +94,8 @@ namespace DoseEmDia.Migrations
                     UsuarioId = table.Column<int>(type: "integer", nullable: false),
                     Titulo = table.Column<string>(type: "text", nullable: false),
                     Mensagem = table.Column<string>(type: "text", nullable: false),
-                    Tipo = table.Column<int>(type: "integer", nullable: false),
-                    DataEnvio = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Tipo = table.Column<string>(type: "text", nullable: false),
+                    DataEnvio = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Visualizada = table.Column<bool>(type: "boolean", nullable: false),
                     EmailEnviado = table.Column<bool>(type: "boolean", nullable: false)
                 },
@@ -121,8 +121,8 @@ namespace DoseEmDia.Migrations
                     NumeroDoses = table.Column<int>(type: "integer", nullable: false),
                     NumeroLote = table.Column<int>(type: "integer", nullable: false),
                     IntervaloEntreDoses = table.Column<string>(type: "text", nullable: false),
-                    DataAplicacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
+                    DataAplicacao = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
                     UsuarioId = table.Column<int>(type: "integer", nullable: false),
                     ValidadeMeses = table.Column<int>(type: "integer", nullable: true)
                 },
