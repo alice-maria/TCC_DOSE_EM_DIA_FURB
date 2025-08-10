@@ -34,7 +34,20 @@ namespace DoseEmDia
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
+                var cs = Configuration.GetConnectionString("DefaultConnection");
+
+                if (string.IsNullOrWhiteSpace(cs))
+                {
+                    var host = Environment.GetEnvironmentVariable("PGHOST");
+                    var port = Environment.GetEnvironmentVariable("PGPORT");
+                    var db = Environment.GetEnvironmentVariable("PGDATABASE");
+                    var user = Environment.GetEnvironmentVariable("PGUSER");
+                    var pwd = Environment.GetEnvironmentVariable("PGPASSWORD");
+
+                    cs = $"Host={host};Port={port};Database={db};Username={user};Password={pwd};SSL Mode=Require;Trust Server Certificate=true";
+                }
+
+                options.UseNpgsql(cs);
 
                 // ATENÇÃO: só ligue em DEV
                 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
