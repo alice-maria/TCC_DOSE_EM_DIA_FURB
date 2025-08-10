@@ -35,7 +35,12 @@ namespace DoseEmDia
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
-                options.EnableSensitiveDataLogging(); // mostra os valores dos parâmetros
+
+                // ATENÇÃO: só ligue em DEV
+                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                {
+                    options.EnableSensitiveDataLogging();
+                }
             });
 
             services.AddEndpointsApiExplorer();
@@ -48,10 +53,19 @@ namespace DoseEmDia
                 });
             });
 
-            services.AddCors();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("Default", builder =>
+                {
+                    builder
+                        .AllowAnyOrigin()   // em produção: substitua por .WithOrigins("https://seu-front.com")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+            });
         }
 
-        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public async Task Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // Ambiente de desenvolvimento
             if (env.IsDevelopment())
@@ -68,10 +82,9 @@ namespace DoseEmDia
             // Middleware
             app.UseRouting();
 
-            app.UseCors(policy => policy
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
+            app.UseCors("Default");
+
+            app.UseAuthorization();
 
             app.UseAuthorization();
 
@@ -82,6 +95,9 @@ namespace DoseEmDia
 
             using (var scope = app.ApplicationServices.CreateScope())
             {
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await db.Database.MigrateAsync();
+
                 var paisService = scope.ServiceProvider.GetRequiredService<PaisService>();
                 await paisService.PopularPaisesSeNecessarioAsync();
             }
