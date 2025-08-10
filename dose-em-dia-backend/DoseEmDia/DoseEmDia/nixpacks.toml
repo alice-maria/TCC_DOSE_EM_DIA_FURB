@@ -1,11 +1,8 @@
-[phases.setup]
-nixPkgs = ["dotnet-sdk_8"]
-
-[phases.install]
-cmds = ["dotnet restore"]
-
 [phases.build]
-cmds = ["dotnet publish -c Release -o out"]
+cmds = ["dotnet restore", "dotnet publish -c Release -o out"]
 
 [start]
 cmd = "dotnet out/DoseEmDia.dll"
+
+[variables]
+DOTNET_VERSION = "8.0.100"
