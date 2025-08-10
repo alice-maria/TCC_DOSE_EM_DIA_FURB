@@ -1,0 +1,12 @@
+# Força o Nixpacks a instalar o SDK do .NET 8
+[phases.setup]
+nixPkgs = ["dotnet-sdk_8"]
+
+[phases.install]
+cmds = ["dotnet restore"]
+
+[phases.build]
+cmds = ["dotnet publish -c Release -o out"]
+
+[start]
+cmd = "dotnet out/DoseEmDia.dll"
