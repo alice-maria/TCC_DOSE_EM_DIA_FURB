@@ -1,13 +1,11 @@
 [phases.setup]
-# força Node 20 nesse serviço
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["npm ci"]
+cmds = ["npm install --no-audit --no-fund"]
 
 [phases.build]
 cmds = ["npm run build"]
 
 [start]
-# SPA: servidor estático com fallback p/ index.html
 cmd = "npx serve -s dist -l ${PORT}"
