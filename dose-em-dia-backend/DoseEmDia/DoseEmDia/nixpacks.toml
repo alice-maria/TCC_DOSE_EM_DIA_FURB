@@ -1,6 +1,8 @@
+# dose-em-dia-backend/DoseEmDia/DoseEmDia/nixpacks.toml
+
 [phases.setup]
-# Instala SDK e runtime do .NET 6
-nixPkgs = ["dotnet-sdk_6", "dotnet-runtime_6"]
+# Instale só o SDK; ele já traz o runtime
+nixPkgs = ["dotnet-sdk_6"]
 
 [phases.build]
 cmds = [
