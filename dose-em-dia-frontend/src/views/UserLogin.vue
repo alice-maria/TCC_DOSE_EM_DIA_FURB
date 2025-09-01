@@ -29,9 +29,14 @@
             </template>
           </v-text-field>
 
-          <v-text-field v-model="senha" label="Senha*" type="password" required variant="outlined">
+          <v-text-field v-model="senha" label="Senha*" :type="mostrarSenha ? 'text' : 'password'" required
+            variant="outlined">
             <template #prepend-inner>
               <img src="@/assets/icons/senha.svg" alt="ícone de senha" width="20" height="20" />
+            </template>
+            <template #append-inner>
+              <img :src="mostrarSenha ? iconeOlhoAberto : iconeOlhoFechado" class="icone-olho-custom"
+                @click.stop="mostrarSenha = !mostrarSenha" />
             </template>
           </v-text-field>
 
@@ -75,14 +80,17 @@ export default {
       senha: "",
       lembrarDeMim: false,
       carregando: false,
-      mensagemErro: ""
+      mensagemErro: "",
+      mostrarSenha: false,
+      iconeOlhoAberto: require('@/assets/icons/eyes-on.svg'),
+      iconeOlhoFechado: require('@/assets/icons/eyes-off.svg')
     };
   },
   methods: {
     async fazerLogin() {
       const payload = {
         email: this.email,
-        senha: this.senha
+        senha: this.senha,
       };
 
       try {
@@ -184,13 +192,10 @@ export default {
   font-weight: bold;
   padding: 12px 16px;
   line-height: 1.2;
-
-  /* NOVO: alinhamento vertical absoluto */
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
-
 
 .coluna-direita {
   display: flex;
@@ -252,12 +257,10 @@ export default {
 
 .modal-card {
   background-color: #f46c20;
-  /* laranja */
   border-radius: 16px;
   padding: 30px 40px;
   text-align: center;
   color: white;
-  /* letras brancas */
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   font-weight: bold;
   font-size: 1.1rem;
@@ -271,5 +274,11 @@ export default {
   margin: 0 0 55px 2px;
   font-size: 0.9rem;
   display: block;
+}
+
+.icone-olho-custom {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
 }
 </style>

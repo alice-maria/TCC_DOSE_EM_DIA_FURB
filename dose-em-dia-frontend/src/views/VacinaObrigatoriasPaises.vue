@@ -6,9 +6,7 @@
             <div class="header">
                 <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
                 <div class="usuario">
-                    <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario"
-                        @click="$router.push('/editar-perfil')" />
-                    <span class="saudacao" @click="$router.push('/editar-perfil')">Olá, {{ nomeUsuario }}!</span>
+                    <UsuarioMenu />
                 </div>
             </div>
 
@@ -65,8 +63,13 @@
 
 <script>
 import axios from "axios";
+import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
 export default {
+    name: "VacinaObrigatoriaPaises",
+    components: {
+        UsuarioMenu
+    },
     data() {
         return {
             paises: [],
@@ -74,7 +77,7 @@ export default {
             filtro: "",
             mostrarFiltro: false,
             breadcrumbs: [
-                { text: "Serviços e Informações", to: "/home", icon: "mdi-home" },
+                { text: "Início", to: "/home", icon: "mdi-home" },
                 { text: "Vacinas pelo mundo" }
             ],
         };
@@ -131,17 +134,6 @@ export default {
 .usuario {
     display: flex;
     align-items: center;
-}
-
-.icone-usuario {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    margin-right: 0.5rem;
-}
-
-.saudacao {
-    font-weight: 500;
 }
 
 .navegacao-filtro {
@@ -211,7 +203,7 @@ export default {
 }
 
 :deep(.v-list-item-title),
-:deep(.v-list-item){
+:deep(.v-list-item) {
     font-size: 1.2em !important;
 }
 

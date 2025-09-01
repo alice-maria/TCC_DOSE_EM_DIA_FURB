@@ -5,9 +5,7 @@
       <div class="header">
         <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
         <div class="usuario">
-          <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario"
-            @click="$router.push('/editar-perfil')" />
-          <span class="saudacao" @click="$router.push('/editar-perfil')">Olá, {{ nomeUsuario }}!</span>
+          <UsuarioMenu />
         </div>
       </div>
 
@@ -68,9 +66,8 @@
         </p>
       </v-form>
     </div>
-
     <v-row justify="center" class="mt-4">
-      <v-btn class="btn-salvar" style="min-width: 200px;" @click="dialogConfirmacao = true">
+      <v-btn class="btn-salvar" style="min-width: 200px;" @click="dialogConfirmacao = true" :disabled="!podeSalvar">
         Salvar
       </v-btn>
     </v-row>
@@ -116,9 +113,13 @@
 
 <script>
 import axios from 'axios';
+import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
 export default {
   name: 'RedefinirSenha',
+  components: {
+    UsuarioMenu
+  },
   data() {
     return {
       nomeUsuario: '',
@@ -139,11 +140,22 @@ export default {
         email: ''
       },
       breadcrumbs: [
-        { text: 'Serviços e Informações', to: '/home', icon: 'mdi-home' },
+        { text: 'Início', to: '/home', icon: 'mdi-home' },
         { text: 'Configurações', to: '/configuracoes' },
         { text: 'Redefinição de senha' }
       ]
     };
+  },
+  computed: {
+    podeSalvar() {
+      return (
+        this.form.senhaAtual.trim().length > 0 &&
+        this.form.senha.trim().length > 0 &&
+        this.form.confirmarSenha.trim().length > 0 &&
+        this.senhaValida &&
+        this.form.senha === this.form.confirmarSenha
+      );
+    }
   },
   mounted() {
     this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
@@ -250,17 +262,6 @@ export default {
   align-items: center;
 }
 
-.icone-usuario {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  margin-right: 0.5rem;
-}
-
-.saudacao {
-  font-weight: 500;
-}
-
 .breadcrumb-link {
   color: #6b7280;
   transition: color 0.2s;
@@ -314,7 +315,7 @@ export default {
 
 .popup-confirmacao {
   background-color: #f97316;
-  border-radius: 20px;
+  border-radius: 25px !important;
   padding: 20px;
   text-align: center;
 }
@@ -350,7 +351,8 @@ export default {
 
 .popup-sucesso {
   background-color: #f46c20;
-  border-radius: 24px !important; /* forçar arredondamento */
+  border-radius: 24px !important;
+  /* forçar arredondamento */
   padding: 40px 20px;
   width: 300px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
@@ -370,7 +372,7 @@ export default {
   margin-top: 16px;
 }
 
-.btn-popupok{
+.btn-popupok {
   display: flex;
   justify-content: center;
   margin-top: 20px;

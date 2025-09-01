@@ -7,9 +7,7 @@
           <img src="@/imagens/logo.png" alt="Logo Dose em Dia" class="logo-img" />
           <h3 class="mensagem-boas-vindas fw-bold">Seja bem-vindo(a)!</h3>
         </div>
-
         <UsuarioMenu />
-
       </div>
 
       <!-- Breadcrumbs -->
@@ -58,7 +56,6 @@
               <v-card-title class="d-flex justify-space-between align-center pb-0">
                 <span class="text-h6 fw-bold">{{ vacina.nome }}</span>
               </v-card-title>
-
               <v-card-text class="pt-1">
                 <p class="mb-1 text-body-1">Aplicada em: {{ formatarData(vacina.dataAplicacao) }}</p>
                 <p class="mb-0 text-body-1">Status: {{ mapearStatus(vacina.status) }}</p>
@@ -75,87 +72,114 @@
 import axios from 'axios';
 import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
+const STATUS_LABELS = Object.freeze({
+  APLICADA: 'Aplicada',
+  A_VENCER: 'A vencer',
+  VENCIDA: 'Vencida',
+  DESCONHECIDO: 'Desconhecido',
+});
+
+const STATUS_MAP = Object.freeze({
+  0: STATUS_LABELS.APLICADA,
+  1: STATUS_LABELS.A_VENCER,
+  2: STATUS_LABELS.VENCIDA,
+});
+
+const dtfBR = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
 export default {
+  name: 'HomeView',
   components: { UsuarioMenu },
-  name: "HomeView",
+
   data() {
     return {
-      nomeUsuario: "",
-      filtro: "",
+      nomeUsuario: '',
+      filtro: '',
       vacinas: [],
-      breadcrumbs: [
-        { text: "Início", to: "/home", icon: "mdi-home" },
-      ],
+      breadcrumbs: [{ text: 'Início', to: '/home', icon: 'mdi-home' }],
+      apiBase: import.meta?.env?.VITE_API_BASE_URL || 'http://localhost:5054',
     };
   },
+
   computed: {
     vacinasFiltradas() {
-      const vacinasValidas = this.vacinas.filter(v => v && typeof v.status !== 'undefined');
-      if (!this.filtro) return vacinasValidas;
-      return vacinasValidas.filter(v => this.mapearStatus(v.status) === this.filtro);
-    }
+      const validas = this.vacinas.filter(v => v && v.statusLabel);
+      return this.filtro ? validas.filter(v => v.statusLabel === this.filtro) : validas;
+    },
   },
+
   mounted() {
-    this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
+    this.nomeUsuario = localStorage.getItem('usuarioNome') || 'Usuário';
     this.carregarVacinas();
   },
+
   methods: {
-    formatarData(data) {
-      const dataObj = new Date(data);
-      if (isNaN(dataObj)) return 'Data inválida';
-      return dataObj.toLocaleDateString('pt-BR');
+    setFiltro(valor) {
+      this.filtro = valor;
     },
-    definirClasse(status) {
-      switch (status) {
-        case 'Aplicada':
+
+    mapearStatus(codigo) {
+      if (codigo === undefined || codigo === null) return STATUS_LABELS.DESCONHECIDO;
+      return STATUS_MAP[codigo] || STATUS_LABELS.DESCONHECIDO;
+    },
+
+    formatarData(data) {
+      const d = new Date(data);
+      return Number.isNaN(d.getTime()) ? 'Data inválida' : dtfBR.format(d);
+    },
+
+    definirClasse(statusLabel) {
+      switch (statusLabel) {
+        case STATUS_LABELS.APLICADA:
           return 'vacina-aplicada';
-        case 'A vencer':
+        case STATUS_LABELS.A_VENCER:
           return 'vacina-avencer';
-        case 'Vencida':
+        case STATUS_LABELS.VENCIDA:
           return 'vacina-vencida';
         default:
           return '';
       }
     },
-    mapearStatus(codigo) {
-      if (codigo === undefined || codigo === null) return 'Desconhecido';
-      switch (codigo) {
-        case 0: return 'Aplicada';
-        case 1: return 'A vencer';
-        case 2: return 'Vencida';
-        default: return 'Desconhecido';
-      }
-    },
+
     async carregarVacinas() {
-      const cpf = localStorage.getItem('usuarioCpf'); 
+      const cpf = localStorage.getItem('usuarioCpf');
       if (!cpf) {
-        alert('CPF não encontrado. Faça login novamente.');
+        console.error('CPF não encontrado no localStorage. Redirecionando para login.');
+        this.$router.push('/login');
         return;
       }
 
       try {
-        const response = await axios.get(`http://localhost:5054/api/vacinas/listaVacinas/${cpf}`);
+        const { data } = await axios.get(`${this.apiBase}/api/vacinas/listaVacinas/${encodeURIComponent(cpf)}`);
 
-        // Se as vacinas estiverem dentro de uma propriedade:
-        const vacinas = Array.isArray(response.data)
-          ? response.data
-          : response.data.vacinas || [];
+        const lista = Array.isArray(data) ? data : (data?.vacinas ?? []);
+        this.vacinas = lista
+          .filter(Boolean)
+          .map(v => {
+            const statusLabel = this.mapearStatus(v.status);
+            return {
+              id: v.id ?? v.Id ?? v.codigo ?? null,
+              nome: v.nome ?? v.Nome ?? 'Vacina',
+              dataAplicacao: v.dataAplicacao ?? v.DataAplicacao ?? v.data ?? null,
+              status: v.status,
+              statusLabel,
+            };
+          });
 
-        this.vacinas = vacinas.map(v => ({
-          ...v,
-          classe: this.definirClasse(this.mapearStatus(v.status))
-        }));
-
-        console.log("Vacinas carregadas:", this.vacinas);
-      } catch (error) {
-        console.error("Erro ao buscar vacinas:", error);
-        alert("Erro ao buscar vacinas.");
+        console.debug('Vacinas carregadas:', this.vacinas);
+      } catch (err) {
+        console.error('Erro ao buscar vacinas:', err?.response ?? err);
       }
     },
+
     navegar(to) {
       this.$router.push(to);
-    }
-  }
+    },
+  },
+
+  provide() {
+    return { STATUS_LABELS };
+  },
 };
 </script>
 
@@ -172,26 +196,12 @@ export default {
 .logo-container {
   display: flex;
   flex-direction: column;
-  align-items: start;
-  margin-top: -45px;
-  margin-left: -25px;
+  align-items: flex-start;
+  margin: -45px 0 0 -25px;
 }
 
 .mensagem-boas-vindas {
-  font-size: inherit;
-  margin-top: -110px;
-  margin-left: 200px;
-}
-
-.breadcrumb-link {
-  color: #6b7280;
-  transition: color 0.2s;
-  font-size: 1.1rem;
-}
-
-.breadcrumb-link:hover {
-  color: #f97316;
-  text-decoration: underline;
+  margin: -110px 0 0 200px;
 }
 
 .breadcrumb-laranja {
@@ -202,23 +212,7 @@ export default {
 }
 
 .breadcrumb-home-img {
-    margin-top: -5px;
-}
-
-.titulo {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #f97316;
-}
-
-.usuario {
-  display: flex;
-  align-items: center;
-}
-
-.btn.active {
-  font-weight: bold;
-  border: 2px solid !important;
+  margin-top: -5px;
 }
 
 .vacina-card {
@@ -250,15 +244,13 @@ export default {
   justify-content: center;
   align-items: center;
   text-align: center;
-  font-size: inherit;
 }
 
 .btn-filtro {
   border-radius: 9999px !important;
   text-transform: none !important;
-  padding: 6px 16px;              
+  padding: 6px 16px;
   line-height: 1.25;
-  font-weight: 500;               
+  font-weight: 500;
 }
-
 </style>

@@ -5,9 +5,7 @@
       <div class="header">
         <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
         <div class="usuario">
-          <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario"
-            @click="$router.push('/editar-perfil')" />
-          <span class="saudacao" @click="$router.push('/editar-perfil')">Olá, {{ nomeUsuario }}!</span>
+         <UsuarioMenu />
         </div>
       </div>
 
@@ -28,7 +26,7 @@
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Notificações</v-list-item-title>
             <v-list-item-subtitle>
-              Você receberá comunicações por e-mail sobre suas vacinas.
+              Gerencie os avisos que você recebe por e-mail sobre suas vacinas.
             </v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
@@ -43,7 +41,7 @@
         <v-list-item @click="navegar('informacoes-cadastrais')" class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Informações cadastrais</v-list-item-title>
-            <v-list-item-subtitle>Informações sobre seu perfil e dados cadastrais.</v-list-item-subtitle>
+            <v-list-item-subtitle>Acesse e atualize seus dados pessoais e de perfil.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
             <img src="@/assets/icons/seta.svg" alt="infosCadastrais" class="icones" />
@@ -69,7 +67,7 @@
         <v-list-item @click="navegar('visualizar-politica-privacidade')" class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Política de Privacidade</v-list-item-title>
-            <v-list-item-subtitle>Regras de privacidade de dados pessoais.</v-list-item-subtitle>
+            <v-list-item-subtitle>Confira as regras de privacidade e uso dos seus dados.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
             <img src="@/assets/icons/seta.svg" alt="politicaPrivacidade" class="icones" />
@@ -82,7 +80,7 @@
         <v-list-item @click="dialogSair = true" class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Sair</v-list-item-title>
-            <v-list-item-subtitle>Desconecte da conta em que você está.</v-list-item-subtitle>
+            <v-list-item-subtitle>Desconecte-se da sua conta atual.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
             <img src="@/assets/icons/sair.svg" alt="sair" class="icones" />
@@ -95,8 +93,7 @@
         <v-list-item @click="dialogExcluir = true" class="item-config hoverable" lines="two">
           <v-list-item-content>
             <v-list-item-title class="secao-titulo">Excluir sua conta</v-list-item-title>
-            <v-list-item-subtitle>Clique aqui para excluir sua conta.
-            </v-list-item-subtitle>
+            <v-list-item-subtitle>Exclua permanentemente sua conta e todos os seus dados.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
             <img src="@/assets/icons/seta.svg" alt="excluir" class="icones" />
@@ -178,9 +175,13 @@
 
 <script>
 import axios from 'axios';
+import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
 export default {
   name: "AcessarConfiguracoes",
+  components: {
+    UsuarioMenu
+  },
   data() {
     return {
       nomeUsuario: "",
@@ -194,7 +195,7 @@ export default {
       mostrarErro: false, // para o popup de erro
       erro: "",
       breadcrumbs: [
-        { text: "Serviços e Informações", to: "/home", icon: "mdi-home" },
+        { text: "Início", to: "/home", icon: "mdi-home" },
         { text: "Configurações" }
       ],
     };
@@ -298,17 +299,6 @@ export default {
 .usuario {
   display: flex;
   align-items: center;
-}
-
-.icone-usuario {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  margin-right: 0.5rem;
-}
-
-.saudacao {
-  font-weight: 500;
 }
 
 .separador {

@@ -97,13 +97,13 @@
                       <span class="caption d-block">Entrar! Já possuo uma conta</span>
                     </template>
                   </v-btn>
-                  <v-btn variant="outlined" color="orange" class="botao-secundario" @click="abaAtiva = 'endereco'">
+                  <v-btn variant="outlined" color="orange" class="botao-secundario" @click="abaAtiva = 'endereco'"
+                    :disabled="!dadosPessoaisOk">
                     <template #append>
                       <span class="caption d-block">Avançar</span>
                     </template>
                   </v-btn>
                 </div>
-
               </v-container>
             </v-window-item>
 
@@ -124,13 +124,13 @@
                       <span class="caption d-block">Voltar</span>
                     </template>
                   </v-btn>
-                  <v-btn color="orange" class="botao-principal" type="submit">Criar </v-btn>
+                  <v-btn color="orange" class="botao-principal" type="submit" :disabled="!formEnderecoOk">
+                    Criar
+                  </v-btn>
                 </div>
-
               </v-container>
             </v-window-item>
           </v-window>
-
         </v-form>
         <small class="infos">*Informações obrigatórias</small>
       </div>
@@ -227,8 +227,39 @@ export default {
       ];
       const preenchidos = campos.filter(c => c && c.toString().trim() !== '').length;
       return Math.round((preenchidos / campos.length) * 100);
-    }
+    },
+    dadosPessoaisOk() {
+      const obrigatorios = [
+        this.form.nome,
+        this.form.email,
+        this.form.telefone,
+        this.form.cpf,
+        this.form.dataNascimento,
+        this.form.sexo,
+        this.form.senha,
+        this.form.confirmarSenha
+      ];
+      const todosPreenchidos = obrigatorios.every(v => v && v.toString().trim() !== '');
+      const senhasBatendo = this.form.senha === this.form.confirmarSenha;
+      return todosPreenchidos && this.emailValido && this.senhaValida && senhasBatendo && this.privacidade;
+    },
+    formEnderecoOk() {
+      const obrigatorios = [
+        this.form.cep,
+        this.form.endereco.logradouro,
+        this.form.endereco.estado,
+        this.form.endereco.pais,
+        this.form.endereco.cidade,
+        this.form.endereco.bairro
+      ];
+      return obrigatorios.every(v => v && v.toString().trim() !== '');
+    },
+
+    formValido() {
+      return this.dadosPessoaisOk && this.formEnderecoOk;
+    },
   },
+
   methods: {
     validarEmail() {
       const field = this.form.email;
@@ -300,7 +331,7 @@ export default {
         this.form.endereco.logradouro = data.logradouro;
         this.form.endereco.bairro = data.bairro;
         this.form.endereco.cidade = data.localidade;
-        this.form.endereco.estado = data.uf; //correção do BUG que ocorria ao tentar salvar um estado como "Sao paulo", limite de caracteres do banco era em 2
+        this.form.endereco.estado = data.uf;
       } catch (error) {
         alert("CEP inválido ou erro ao buscar endereço.");
       }
@@ -311,7 +342,7 @@ export default {
         return;
       }
 
-      const cpfLimpo = this.form.cpf.replace(/\D/g, "").padStart(11, "0"); 
+      const cpfLimpo = this.form.cpf.replace(/\D/g, "").padStart(11, "0");
 
       const payload = {
         nome: this.form.nome,
@@ -336,8 +367,8 @@ export default {
         const response = await axios.post("http://localhost:5054/api/usuario/criar-conta", payload);
         localStorage.setItem("usuarioNome", response.data.nome);
         localStorage.setItem("usuarioCpf", cpfLimpo);
-        localStorage.setItem("usuarioId", response.data.idUser); 
-        localStorage.setItem("usuarioEmail", response.data.email); 
+        localStorage.setItem("usuarioId", response.data.idUser);
+        localStorage.setItem("usuarioEmail", response.data.email);
         console.log("Usuário criado:", response.data);
         this.modalSucesso = true;
       } catch (err) {
@@ -379,8 +410,8 @@ export default {
 .header {
   background-color: #ffffff;
   border-bottom: 1px solid #eee;
-  padding: 1.25rem 2rem; 
-  min-height: 120px;     
+  padding: 1.25rem 2rem;
+  min-height: 120px;
   display: flex;
   align-items: center;
 }

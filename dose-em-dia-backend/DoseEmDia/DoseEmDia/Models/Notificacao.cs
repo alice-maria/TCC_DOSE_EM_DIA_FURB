@@ -15,6 +15,8 @@ namespace DoseEmDia.Models
         public string Titulo { get; set; }
         public string Mensagem { get; set; }
         public TipoNotificacao Tipo { get; set; }
+
+        [Column(TypeName = "timestamp without time zone")]
         public DateTime DataEnvio { get; set; }
         public bool Visualizada { get; set; } = false;
 

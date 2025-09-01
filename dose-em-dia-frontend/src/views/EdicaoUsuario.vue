@@ -5,9 +5,7 @@
       <div class="header">
         <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
         <div class="usuario">
-          <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario"
-            @click="$router.push('/editar-perfil')" />
-          <span class="saudacao" @click="$router.push('/editar-perfil')">Olá, {{ nomeUsuario }}!</span>
+          <UsuarioMenu />
         </div>
       </div>
 
@@ -58,6 +56,9 @@
         <div>
           <span v-if="!editando">{{ formatarCPF(usuario.cpf) }}</span>
           <input v-else v-model="form.cpf" type="text" class="form-control" disabled>
+          <v-tooltip activator="parent" location="top">
+            Este campo não é editável.
+          </v-tooltip>
         </div>
       </div>
       <v-divider />
@@ -67,6 +68,9 @@
         <div>
           <span v-if="!editando">{{ formatarData(usuario.dataNascimento) }}</span>
           <input v-else v-model="form.dataNascimento" type="date" class="form-control" disabled>
+          <v-tooltip activator="parent" location="top">
+            Este campo não é editável.
+          </v-tooltip>
         </div>
       </div>
       <v-divider />
@@ -76,6 +80,9 @@
         <div>
           <span v-if="!editando">{{ usuario.sexo || 'Não informado' }}</span>
           <input v-else v-model="form.sexo" type="text" class="form-control" disabled>
+          <v-tooltip activator="parent" location="top">
+            Este campo não é editável.
+          </v-tooltip>
         </div>
       </div>
       <v-divider />
@@ -158,9 +165,13 @@
 
 <script>
 import axios from 'axios';
+import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
 export default {
   name: 'EdicaoUsuario',
+  components: {
+    UsuarioMenu
+  },
   data() {
     return {
       usuario: {},
@@ -184,7 +195,7 @@ export default {
       mostrarErro: false,
       confirmarSalvar: false,
       breadcrumbs: [
-        { text: 'Serviços e Informações', to: '/home', icon: 'mdi-home' },
+        { text: 'Início', to: '/home', icon: 'mdi-home' },
         { text: 'Configurações', to: '/configuracoes' },
         { text: 'Informações Cadastrais' }
       ]
@@ -201,7 +212,7 @@ export default {
       return new Date(data).toLocaleDateString('pt-BR');
     },
     async carregarUsuario() {
-      const cpf = localStorage.getItem('usuarioCpf'); 
+      const cpf = localStorage.getItem('usuarioCpf');
       if (!cpf) return;
       try {
         const response = await axios.get(`http://localhost:5054/api/usuario/buscarPorCpf/${cpf}`);
@@ -266,7 +277,7 @@ export default {
         this.form.endereco.logradouro = data.logradouro;
         this.form.endereco.bairro = data.bairro;
         this.form.endereco.cidade = data.localidade;
-        this.form.endereco.estado = data.uf; //correção do BUG que ocorria ao tentar salvar um estado como "Sao paulo", limite de caracteres do banco era em 2
+        this.form.endereco.estado = data.uf;
       } catch (error) {
         alert("CEP inválido ou erro ao buscar endereço.");
       }
@@ -304,17 +315,6 @@ export default {
   align-items: center;
 }
 
-.icone-usuario {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  margin-right: 0.5rem;
-}
-
-.saudacao {
-  font-weight: 500;
-}
-
 .breadcrumb-link {
   color: #6b7280;
   transition: color 0.2s;
@@ -327,7 +327,7 @@ export default {
 }
 
 .breadcrumb-home-img {
-    margin-top: -5px;
+  margin-top: -5px;
 }
 
 .breadcrumb-laranja {
@@ -419,7 +419,7 @@ export default {
 
 .popup-confirmacao {
   background-color: #f97316;
-  border-radius: 20px;
+  border-radius: 25px !important;
   padding: 20px;
   text-align: center;
 }

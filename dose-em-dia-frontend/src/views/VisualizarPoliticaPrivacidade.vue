@@ -5,9 +5,7 @@
             <div class="header">
                 <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
                 <div class="usuario">
-                    <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario"
-                        @click="$router.push('/editar-perfil')" />
-                    <span class="saudacao" @click="$router.push('/editar-perfil')">Olá, {{ nomeUsuario }}!</span>
+                    <UsuarioMenu />
                 </div>
             </div>
 
@@ -18,7 +16,8 @@
                         'breadcrumb-link',
                         index === breadcrumbs.length - 1 ? 'breadcrumb-laranja' : ''
                     ]" @click="item.to && navegar(item.to)" style="cursor: pointer;">
-                        <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
+                        <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt=""
+                            class="breadcrumb-home-img" />
                         {{ item.text }}
                     </span>
                 </template>
@@ -249,13 +248,18 @@
 </template>
 
 <script>
+import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
 export default {
+    name: "VisualizarPoliticaPrivacidade",
+    components: {
+        UsuarioMenu
+    },
     data() {
         return {
             nomeUsuario: "",
             breadcrumbs: [
-                { text: 'Serviços e Informações', to: '/home', icon: 'mdi-home' },
+                { text: 'Início', to: '/home', icon: 'mdi-home' },
                 { text: 'Configurações', to: '/configuracoes' },
                 { text: 'Politica de Privacidade' }
             ]
@@ -348,7 +352,7 @@ export default {
 }
 
 .conteudo-politica {
-  width: 100%;
+    width: 100%;
     max-width: 1400px;
     margin: 0 auto;
     padding: 1.5rem;
@@ -398,17 +402,16 @@ export default {
 }
 
 .voltar-topo {
-  position: fixed;
-  left: 50%;
-  bottom: 3%;                
-  transform: translateX(-50%);
-  z-index: 3000;
-  cursor: pointer;
+    position: fixed;
+    left: 50%;
+    bottom: 3%;
+    transform: translateX(-50%);
+    z-index: 3000;
+    cursor: pointer;
 }
 
 .icone-voltar-topo {
-  width: 40px;
-  height: 40px;
+    width: 40px;
+    height: 40px;
 }
-
 </style>

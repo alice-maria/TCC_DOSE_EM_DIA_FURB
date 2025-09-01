@@ -1,5 +1,5 @@
-﻿using DoseEmDia.Controllers;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DoseEmDia.Models.db
 {
@@ -69,9 +69,14 @@ namespace DoseEmDia.Models.db
                 .HasForeignKey(n => n.UsuarioId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            var toUnspecified = new ValueConverter<DateTime, DateTime>(
+                v => DateTime.SpecifyKind(v, DateTimeKind.Unspecified),   
+                v => DateTime.SpecifyKind(v, DateTimeKind.Unspecified));  
+
             modelBuilder.Entity<Notificacao>()
                 .Property(n => n.DataEnvio)
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp without time zone")
+                .HasConversion(toUnspecified);
 
             modelBuilder.Entity<Notificacao>()
                 .Property(n => n.Tipo)

@@ -28,7 +28,7 @@ namespace DoseEmDia.Controllers
                 throw VacinaException.NenhumaVacinaEncontrada(usuario.IdUser);
 
             return usuario.Vacinas
-                .OrderByDescending(v =>
+                .OrderBy(v =>
                     v.Status == StatusVacina.EmAtraso ? 1 :
                     v.Status == StatusVacina.AVencer ? 2 :
                     3)
@@ -50,59 +50,97 @@ namespace DoseEmDia.Controllers
 
         private List<Vacina> GerarHistoricoVacinalPorIdade(int idadeAtual, string? sexo)
         {
+            const int TOTAL = 15;
+            const int QT_APLICADAS = 10;
+            const int QT_ATRASO = 3;
+            const int QT_AVENCER = 2;
+
             var hoje = DateTime.Today;
-            var rand = new Random();
+            var rand = new Random(unchecked((int)DateTime.Now.Ticks));
             var lista = new List<Vacina>();
 
-            foreach (var esquema in _tabelaVacinas)
+            var elegiveis = _tabelaVacinas
+                .Where(e =>
+                    idadeAtual >= e.IdadeMinima &&
+                    (!e.IdadeMaxima.HasValue || idadeAtual <= e.IdadeMaxima.Value) &&
+                    (string.IsNullOrWhiteSpace(e.Sexo) || string.Equals(e.Sexo, sexo, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            if (!elegiveis.Any())
+                elegiveis = _tabelaVacinas.ToList();
+
+            void adicionar(StatusVacina status, int quantidade)
             {
-                if (idadeAtual < esquema.IdadeMinima)
-                    continue;
-
-                if (esquema.IdadeMaxima.HasValue && idadeAtual > esquema.IdadeMaxima.Value)
-                    continue;
-
-                if (!string.IsNullOrWhiteSpace(esquema.Sexo) && sexo != esquema.Sexo)
-                    continue;
-
-                var idadeAplicacao = esquema.IdadeMinima + rand.Next(0, Math.Max(1, idadeAtual - esquema.IdadeMinima + 1));
-                var dataAplicacao = hoje.AddYears(-idadeAplicacao).AddMonths(rand.Next(-6, 6));
-
-                lista.Add(new Vacina
+                for (int i = 0; i < quantidade && lista.Count < TOTAL; i++)
                 {
-                    Nome = esquema.Nome,
-                    IntervaloEntreDoses = esquema.Intervalo,
-                    NumeroDoses = esquema.NumeroDoses,
-                    NumeroLote = rand.Next(100000, 999999),
-                    DataAplicacao = dataAplicacao,
-                    ValidadeMeses = esquema.ValidadeMeses,
-                    Fabricante = esquema.Fabricante
-                });
+                    var esquema = elegiveis[rand.Next(elegiveis.Count)];
+                    var vacina = CriarVacinaParaStatus(esquema, status, hoje, rand);
+                    lista.Add(vacina);
+                }
+            }
+
+            adicionar(StatusVacina.Aplicada, QT_APLICADAS);
+            adicionar(StatusVacina.EmAtraso, QT_ATRASO);
+            adicionar(StatusVacina.AVencer, QT_AVENCER);
+
+            while (lista.Count < TOTAL)
+            {
+                var esquema = elegiveis[rand.Next(elegiveis.Count)];
+                lista.Add(CriarVacinaParaStatus(esquema, StatusVacina.Aplicada, hoje, rand));
             }
 
             AplicarStatusComBaseNaValidade(lista);
+
             return lista;
+        }
+
+        private Vacina CriarVacinaParaStatus(EsquemaVacinal esquema, StatusVacina status, DateTime hoje, Random rand)
+        {
+            int validade = esquema.ValidadeMeses > 0 ? esquema.ValidadeMeses : 120;
+
+            DateTime vencimentoAlvo = status switch
+            {
+                StatusVacina.EmAtraso => hoje.AddDays(-rand.Next(1, 366)),
+                StatusVacina.AVencer => hoje.AddDays(rand.Next(1, 31)),
+                _ => hoje.AddDays(rand.Next(31, 365)),
+            };
+
+            DateTime dataAplicacao = vencimentoAlvo.AddMonths(-validade);
+
+            var vacina = new Vacina
+            {
+                Nome = esquema.Nome,
+                IntervaloEntreDoses = esquema.Intervalo,
+                NumeroDoses = 0,                        
+                NumeroLote = rand.Next(100000, 999999),
+                DataAplicacao = dataAplicacao,
+                ValidadeMeses = esquema.ValidadeMeses,
+                Fabricante = esquema.Fabricante,
+                Status = status
+            };
+
+            return vacina;
         }
 
         private void AplicarStatusComBaseNaValidade(List<Vacina> vacinas)
         {
             foreach (var vacina in vacinas)
             {
-                if ((vacina.ValidadeMeses ?? 0) <= 0)
-                {
-                    vacina.Status = StatusVacina.Aplicada; // vacinas de dose única ou sem validade
-                    continue;
-                }
+                int validade = (vacina.ValidadeMeses ?? 0);
 
-                var vencimento = vacina.DataAplicacao.AddMonths(vacina.ValidadeMeses ?? 0);
+                if (validade <= 0) continue;
+
+                var vencimento = vacina.DataAplicacao.AddMonths(validade);
                 var diasRestantes = (vencimento - DateTime.Today).TotalDays;
 
-                if (diasRestantes < 0)
-                    vacina.Status = StatusVacina.EmAtraso;
-                else if (diasRestantes <= 30)
-                    vacina.Status = StatusVacina.AVencer;
-                else
-                    vacina.Status = StatusVacina.Aplicada;
+                var statusCalculado = diasRestantes < 0
+                    ? StatusVacina.EmAtraso
+                    : (diasRestantes <= 30 ? StatusVacina.AVencer : StatusVacina.Aplicada);
+
+                if (vacina.Status != statusCalculado)
+                {
+                    Console.WriteLine($"Aviso: {vacina.Nome} está marcada como {vacina.Status}, mas cálculo deu {statusCalculado}");
+                }
             }
         }
 

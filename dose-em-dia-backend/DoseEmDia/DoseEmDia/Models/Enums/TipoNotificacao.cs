@@ -6,6 +6,7 @@
         VacinaVencendo = 2,
         CampanhaImunizacao = 3,
         VacinaOk = 4,
-        AvisoGeral = 5
+        AvisoGeral = 5,
+        RedefinicaoSenha = 6,
     }
 }

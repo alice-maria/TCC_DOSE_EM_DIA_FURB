@@ -5,9 +5,7 @@
       <div class="header">
         <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
         <div class="usuario">
-          <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario"
-            @click="$router.push('/editar-perfil')" />
-          <span class="saudacao" @click="$router.push('/editar-perfil')">Olá, {{ nomeUsuario }}!</span>
+          <UsuarioMenu />
         </div>
       </div>
 
@@ -84,9 +82,13 @@
 
 <script>
 import axios from 'axios';
+import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
 export default {
   name: 'ComprovanteView',
+  components: {
+    UsuarioMenu
+  },
   data() {
     return {
       nomeUsuario: '',
@@ -94,7 +96,7 @@ export default {
       carregando: false,
       progresso: 0,
       breadcrumbs: [
-        { text: 'Serviços e Informações', to: '/home', icon: 'mdi-home' },
+        { text: 'Início', to: '/home', icon: 'mdi-home' },
         { text: 'Exportar comprovante' }
       ]
     };
@@ -177,22 +179,6 @@ export default {
   font-size: 1.8rem;
   font-weight: bold;
   color: #f97316;
-}
-
-.usuario {
-  display: flex;
-  align-items: center;
-}
-
-.icone-usuario {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  margin-right: 0.5rem;
-}
-
-.saudacao {
-  font-weight: 500;
 }
 
 .aviso-comprovante {
@@ -308,7 +294,7 @@ export default {
 
 .loading-card {
   background: rgb(255, 119, 0);
-  color: black;
+  color: white;
   padding: 16px 20px;
   border-radius: 12px;
   min-width: 220px;

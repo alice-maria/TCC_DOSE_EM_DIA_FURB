@@ -30,10 +30,27 @@
                 icon="mdi-alert-circle">
                 {{ mensagem }}
               </v-alert>
-
             </v-card>
           </v-col>
         </v-row>
+
+        <!-- POPUP de confirmação -->
+        <v-dialog v-model="dialogSucesso" max-width="420" persistent>
+          <v-card>
+            <v-card-title class="text-h6 font-weight-bold">
+              Solicitação enviada
+            </v-card-title>
+            <v-card-text class="text-body-2">
+              Se o e-mail estiver cadastrado, um link foi enviado para redefinir sua senha.
+              Verifique sua caixa de entrada e o spam.
+            </v-card-text>
+            <v-card-actions class="justify-end">
+              <v-btn color="orange" variant="flat" class="rounded-pill" @click="fecharDialog">
+                Ok
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-container>
     </v-main>
   </v-app>
@@ -52,17 +69,23 @@ export default {
   },
   methods: {
     async enviarEmail() {
+      this.mensagem = '';
+      this.carregando = true;
       try {
         await axios.post('http://localhost:5054/api/usuario/esqueciSenha', { email: this.email });
-        this.mensagem = 'Se o e-mail estiver cadastrado, um link foi enviado para redefinir sua senha.';
+        this.dialogSucesso = true;
       } catch (err) {
         this.mensagem = err.response?.data || 'Erro ao solicitar redefinição.';
+      }
+      finally {
+        this.carregando = false;
       }
     },
     cancelar() {
       this.$router.push('/');
-    }
-
+    },fecharDialog() {
+      this.dialogSucesso = false;
+    },
   }
 };
 </script>

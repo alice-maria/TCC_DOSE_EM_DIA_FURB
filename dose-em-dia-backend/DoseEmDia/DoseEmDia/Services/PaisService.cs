@@ -1,6 +1,5 @@
 using DoseEmDia.Models.db;
 using DoseEmDia.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace DoseEmDia.Services

@@ -3,16 +3,15 @@ using DoseEmDia.Models.db;
 using DoseEmDia.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using DoseEmDia.Helpers;
-using Microsoft.Extensions.Logging;
 
 namespace DoseEmDia.Controllers.Helpers
 {
-    public class VacinaNotificacao : BackgroundService
+    public class VacinasEmailService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<VacinaNotificacao> _logger;
+        private readonly ILogger<VacinasEmailService> _logger;
 
-        public VacinaNotificacao(IServiceProvider serviceProvider, ILogger<VacinaNotificacao> logger)
+        public VacinasEmailService(IServiceProvider serviceProvider, ILogger<VacinasEmailService> logger)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
@@ -68,7 +67,29 @@ namespace DoseEmDia.Controllers.Helpers
                                     ? "Vacina atrasada"
                                     : "Vacina prestes a vencer";
 
-                                string mensagem = $"Atenção! A vacina {vacina.Nome} está {titulo.ToLower()} e precisa de sua atenção.";
+                                string mensagem = $@"
+                                <html>
+                                  <body style='font-family: Arial, Helvetica, sans-serif; background-color: #f9f9f9; padding: 20px; color: #333;'>
+                                    <div style='max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; padding: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);'>
+                                      
+                                      <h2 style='color: #d93025; text-align: center;'>⚠️ Vacina em atraso</h2>
+                                      
+                                      <p>Olá,</p>
+                                      <p>
+                                        Identificamos que a vacina <strong>{vacina.Nome}</strong> está <strong>em atraso</strong> e requer a sua atenção imediata.
+                                      </p>
+                                      <p>
+                                        Manter sua vacinação em dia é essencial para garantir sua saúde e proteção contra doenças preveníveis. Caso já tenha regularizado sua vacinação, por favor, desconsidere este aviso.
+                                      </p>
+                                      
+                                      <hr style='border: none; border-top: 1px solid #eee; margin: 30px 0;' />
+                                      <p style='font-size: 13px; color: #666; text-align: center;'>
+                                        Este é um aviso automático do sistema <strong>Dose em Dia</strong>.<br/>
+                                        Não responda a este e-mail diretamente.
+                                      </p>
+                                    </div>
+                                  </body>
+                                </html>";
 
                                 bool jaEnviado = await context.Notificacao.AnyAsync(n =>
                                     n.UsuarioId == vacina.UsuarioId &&
@@ -88,7 +109,6 @@ namespace DoseEmDia.Controllers.Helpers
                                     catch (Exception ex)
                                     {
                                         _logger.LogError(ex, $"Falha ao enviar e-mail para {vacina.Usuario.Email} - Método: ExecuteAsync");
-                                        // segue mesmo com falha
                                     }
 
                                     notificacoesCriadas.Add(new Notificacao

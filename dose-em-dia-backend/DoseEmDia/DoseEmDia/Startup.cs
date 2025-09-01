@@ -4,6 +4,8 @@ using DoseEmDia.Helpers;
 using DoseEmDia.Services;
 using DoseEmDia.Controllers;
 using Microsoft.OpenApi.Models;
+using DoseEmDia.Controllers.Helpers;
+using DoseEmDia.Services.Interfaces;
 
 namespace DoseEmDia
 {
@@ -31,6 +33,11 @@ namespace DoseEmDia
             services.AddScoped<NotificacaoService>();
             services.AddScoped<PaisService>();
             services.AddScoped<ComprovanteService>();
+            services.AddHostedService<CampanhasEmailService>();
+            services.AddHostedService<VacinasEmailService>();
+            services.AddHttpClient();
+            services.AddMemoryCache();
+            services.AddScoped<IPostoVacinacaoService, PostoVacinacaoLocService>();
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {

@@ -7,6 +7,7 @@ using DoseEmDia.Helpers;
 using DoseEmDia.Models.Exceptions;
 using DoseEmDia.Controllers.DTO;
 using DoseEmDia.Controllers;
+using DoseEmDia.Models.Enums;
 
 public class UsuarioService
 {
@@ -136,7 +137,35 @@ public class UsuarioService
 
         await _context.SaveChangesAsync();
 
-        await _envioEmail.EnviarEmailRedefinicaoSenhaAsync(usuario.Email, usuario.TokenRedefinicaoSenha);
+        var emailEnviado = false;
+        try
+        {
+            await _envioEmail.EnviarEmailRedefinicaoSenhaAsync(usuario.Email, usuario.TokenRedefinicaoSenha);
+            emailEnviado = true;
+        }
+        catch (Exception ex)
+        {
+            emailEnviado = false;
+            throw new EmailException("Falha ao enviar o e-mail. Verifique as configurações.", ex);
+        }
+
+        var limite = DateTime.UtcNow.AddMinutes(-5);
+
+        var haRegistroRecente = await _context.Notificacao.AnyAsync(n =>
+        n.UsuarioId == usuario.IdUser &&
+        n.Tipo == TipoNotificacao.RedefinicaoSenha &&
+        n.DataEnvio > limite);
+
+        if (!haRegistroRecente)
+        {
+            await RegistrarNotificacaoAsync(
+                usuario.IdUser,
+                TipoNotificacao.RedefinicaoSenha,
+                "Redefinição de senha solicitada",
+                "Enviamos instruções para redefinir sua senha (verifique também o spam).",
+                emailEnviado
+            );
+        }
     }
 
     public async Task RedefinirSenha(RedefinirSenhaRequest request)
@@ -252,6 +281,21 @@ public class UsuarioService
         return idade;
     }
 
+    private async Task RegistrarNotificacaoAsync( int usuarioId, TipoNotificacao tipo, string titulo, string mensagem, bool emailEnviado)
+    {
+        _context.Notificacao.Add(new Notificacao
+        {
+            UsuarioId = usuarioId,
+            Tipo = tipo,
+            Titulo = titulo,
+            Mensagem = mensagem,
+            DataEnvio = DateTime.UtcNow,    
+            Visualizada = false,
+            EmailEnviado = emailEnviado
+        });
+
+        await _context.SaveChangesAsync();
+    }
 }
 
 public class LoginRequest

@@ -1,10 +1,6 @@
-﻿using DoseEmDia.Models;
-using System.Text.Json;
-using DoseEmDia.Controllers.DTO;
-using DoseEmDia.Controllers.Helpers;
+﻿using DoseEmDia.Controllers.DTO;
+using DoseEmDia.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using DoseEmDia.Models.db;
-using Microsoft.EntityFrameworkCore;
 
 namespace DoseEmDia.Controllers
 {
@@ -12,97 +8,57 @@ namespace DoseEmDia.Controllers
     [Route("api/localizacao")]
     public class PostoVacinacaoLocController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private static readonly int _limiteRequisicoes = 1500;
-        private readonly HttpClient _httpClient;
-        private readonly string _hereApiKey = "SUA_API_KEY_HERE"; //Falta criar uma conta na HERE e pegar a chave
+        private readonly IPostoVacinacaoService _service;
 
-        public PostoVacinacaoLocController(ApplicationDbContext context, IHttpClientFactory httpClientFactory)
+        public PostoVacinacaoLocController(IPostoVacinacaoService service)
         {
-            _context = context;
-            _httpClient = httpClientFactory.CreateClient();
+            _service = service;
         }
 
         [HttpGet("buscar-postos")]
-        public async Task<IActionResult> BuscarPostosVacina([FromQuery] double latitude, [FromQuery] double longitude)
+        [ProducesResponseType(typeof(List<PostoVacinacaoResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status502BadGateway)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> BuscarPostosVacina([FromQuery] int usuarioId, CancellationToken ct = default)
         {
-            var contador = await _context.ContadorRequisicoes.FirstOrDefaultAsync();
+            if (usuarioId <= 0)
+                return BadRequest(Problem(title: "Parâmetro inválido", detail: "usuarioId deve ser > 0."));
 
-            if (contador == null)
+            try
             {
-                contador = new ContadorRequisicoes { Requisicoes = 0 };
-                _context.ContadorRequisicoes.Add(contador);
-                await _context.SaveChangesAsync();
+                var locais = await _service.BuscarPostosVacinaAsync(usuarioId, ct);
+                return Ok(locais?.ToList() ?? new List<PostoVacinacaoResponse>());
             }
-
-            if (contador.Requisicoes >= _limiteRequisicoes)
+            catch (OperationCanceledException)
             {
-                return StatusCode(429, "Limite de requisições atingido. Entre em contato com o suporte.");
+                return Ok(new List<PostoVacinacaoResponse>());
             }
-
-            contador.Requisicoes++;
-            await _context.SaveChangesAsync();
-
-            var url = $"https://discover.search.hereapi.com/v1/discover" +
-                      $"?q=posto+de+vacinação" +
-                      $"&at={latitude},{longitude}" +
-                      $"&limit=10" +
-                      $"&apiKey={_hereApiKey}";
-
-            var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
-                return StatusCode((int)response.StatusCode, "Erro ao consultar HERE API.");
-
-            var json = await response.Content.ReadAsStringAsync();
-
-            var resultado = JsonDocument.Parse(json);
-            var locais = resultado.RootElement.GetProperty("items")
-                .EnumerateArray()
-                .Select(item =>
-                {
-                    var endereco = new Endereco
-                    {
-                        Logradouro = item.GetProperty("address").TryGetProperty("street", out var street) ? street.GetString() ?? "" : "",
-                        Bairro = item.GetProperty("address").TryGetProperty("district", out var district) ? district.GetString() ?? "" : "",
-                        Cidade = item.GetProperty("address").TryGetProperty("city", out var city) ? city.GetString() ?? "" : "",
-                        Estado = item.GetProperty("address").TryGetProperty("state", out var state) ? state.GetString() ?? "" : ""
-                    };
-
-                    var distanciaMetros = item.GetProperty("distance").GetInt32();
-                    var lat = item.GetProperty("position").GetProperty("lat").GetDouble();
-                    var lng = item.GetProperty("position").GetProperty("lng").GetDouble();
-
-                    return new PostoVacinacaoResponse
-                    {
-                        Nome = item.GetProperty("title").GetString(),
-                        EnderecoCompleto = $"{endereco.Logradouro}, {endereco.Bairro} - {endereco.Cidade}/{endereco.Estado}",
-                        Distancia = FormatacaoHelper.FormatarDistancia(distanciaMetros),
-                        LinkGoogleMaps = GerarLinkGoogleMaps(lat, lng)
-                    };
-                })
-                .ToList();
-
-            return Ok(locais);
-        }
-
-        //criar api
-        private static string GerarLinkGoogleMaps(double latitude, double longitude)
-        {
-            return $"https://www.google.com/maps/search/?api=1&query={latitude},{longitude}";
-        }
-
-        //metodo para zerar o contador de requisições, ver como aplicar
-        public static void ResetarContadorRequisicoes()
-        {
-            
+            catch (RateLimitExceededException ex)
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests,
+                    Problem(title: "Limite de requisições atingido", detail: ex.Message));
+            }
+            catch (InvalidOperationException ex) // erros de entrada/configuração
+            {
+                return BadRequest(Problem(title: "Solicitação inválida", detail: ex.Message));
+            }
+            catch (HttpRequestException ex) // falha na HERE
+            {
+                return StatusCode(StatusCodes.Status502BadGateway,
+                    Problem(title: "Falha ao consultar provedor de mapa", detail: ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    Problem(title: "Erro interno", detail: ex.Message));
+            }
         }
     }
 
-    public class ContadorRequisicoes
+    public sealed class RateLimitExceededException : Exception
     {
-        public int Id { get; set; }
-        public int Requisicoes { get; set; }
+        public RateLimitExceededException(string message) : base(message) { }
     }
 }
-
-
