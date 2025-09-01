@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DoseEmDia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250901020508_InitialCreate")]
+    [Migration("20250901021345_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
