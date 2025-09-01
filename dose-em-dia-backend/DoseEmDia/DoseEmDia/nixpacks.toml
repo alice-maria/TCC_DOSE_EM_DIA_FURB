@@ -1,7 +1,5 @@
-providers = ["dotnet"]
-
 [phases.setup]
-# SDK e runtime para net6.0
+# Instala SDK e runtime do .NET 6
 nixPkgs = ["dotnet-sdk_6", "dotnet-runtime_6"]
 
 [phases.build]
