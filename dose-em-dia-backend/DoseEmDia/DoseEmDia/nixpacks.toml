@@ -1,8 +1,7 @@
-# Força detecção de .NET
 providers = ["dotnet"]
 
 [phases.setup]
-# Se seu .csproj é net6.0, deixe _6; se for net8.0, troque para _8 em ambos
+# SDK e runtime para net6.0
 nixPkgs = ["dotnet-sdk_6", "dotnet-runtime_6"]
 
 [phases.build]
@@ -12,5 +11,4 @@ cmds = [
 ]
 
 [start]
-# Ajuste o nome do assembly se for diferente
 cmd = "dotnet out/DoseEmDia.dll"
