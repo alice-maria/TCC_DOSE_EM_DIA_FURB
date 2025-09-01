@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using DoseEmDia.Models.db;
 using DoseEmDia.Helpers;
@@ -12,21 +13,19 @@ namespace DoseEmDia
     public class Startup
     {
         public IConfiguration Configuration { get; }
-
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        public Startup(IConfiguration configuration) => Configuration = configuration;
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {
-                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.ReferenceHandler =
+                        System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                     options.JsonSerializerOptions.WriteIndented = true;
                 });
 
+            // Serviços de domínio
             services.AddScoped<EnvioEmail>();
             services.AddScoped<UsuarioService>();
             services.AddScoped<VacinaService>();
@@ -39,97 +38,128 @@ namespace DoseEmDia
             services.AddMemoryCache();
             services.AddScoped<IPostoVacinacaoService, PostoVacinacaoLocService>();
 
+            // --------- Banco de Dados (Railway first) ----------
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                var pgHost = Environment.GetEnvironmentVariable("PGHOST");
+                // 1) Se houver ConnectionStrings__DefaultConnection, usa (padrão recomendado no Railway)
+                var cs = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
-                string cs;
-                if (!string.IsNullOrWhiteSpace(pgHost))
+                // 2) Senão, tenta o padrão PG* (Railway/Heroku style)
+                if (string.IsNullOrWhiteSpace(cs) && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("PGHOST")))
                 {
+                    var pgHost = Environment.GetEnvironmentVariable("PGHOST");
                     var pgPort = Environment.GetEnvironmentVariable("PGPORT") ?? "5432";
                     var pgDb = Environment.GetEnvironmentVariable("PGDATABASE");
                     var pgUser = Environment.GetEnvironmentVariable("PGUSER");
                     var pgPwd = Environment.GetEnvironmentVariable("PGPASSWORD");
 
-                    cs = $"Host={pgHost};Port={pgPort};Database={pgDb};Username={pgUser};Password={pgPwd};SSL Mode=Require;Trust Server Certificate=true";
+                    cs = $"Host={pgHost};Port={pgPort};Database={pgDb};Username={pgUser};Password={pgPwd};" +
+                         "SSL Mode=Require;Trust Server Certificate=true";
                 }
-                else
+
+                // 3) Senão, usa appsettings.json (ambiente local)
+                if (string.IsNullOrWhiteSpace(cs))
                 {
-                    // Ambiente local: usa appsettings.json
-                    cs = Configuration.GetConnectionString("DefaultConnection");
+                    cs = Configuration.GetConnectionString("DefaultConnection")
+                         ?? throw new InvalidOperationException("Connection string não encontrada.");
                 }
 
                 options.UseNpgsql(cs, b =>
-                    b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
+                {
+                    b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                    b.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(10),
+                        errorCodesToAdd: null);
+                });
 
                 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
                     options.EnableSensitiveDataLogging();
             });
 
+            // --------- Swagger ----------
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "Dose em Dia API",
-                    Version = "v1"
-                });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Dose em Dia API", Version = "v1" });
             });
 
+            // --------- CORS ----------
             services.AddCors(options =>
             {
                 options.AddPolicy("Default", builder =>
                 {
-                    builder
-                        .AllowAnyOrigin()   // em produção: substitua por .WithOrigins("https://seu-front.com")
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
+                    var allowed = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
+                    if (!string.IsNullOrWhiteSpace(allowed))
+                    {
+                        var origins = allowed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                        builder.WithOrigins(origins).AllowAnyMethod().AllowAnyHeader();
+                    }
+                    else
+                    {
+                        // Em dev/liberação inicial: libera tudo. Em produção, defina ALLOWED_ORIGINS.
+                        builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                    }
                 });
+            });
+
+            // Encaminhamento de cabeçalhos do proxy (Railway)
+            services.Configure<ForwardedHeadersOptions>(opts =>
+            {
+                opts.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                // Se quiser, limpe redes conhecidas para aceitar qualquer proxy:
+                opts.KnownNetworks.Clear();
+                opts.KnownProxies.Clear();
             });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // Ambiente de desenvolvimento
-            if (env.IsDevelopment())
+            // Proxy do Railway (gera URLs HTTPS corretas em redirecionamentos/links)
+            app.UseForwardedHeaders();
+
+            // NÃO use UseHttpsRedirection no Railway (TLS termina no proxy).
+            // app.UseHttpsRedirection();
+
+            // Swagger em Dev sempre; em Prod somente se ENABLE_SWAGGER=true
+            var enableSwaggerProd = Environment.GetEnvironmentVariable("ENABLE_SWAGGER");
+            var swaggerEmProducao = string.Equals(enableSwaggerProd, "true", StringComparison.OrdinalIgnoreCase);
+
+            if (env.IsDevelopment() || swaggerEmProducao)
             {
-                app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Dose em Dia API v1");
-                    c.RoutePrefix = string.Empty; // Swagger na raiz: https://localhost:5001/
+                    if (env.IsDevelopment())
+                        c.RoutePrefix = string.Empty; // raiz em dev
                 });
             }
 
             app.UseRouting();
-
-            app.UseCors(policy => policy
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
-
+            app.UseCors("Default");
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                // Health-check simples
+                endpoints.MapGet("/health", () => Results.Ok(new { status = "ok" }));
             });
 
-            using (var scope = app.ApplicationServices.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            // Migração automática + seed
+            using var scope = app.ApplicationServices.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                var applied = db.Database.GetAppliedMigrations().ToList();
-                var pending = db.Database.GetPendingMigrations().ToList();
-                Console.WriteLine($"Applied: {applied.Count} => {string.Join(",", applied)}");
-                Console.WriteLine($"Pending: {pending.Count} => {string.Join(",", pending)}");
+            var applied = db.Database.GetAppliedMigrations().ToList();
+            var pending = db.Database.GetPendingMigrations().ToList();
+            Console.WriteLine($"Applied: {applied.Count} => {string.Join(",", applied)}");
+            Console.WriteLine($"Pending: {pending.Count} => {string.Join(",", pending)}");
 
-                db.Database.Migrate(); // <-- aplica antes do seed
+            db.Database.Migrate(); // aplica migrations
 
-                var paisService = scope.ServiceProvider.GetRequiredService<PaisService>();
-                paisService.PopularPaisesSeNecessarioAsync().GetAwaiter().GetResult();
-            }
+            var paisService = scope.ServiceProvider.GetRequiredService<PaisService>();
+            paisService.PopularPaisesSeNecessarioAsync().GetAwaiter().GetResult();
         }
     }
 }
