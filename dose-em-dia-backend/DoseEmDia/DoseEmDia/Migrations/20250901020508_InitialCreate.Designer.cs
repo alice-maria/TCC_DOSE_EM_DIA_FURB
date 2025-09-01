@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DoseEmDia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250813011549_MinhaMudanca")]
-    partial class MinhaMudanca
+    [Migration("20250901020508_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -24,7 +24,7 @@ namespace DoseEmDia.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DoseEmDia.Controllers.ContadorRequisicoes", b =>
+            modelBuilder.Entity("DoseEmDia.Models.db.ContadorRequisicoes", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

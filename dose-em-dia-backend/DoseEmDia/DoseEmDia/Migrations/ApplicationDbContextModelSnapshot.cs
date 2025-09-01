@@ -22,7 +22,7 @@ namespace DoseEmDia.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DoseEmDia.Controllers.ContadorRequisicoes", b =>
+            modelBuilder.Entity("DoseEmDia.Models.db.ContadorRequisicoes", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
