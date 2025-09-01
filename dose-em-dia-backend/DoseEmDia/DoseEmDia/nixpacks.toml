@@ -1,13 +1,16 @@
-[phases.setup]
-# SDK para build + ICU no runtime
-nixPkgs = ["dotnet-sdk_8", "icu"]
+# Força detecção de .NET
+providers = ["dotnet"]
 
-[phases.install]
-cmds = ["dotnet restore"]
+[phases.setup]
+# Se seu .csproj é net6.0, deixe _6; se for net8.0, troque para _8 em ambos
+nixPkgs = ["dotnet-sdk_6", "dotnet-runtime_6"]
 
 [phases.build]
-# self-contained para Linux x64 (não depende de runtime externo)
-cmds = ["dotnet publish -c Release -o out -r linux-x64 --self-contained true /p:UseAppHost=true"]
+cmds = [
+  "dotnet restore",
+  "dotnet publish -c Release -o out"
+]
 
 [start]
-cmd = "./out/DoseEmDia"
+# Ajuste o nome do assembly se for diferente
+cmd = "dotnet out/DoseEmDia.dll"
