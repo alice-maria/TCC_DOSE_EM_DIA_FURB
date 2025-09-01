@@ -1,11 +1,13 @@
 [phases.setup]
-nixPkgs = ["nodejs_16"]
+# força Node 20 nesse serviço
+nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["npm install --legacy-peer-deps"]
+cmds = ["npm ci"]
 
 [phases.build]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npx serve -s dist -l $PORT"
+# SPA: servidor estático com fallback p/ index.html
+cmd = "npx serve -s dist -l ${PORT}"
