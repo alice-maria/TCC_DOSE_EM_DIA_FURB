@@ -132,59 +132,52 @@ export default {
 
 @media (max-width: 600px) {
   .icone-usuario {
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
   }
 
-  /* Permite o texto encolher dentro do flex */
   .usuario {
-    min-width: 0;            /* importante para ellipsis funcionar em flex */
-    max-width: 92vw;         /* evita extravasar a tela */
+    min-width: 0;
+    max-width: 80vw;
+    gap: 6px;
+    align-items: center;
   }
 
   .saudacao {
-    display: inline-block;   /* precisa ser bloco/inline-block p/ ellipsis */
-    max-width: 48vw;         /* ajuste fino: espaço p/ ícone e padding */
+    font-size: 0.8rem;   /* tamanho menor */
+    font-weight: 400;    /* peso mais leve */
+    color: #374151;      /* cinza suave em vez de preto */
+    max-width: 48vw;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: .95rem;
   }
 
-  .usuario-menu-content {
-    width: min(92vw, 360px) !important;
-    min-width: 0 !important;
-    inset: auto 12px auto auto !important;
-    transform: translateY(6px) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 6px 18px rgba(17, 24, 39, .12) !important;
+  .v-dialog > .v-overlay__content {
+    align-items: center !important;
+    justify-content: center !important;
   }
 
-  .usuario-menu-content .v-list-item {
-    min-height: 48px !important;
-    padding-inline: 14px !important;
-  }
-  .usuario-menu-content .v-list-item-title {
-    font-size: 16px !important;
+  /* Remova o alinhamento ao rodapé */
+  .v-dialog {
+    align-items: center !important;
   }
 
-  .icone {
-    width: 22px;
-    height: 22px;
-  }
-
-  .v-dialog { align-items: flex-end; }
-
+  /* Popup dimensionado e sem margem inferior fixa */
   .popup-sair {
-    width: calc(100vw - 24px);
+    width: min(92vw, 420px);
     max-width: 420px;
-    margin: 0 auto 12px;
+    max-height: calc(100vh - 48px); /* evita estourar em telas menores */
+    margin: 0 auto;                 /* centralizado */
     padding: 20px 16px;
     border-radius: 16px !important;
+    overflow: auto;                 /* rolagem, se necessário */
   }
+
   .popup-sair__texto { font-size: 1.05rem !important; margin-bottom: 16px; }
   .popup-sair__botoes { gap: 10px; }
-  .popup-sair__cancelar, .popup-sair__confirmar {
+  .popup-sair__cancelar,
+  .popup-sair__confirmar {
     width: 100%;
     min-width: 0;
     padding: 10px 14px;

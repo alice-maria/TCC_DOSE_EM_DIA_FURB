@@ -237,7 +237,9 @@ export default {
 @media (max-width: 600px) {
   .acessibilidade-container {
     right: 12px;
-    bottom: calc(16px + env(safe-area-inset-bottom));
+    /* Altura do VLibras (~56px) + espaçamento (~24px) */
+    bottom: calc(env(safe-area-inset-bottom) + 56px + 24px);
+    z-index: 10000; /* garante que fique clicável */
   }
 
   .acessibilidade-wrap .acessibilidade-tooltip {

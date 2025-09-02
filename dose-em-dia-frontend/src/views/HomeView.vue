@@ -263,7 +263,7 @@ export default {
 @media (max-width: 600px) {
   /* Mantém sua margem de 95px conforme solicitado */
   .pagina-home {
-    margin-left: 95px;
+    margin-left: 90px;
     padding: 16px 12px;       /* respiro interno para não “colar” nas bordas */
     box-sizing: border-box;
   }

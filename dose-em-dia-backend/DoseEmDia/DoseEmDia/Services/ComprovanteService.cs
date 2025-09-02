@@ -97,7 +97,7 @@ namespace DoseEmDia.Controllers
             }
 
             //Rodapé
-            var fontRodape = new XFont("Verdana", 8, XFontStyle.Italic);
+            var fontRodape = new XFont("Arial", 8, XFontStyle.Italic);
 
             var linha1 = "Este documento foi gerado automaticamente pelo sistema Dose em Dia com base nos registros internos de vacinação.";
             var linha2 = "Trata-se de um comprovante informativo, sem validade jurídica, e não substitui certificados oficiais emitidos por autoridades públicas de saúde.";
