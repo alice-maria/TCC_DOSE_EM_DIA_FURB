@@ -87,9 +87,7 @@ const STATUS_MAP = Object.freeze({
 
 const dtfBR = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-const baseURL =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://doseemdiabackend-production.up.railway.app";
+const baseURL = process.env.VUE_APP_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
 
 export const api = axios.create({
   baseURL: baseURL.replace(/\/+$/, ""), // remove barra(s) finais
