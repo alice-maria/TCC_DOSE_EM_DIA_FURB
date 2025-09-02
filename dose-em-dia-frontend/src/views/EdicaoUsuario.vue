@@ -164,129 +164,132 @@
 </template>
 
 <script>
-import axios from 'axios';
-import UsuarioMenu from '@/views/UsuarioMenu.vue';
+import axios from "axios";
+import UsuarioMenu from "@/views/UsuarioMenu.vue";
+
+const baseURL = import.meta.env.VITE_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
+
+export const api = axios.create({
+  baseURL: baseURL.replace(/\/+$/, ""), 
+  timeout: 20000,
+});
 
 export default {
-  name: 'EdicaoUsuario',
-  components: {
-    UsuarioMenu
-  },
+  name: "EdicaoUsuario",
+  components: { UsuarioMenu },
+
   data() {
     return {
       usuario: {},
       form: {
-        nome: '',
-        email: '',
-        telefone: '',
-        cpf: '',
-        dataNascimento: '',
-        sexo: '',
+        nome: "",
+        email: "",
+        telefone: "",
+        cpf: "",
+        dataNascimento: "",
+        sexo: "",
         cep: "",
-        endereco: {
-          logradouro: "",
-          bairro: "",
-          cidade: "",
-          estado: "",
-        }
+        endereco: { logradouro: "", bairro: "", cidade: "", estado: "" },
       },
       editando: false,
-      erro: '',
+      erro: "",
       mostrarErro: false,
       confirmarSalvar: false,
       breadcrumbs: [
-        { text: 'Início', to: '/home', icon: 'mdi-home' },
-        { text: 'Configurações', to: '/configuracoes' },
-        { text: 'Informações Cadastrais' }
-      ]
+        { text: "Início", to: "/home", icon: "mdi-home" },
+        { text: "Configurações", to: "/configuracoes" },
+        { text: "Informações Cadastrais" },
+      ],
     };
   },
+
   methods: {
     navegar(rota) {
-      if (rota) {
-        this.$router.push(rota);
-      }
+      if (rota) this.$router.push(rota);
     },
 
     formatarData(data) {
-      return new Date(data).toLocaleDateString('pt-BR');
+      return new Date(data).toLocaleDateString("pt-BR");
     },
+
     async carregarUsuario() {
-      const cpf = localStorage.getItem('usuarioCpf');
+      const cpf = localStorage.getItem("usuarioCpf");
       if (!cpf) return;
+
       try {
-        const response = await axios.get(`http://localhost:5054/api/usuario/buscarPorCpf/${cpf}`);
-        this.usuario = response.data;
-        const dataFormatada = response.data.dataNascimento?.split('T')[0];
+        const { data } = await api.get(`/api/usuario/buscarPorCpf/${cpf}`);
+        this.usuario = data;
+        const dataFormatada = data.dataNascimento?.split("T")[0];
+
         this.form = {
-          ...response.data,
+          ...data,
           dataNascimento: dataFormatada,
-          endereco: response.data.endereco || { logradouro: '', cidade: '' }
+          endereco: data.endereco || { logradouro: "", bairro: "", cidade: "", estado: "" },
         };
       } catch (error) {
-        this.erro = 'Erro ao carregar dados do usuário.';
+        this.erro = "Erro ao carregar dados do usuário.";
       }
     },
+
     async salvar() {
       try {
-        await axios.patch(`http://localhost:5054/api/usuario/alterarDados/${this.usuario.idUser}`, this.form);
+        await api.patch(`/api/usuario/alterarDados/${this.usuario.idUser}`, this.form);
         this.editando = false;
         await this.carregarUsuario();
       } catch (error) {
         console.error(error);
-        if (error.response?.data?.message) {
+        if (error?.response?.data?.message) {
           this.erro = error.response.data.message;
-        } else if (typeof error === 'string') {
+        } else if (typeof error === "string") {
           this.erro = error;
         } else {
-          this.erro = 'Erro ao salvar os dados. Tente novamente.';
+          this.erro = "Erro ao salvar os dados. Tente novamente.";
         }
         this.mostrarErro = true;
       }
     },
+
     cancelar() {
       this.editando = false;
       this.carregarUsuario();
     },
+
     formatarTelefone(telefone) {
-      if (!telefone) return '';
-      const numeros = telefone.replace(/\D/g, '');
-      if (numeros.length === 11)
-        return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
-      if (numeros.length === 10)
-        return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(6)}`;
+      if (!telefone) return "";
+      const numeros = telefone.replace(/\D/g, "");
+      if (numeros.length === 11) return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
+      if (numeros.length === 10) return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(6)}`;
       return telefone;
     },
 
     formatarCPF(cpf) {
-      if (!cpf) return '';
-      const numeros = cpf.replace(/\D/g, '');
-      return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+      if (!cpf) return "";
+      const numeros = cpf.replace(/\D/g, "");
+      return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
     },
+
     async buscarCep() {
       const cepLimpo = this.form.endereco.cep?.replace(/\D/g, "");
-      if (cepLimpo.length !== 8) return;
+      if (cepLimpo?.length !== 8) return;
 
       try {
-        const response = await axios.get(
-          `https://viacep.com.br/ws/${cepLimpo}/json/`
-        );
-        const data = response.data;
+        const { data } = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
         if (data.erro) throw new Error("CEP inválido");
 
         this.form.endereco.logradouro = data.logradouro;
         this.form.endereco.bairro = data.bairro;
         this.form.endereco.cidade = data.localidade;
         this.form.endereco.estado = data.uf;
-      } catch (error) {
+      } catch {
         alert("CEP inválido ou erro ao buscar endereço.");
       }
     },
   },
+
   mounted() {
     this.carregarUsuario();
     this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
-  }
+  },
 };
 </script>
 

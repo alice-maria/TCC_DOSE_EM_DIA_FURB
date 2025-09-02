@@ -177,6 +177,14 @@
 import axios from 'axios';
 import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
+
+export const api = axios.create({
+  baseURL: baseURL.replace(/\/+$/, ""), 
+  timeout: 20000,
+});
+
 export default {
   name: "AcessarConfiguracoes",
   components: {
@@ -192,7 +200,7 @@ export default {
       notificacoesAtivas: true,
       dialogConfirmarExclusaoFinal: false,
       dialogContaExcluida: false,
-      mostrarErro: false, // para o popup de erro
+      mostrarErro: false, 
       erro: "",
       breadcrumbs: [
         { text: "Início", to: "/home", icon: "mdi-home" },
@@ -206,7 +214,7 @@ export default {
     const idUser = localStorage.getItem("usuarioId");
 
     if (idUser) {
-      axios.get(`http://localhost:5054/api/usuario/${idUser}`)
+      api.get(`/api/usuario/${idUser}`)
         .then(res => {
           this.notificacoesAtivas = res.data.receberNotificacoes;
         })
@@ -232,7 +240,7 @@ export default {
       }
 
       try {
-        await axios.post("http://localhost:5054/api/usuario/excluir-conta", {
+        await api.post(`/api/usuario/excluir-conta`, {
           email: this.email,
           senha: this.senha
         });
@@ -264,11 +272,10 @@ export default {
   watch: {
     notificacoesAtivas(novoValor) {
       const idUser = localStorage.getItem("usuarioId");
-
       if (!idUser) return;
 
-      axios.put(
-        `http://localhost:5054/api/notificacoes/usuario/${idUser}/recebernotificacoes`,
+      api.put(
+        `/api/notificacoes/usuario/${idUser}/recebernotificacoes`,
         { receberNotificacoes: novoValor }
       );
 

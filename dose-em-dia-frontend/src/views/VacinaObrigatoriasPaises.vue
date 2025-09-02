@@ -65,6 +65,15 @@
 import axios from "axios";
 import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://doseemdiabackend-production.up.railway.app";
+
+export const api = axios.create({
+  baseURL: baseURL.replace(/\/+$/, ""),
+  timeout: 20000,
+});
+
 export default {
     name: "VacinaObrigatoriaPaises",
     components: {
@@ -95,7 +104,7 @@ export default {
     methods: {
         async carregarPaises() {
             try {
-                const response = await axios.get("http://localhost:5054/api/paises/listaPaises");
+                const response = await api.get("/api/paises/listaPaises");
                 this.paises = Array.isArray(response.data) ? response.data : response.data.$values || [];
             } catch (error) {
                 this.paises = [];

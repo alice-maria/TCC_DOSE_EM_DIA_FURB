@@ -53,6 +53,15 @@
 import axios from "axios";
 import UsuarioMenu from "@/views/UsuarioMenu.vue";
 
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://doseemdiabackend-production.up.railway.app";
+
+export const api = axios.create({
+  baseURL: baseURL.replace(/\/+$/, ""), 
+  timeout: 20000,
+});
+
 export default {
   name: "HistoricoNotificacoes",
   components: { UsuarioMenu },
@@ -77,7 +86,6 @@ export default {
       );
     },
 
-    // Fallback simples (usado se DOMParser falhar)
     limparHtml(html) {
       if (!html) return "";
       const div = document.createElement("div");
@@ -85,7 +93,6 @@ export default {
       return (div.textContent || div.innerText || "").replace(/\s+/g, " ").trim();
     },
 
-    // Extrai a frase principal "Identificamos ..." do HTML completo
     mensagemCurta(html) {
       if (!html) return "";
 
@@ -93,17 +100,14 @@ export default {
         const parser = new DOMParser();
         const doc = parser.parseFromString(String(html), "text/html");
 
-        // Textos dos parágrafos
         const paragrafos = Array.from(doc.querySelectorAll("p"))
           .map(p => (p.textContent || "").replace(/\s+/g, " ").trim())
           .filter(Boolean);
 
-        // 1) Preferir parágrafo que começa com "Identificamos"
         let preferida =
           paragrafos.find(t => /^Identificamos/i.test(t)) ||
           paragrafos.find(t => /Identificamos/i.test(t));
 
-        // 2) Se não achou, tentar regex na soma do body
         if (!preferida) {
           const corpo = (doc.body?.textContent || "")
             .replace(/\s+/g, " ")
@@ -112,23 +116,19 @@ export default {
           if (m && m[0]) preferida = m[0].trim();
         }
 
-        // 3) Se ainda não achou, usar o primeiro parágrafo/frase
         if (!preferida) {
           if (paragrafos.length > 0) {
             const primeiraFrase = paragrafos[0].split(/(?<=[.!?])\s+/)[0];
             return (primeiraFrase || paragrafos[0]).trim();
           }
-          // fallback final: texto limpo do body
           const txt = (doc.body?.textContent || "").replace(/\s+/g, " ").trim();
           if (txt) {
             const primeiraFrase = txt.split(/(?<=[.!?])\s+/)[0];
             return (primeiraFrase || txt).trim();
           }
         }
-
         return (preferida || "").trim();
       } catch (e) {
-        // Qualquer problema no parser -> fallback simples
         return this.limparHtml(html).split(/(?<=[.!?])\s+/)[0] || "";
       }
     },
@@ -141,7 +141,7 @@ export default {
       }
       try {
         const { data } = await axios.get(
-          `http://localhost:5054/api/notificacoes/usuario/${cpf}/historico`
+          `/api/notificacoes/usuario/${cpf}/historico`
         );
         this.notificacoes = Array.isArray(data) ? data : [];
       } catch (error) {

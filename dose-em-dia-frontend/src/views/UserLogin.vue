@@ -50,11 +50,9 @@
           <v-btn class="btn-login" rounded @click="fazerLogin">
             Entrar
           </v-btn>
-
           <router-link to="/esqueci-minha-senha" class="link-senha">
             Esqueceu a senha?
           </router-link>
-
         </v-form>
       </v-col>
     </v-row>
@@ -66,11 +64,18 @@
       <p>Aguarde, você está sendo redirecionado...</p>
     </div>
   </div>
-
 </template>
 
 <script>
 import axios from "axios";
+
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
+
+export const api = axios.create({
+  baseURL: baseURL.replace(/\/+$/, ""),
+  timeout: 20000,
+});
 
 export default {
   name: "UserLogin",
@@ -94,12 +99,12 @@ export default {
       };
 
       try {
-        const response = await axios.post("http://localhost:5054/api/usuario/login", payload);
+        const { data } = await api.post("/api/usuario/login", payload);
 
         localStorage.setItem("usuarioEmail", this.email);
-        localStorage.setItem("usuarioNome", response.data.nome);
-        localStorage.setItem("usuarioCpf", response.data.cpf);
-        localStorage.setItem("usuarioId", response.data.id);
+        localStorage.setItem("usuarioNome", data.nome);
+        localStorage.setItem("usuarioCpf", data.cpf);
+        localStorage.setItem("usuarioId", data.id);
 
         if (this.lembrarDeMim) {
           localStorage.setItem("lembrarEmail", this.email);
@@ -107,17 +112,14 @@ export default {
           localStorage.removeItem("lembrarEmail");
         }
 
-        // Ativa o modal de carregamento
         this.carregando = true;
 
-        // Aguarda um segundo antes de redirecionar
         setTimeout(() => {
           this.$router.push("/home");
         }, 1000);
       } catch (err) {
         this.mensagemErro = "Usuário ou senha incorretos. Verifique suas informações.";
       }
-
     }
   },
   mounted() {

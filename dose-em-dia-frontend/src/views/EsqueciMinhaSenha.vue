@@ -59,6 +59,14 @@
 <script>
 import axios from 'axios';
 
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
+
+export const api = axios.create({
+  baseURL: baseURL.replace(/\/+$/, ""),
+  timeout: 20000,
+});
+
 export default {
   name: 'EsqueciMinhaSenha',
   data() {
@@ -72,7 +80,7 @@ export default {
       this.mensagem = '';
       this.carregando = true;
       try {
-        await axios.post('http://localhost:5054/api/usuario/esqueciSenha', { email: this.email });
+        await api.post('/api/usuario/esqueciSenha', { email: this.email });
         this.dialogSucesso = true;
       } catch (err) {
         this.mensagem = err.response?.data || 'Erro ao solicitar redefinição.';

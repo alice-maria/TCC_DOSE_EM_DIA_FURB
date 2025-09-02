@@ -84,6 +84,14 @@
 import axios from 'axios';
 import UsuarioMenu from '@/views/UsuarioMenu.vue';
 
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
+
+export const api = axios.create({
+  baseURL: baseURL.replace(/\/+$/, ""),
+  timeout: 20000,
+});
+
 export default {
   name: 'ComprovanteView',
   components: {
@@ -115,7 +123,7 @@ export default {
       this.carregando = true;
       this.progresso = 0;
       try {
-        const response = await axios.get(`http://localhost:5054/api/comprovante/${usuarioId}/gerarComprovante`, {
+        const response = await api.get(`api/comprovante/${usuarioId}/gerarComprovante`, {
           responseType: 'blob',
           onDownloadProgress: (e) => {
             if (e.total) {

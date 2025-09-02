@@ -114,6 +114,14 @@
 <script>
 import axios from 'axios';
 import UsuarioMenu from '@/views/UsuarioMenu.vue';
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://doseemdiabackend-production.up.railway.app";
+
+export const api = axios.create({
+  baseURL: baseURL.replace(/\/+$/, ""),
+  timeout: 20000,
+});
 
 export default {
   name: 'RedefinirSenha',
@@ -176,7 +184,7 @@ export default {
       }
 
       try {
-        await axios.put('http://localhost:5054/api/usuario/alterar-senha', {
+        await api.put('/api/usuario/alterar-senha', {
           email: this.form.email,
           senhaAtual: this.form.senhaAtual,
           novaSenha: this.form.senha

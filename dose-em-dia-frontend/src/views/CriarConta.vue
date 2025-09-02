@@ -168,6 +168,13 @@
 import axios from "axios";
 import { mask } from "vue-the-mask";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
+
+export const api = axios.create({
+  baseURL: baseURL.replace(/\/+$/, ""),
+  timeout: 20000,
+});
+
 export default {
   name: "CriarConta",
   directives: { mask },
@@ -364,12 +371,12 @@ export default {
 
       try {
         this.carregando = true;
-        const response = await axios.post("http://localhost:5054/api/usuario/criar-conta", payload);
-        localStorage.setItem("usuarioNome", response.data.nome);
+        const { data } = await api.post("/api/usuario/criar-conta", payload);
+        localStorage.setItem("usuarioNome", data.nome);
         localStorage.setItem("usuarioCpf", cpfLimpo);
-        localStorage.setItem("usuarioId", response.data.idUser);
-        localStorage.setItem("usuarioEmail", response.data.email);
-        console.log("Usuário criado:", response.data);
+        localStorage.setItem("usuarioId", data.idUser);
+        localStorage.setItem("usuarioEmail", data.email);
+        console.log("Usuário criado:", data);
         this.modalSucesso = true;
       } catch (err) {
         if (err.response && err.response.data) {
