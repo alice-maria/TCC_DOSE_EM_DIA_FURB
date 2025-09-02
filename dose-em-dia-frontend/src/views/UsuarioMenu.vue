@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-model="menuAberto" location="bottom end" :offset="8">
+  <v-menu v-model="menuAberto" location="bottom end" :offset="8" content-class="usuario-menu-content">
     <template #activator="{ props }">
       <div v-bind="props" class="usuario d-flex align-items-center gap-2" style="cursor: pointer;">
         <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario" />
@@ -128,5 +128,67 @@ export default {
 .popup-sair__confirmar {
   background-color: white;
   color: #f97316;
+}
+
+@media (max-width: 600px) {
+  .icone-usuario {
+    width: 36px;
+    height: 36px;
+  }
+  .saudacao {
+    display: none;
+  }
+
+  .usuario-menu-content {
+    width: min(92vw, 360px) !important;
+    min-width: 0 !important;
+    inset: auto 12px auto auto !important;
+    transform: translateY(6px) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 6px 18px rgba(17, 24, 39, .12) !important;
+  }
+
+  .usuario-menu-content .v-list-item {
+    min-height: 48px !important;
+    padding-inline: 14px !important;
+  }
+  .usuario-menu-content .v-list-item-title {
+    font-size: 16px !important;
+  }
+  .icone {
+    width: 22px;
+    height: 22px;
+  }
+
+  .v-dialog {
+    align-items: flex-end; 
+  }
+  .popup-sair {
+    width: calc(100vw - 24px);
+    max-width: 420px;
+    margin: 0 auto 12px;
+    padding: 20px 16px;
+    border-radius: 16px !important;
+  }
+  .popup-sair__texto {
+    font-size: 1.05rem !important;
+    margin-bottom: 16px;
+  }
+  .popup-sair__botoes {
+    gap: 10px;
+  }
+  .popup-sair__cancelar,
+  .popup-sair__confirmar {
+    width: 100%;
+    min-width: 0;      
+    padding: 10px 14px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .usuario-menu-content {
+    width: 94vw !important;
+  }
 }
 </style>

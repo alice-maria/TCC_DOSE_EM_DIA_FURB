@@ -186,7 +186,12 @@
 <script>
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5054';
+const baseURL = process.env.VUE_APP_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
+
+export const api = axios.create({
+  baseURL: baseURL.replace(/\/+$/, ""),
+  timeout: 20000,
+});
 
 export default {
   name: 'ChatBot',
@@ -297,7 +302,7 @@ export default {
       this.mostrarMensagem('Certo! Estou buscando suas vacinas...');
 
       try {
-        const { data: vacinas } = await axios.get(`${API_BASE}/api/vacinas/listaVacinas/${cpf}`);
+        const { data: vacinas } = await api.get(`/api/vacinas/listaVacinas/${cpf}`);
         const filtradas = (vacinas || []).filter(v => v.status === statusDesejado);
 
         if (filtradas.length) {
@@ -342,7 +347,7 @@ export default {
           assunto: this.formEmail.assunto,
           mensagem: this.formEmail.mensagem
         };
-        await axios.post(`${API_BASE}/api/suporte/mensagem`, payload);
+        await api.post(`/api/suporte/mensagem`, payload);
         this.sucesso = 'Mensagem enviada com sucesso. Em breve entraremos em contato.';
         this.formEmail.mensagem = '';
       } catch (e) {

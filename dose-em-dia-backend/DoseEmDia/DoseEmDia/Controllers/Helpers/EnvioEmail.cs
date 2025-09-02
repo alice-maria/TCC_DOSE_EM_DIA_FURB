@@ -85,7 +85,7 @@ namespace DoseEmDia.Helpers
         Para prosseguir com a redefinição, clique no botão abaixo:
       </p>
       <p style='text-align: center; margin: 30px 0;'>
-        <a href='http://localhost:8080/esqueci-redefinir-minha-senha?token={tokenEncoded}'
+        <a href='https://dose-em-dia.up.railway.app/esqueci-redefinir-minha-senha?token={tokenEncoded}'
            style='background-color: #f46c20; color: white; padding: 14px 28px; text-decoration: none;
                   font-weight: 500; border-radius: 6px; display: inline-block;'>
           Redefinir senha

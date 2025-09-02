@@ -259,4 +259,104 @@ export default {
   line-height: 1.25;
   font-weight: 500;
 }
+
+/* ====== MOBILE-ONLY ====== */
+@media (max-width: 600px) {
+  .pagina-home {
+    margin-left: 0;          /* remove deslocamento lateral */
+    padding: 12px !important;
+  }
+
+  /* Cabeçalho */
+  .header {
+    gap: 12px;
+  }
+
+  .logo-container {
+    flex-direction: row;
+    align-items: center;
+    margin: 0;               /* zera margens negativas */
+    gap: 10px;
+  }
+
+  .logo-img {
+    height: 44px;            /* reduz logo */
+    width: auto;
+  }
+
+  .mensagem-boas-vindas {
+    margin: 0;               /* remove offset negativo */
+    font-size: 1rem;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  /* Breadcrumbs */
+  .meus-breadcrumbs {
+    padding-inline: 0 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .breadcrumb-laranja {
+    margin-top: 0;
+    font-size: 0.95rem;      /* tipografia menor */
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .breadcrumb-home-img {
+    width: 18px;
+    height: 18px;
+    margin-top: 0;
+  }
+
+  /* Aviso */
+  .aviso-vacinas {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    margin-bottom: 14px;
+  }
+
+  /* Filtros */
+  .d-flex.flex-wrap.gap-2.mb-4 {
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .btn-filtro {
+    width: 100%;             /* botões em largura total */
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
+
+  /* Cards de vacina */
+  .row.gx-4 {
+    --bs-gutter-x: 12px;     /* reduz espaçamento lateral */
+  }
+
+  .vacina-card {
+    min-height: unset;
+    background-color: #fff;  /* melhora contraste no mobile */
+    border-radius: 10px;
+  }
+
+  .v-card-title {
+    padding: 10px 12px 0 12px !important;
+  }
+
+  .v-card-text {
+    padding: 8px 12px 12px 12px !important;
+  }
+
+  .text-h6 {
+    font-size: 1rem !important;
+  }
+
+  .text-body-1 {
+    font-size: 0.95rem !important;
+  }
+}
 </style>

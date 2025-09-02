@@ -233,4 +233,46 @@ export default {
   line-height: 1.2;
   color: #fff;
 }
+
+@media (max-width: 600px) {
+  .acessibilidade-container {
+    right: 12px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  .acessibilidade-wrap .acessibilidade-tooltip {
+    display: none;
+  }
+
+  .acessibilidade-menu {
+    top: auto;
+    bottom: 56px;
+    right: 0;
+    min-width: 0;
+    width: min(92vw, 380px);
+    padding: 10px;
+    gap: 8px;
+    border-radius: 12px;
+    box-shadow: var(--acc-shadow-sm);
+  }
+
+  .acessibilidade-menu button {
+    padding: 12px 10px;
+    font-size: 16px;      
+    border-radius: 10px;
+  }
+
+  .icone-menu {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    margin-right: 2px;
+  }
+}
+
+@media (max-width: 360px) {
+  .acessibilidade-menu {
+    width: 94vw;
+  }
+}
 </style>

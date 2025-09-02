@@ -122,7 +122,7 @@ export default {
       this.carregando = true;
       this.progresso = 0;
       try {
-        const response = await api.get(`api/comprovante/${usuarioId}/gerarComprovante`, {
+        const response = await api.get(`/api/comprovante/${usuarioId}/gerarComprovante`, {
           responseType: 'blob',
           onDownloadProgress: (e) => {
             if (e.total) {
@@ -312,5 +312,65 @@ export default {
 
 .fw-600 {
   font-weight: 600;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+  .titulo {
+    font-size: 1.35rem;
+    text-align: center;
+  }
+
+  .meus-breadcrumbs {
+    padding: 0 12px !important;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .breadcrumb-home-img { width: 18px; height: 18px; margin-top: -2px; }
+
+  .aviso-comprovante {
+    margin: 0.75rem 1rem 1.25rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .conteudo {
+    padding: 1rem 0.75rem;
+    max-width: 480px;
+  }
+
+  .frase-reforco {
+    font-size: 0.95rem;
+    margin: 1rem auto 1.25rem;
+    max-width: 92%;
+  }
+
+  .preview-comprovante img {
+    aspect-ratio: auto;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    border-radius: 10px;
+  }
+
+  .botao-material {
+    width: 100%;
+    height: 44px;
+    font-size: 1rem;
+  }
+
+  .tooltip-legal { font-size: 0.75rem; }
+
+  .loading-card {
+    min-width: 180px;
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
 }
 </style>

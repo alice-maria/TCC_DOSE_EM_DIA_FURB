@@ -600,4 +600,114 @@ export default {
   border-radius: 20px;
   padding: 6px 16px;
 }
+
+/* Mobile */
+@media (max-width: 600px) {
+  .pagina {
+    height: auto;            
+    min-height: 100vh;
+    overflow: auto;
+  }
+
+  .header {
+    padding: 0.75rem 1rem;
+    min-height: auto;
+  }
+
+  .logo-container {
+    gap: 0.5rem;
+  }
+
+  .logo-img {
+    height: 64px;           
+    margin-top: 0;
+  }
+
+  .titulo-principal {
+    font-size: 1.25rem;     
+    margin-top: 0;
+  }
+
+  .subtitulo {
+    font-size: 0.9rem;
+  }
+
+  .container-laranja {
+    margin-top: 0;
+    padding: 1rem 0.5rem;   
+    border-top-width: 4px;
+  }
+
+  .formulario-caixa {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    max-height: none;       
+    padding: 1rem;          
+    margin-top: 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  }
+
+  .v-container {
+    padding: 0 !important;
+  }
+
+  .v-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .v-tab {
+    flex: 1 0 auto;
+  }
+
+  .seguranca {
+    margin-top: 0.5rem;
+  }
+
+  .mensagem-erro-wrapper {
+    margin-top: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .d-flex.justify-end {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .botao-principal,
+  .botao-secundario,
+  .botao-japossuiconta,
+  .botao-redirecionamento {
+    width: 100%;
+    padding: 12px 16px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  }
+
+  .checkbox-privacidade {
+    margin-top: 0.5rem;
+    margin-left: 0;
+    font-size: 13px;
+  }
+
+  .v-progress-linear {
+    height: 6px !important;
+    border-radius: 999px;
+  }
+
+  .modal-content {
+    width: 90%;
+    max-width: 360px;
+    padding: 24px;
+    border-radius: 16px;
+  }
+
+  .infos {
+    margin-top: 0.75rem;
+    margin-left: 0;
+    display: block;
+    text-align: center;
+  }
+}
+
 </style>
