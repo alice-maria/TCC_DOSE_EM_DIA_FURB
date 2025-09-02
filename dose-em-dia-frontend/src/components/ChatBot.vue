@@ -755,4 +755,78 @@ export default {
 .chatbot-popup {
   padding-bottom: 80px;
 }
+
+/* =========================
+   CHATBOT - MOBILE STYLE
+   ========================= */
+@media (max-width: 600px) {
+  .chatbot-popup {
+    width: 100vw;
+    height: 100vh;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-radius: 0;
+    padding: 20px 16px 100px 16px; /* mais espaço no fundo para botões */
+  }
+
+  .chatbot-toggle img {
+    width: 52px;
+    height: 52px;
+  }
+
+  .mensagem.bot {
+    font-size: 0.9rem;
+    padding: 10px 14px;
+    max-width: 100%;
+  }
+
+  .opcao button,
+  .card-atalho,
+  .btn-educacao,
+  .voltar,
+  .btn-acao {
+    font-size: 0.9rem;
+    padding: 12px;
+    width: 100%;
+  }
+
+  .opcao button,
+  .card-atalho {
+    text-align: center; /* centraliza para mobile */
+  }
+
+  .grid-educacao {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .educacao-card .educacao-titulo {
+    font-size: 1rem;
+  }
+
+  .form-suporte {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 8px;
+  }
+
+  .form-suporte input,
+  .form-suporte textarea {
+    max-width: 100%;
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
+
+  .fechar-chat {
+    top: 8px;
+    right: 8px;
+  }
+
+  .fechar-chat img {
+    width: 18px;
+    height: 18px;
+  }
+}
+
 </style>
