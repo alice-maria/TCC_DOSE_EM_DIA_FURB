@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "serve -s dist -1 $PORT"
+    "start": "serve -s dist -l $PORT -n"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
@@ -35,25 +35,19 @@
     "sass-loader": "^12.0.0",
     "serve": "^14.2.4"
   },
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
   "eslintConfig": {
     "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended"
-    ],
+    "env": { "node": true },
+    "extends": ["plugin:vue/vue3-essential", "eslint:recommended"],
     "parserOptions": {
       "parser": "@babel/eslint-parser",
       "requireConfigFile": false
     },
     "rules": {}
   },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead",
-    "not ie 11"
-  ]
+  "browserslist": ["> 1%", "last 2 versions", "not dead", "not ie 11"]
 }

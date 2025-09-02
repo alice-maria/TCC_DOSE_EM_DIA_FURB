@@ -1,11 +1,11 @@
 [phases.setup]
-nixPkgs = ["nodejs_20"]
+nixPkgs = ["nodejs_18", "nodePackages.npm"]
 
 [phases.install]
-cmds = ["npm install --no-audit --no-fund"]
+cmds = ["npm ci"]
 
 [phases.build]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npx serve -s dist -l ${PORT}"
+cmd = "npx http-server dist -p ${PORT:-8080} -a 0.0.0.0 -c-1"
