@@ -1,5 +1,6 @@
 [phases.setup]
-nixPkgs = ["nodejs_18", "nodePackages.npm"]
+# Instala apenas Node 18 (e o npm que já vem junto)
+nixPkgs = ["nodejs_18"]
 
 [phases.install]
 cmds = ["npm ci"]
@@ -8,4 +9,5 @@ cmds = ["npm ci"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npx http-server dist -p ${PORT:-8080} -a 0.0.0.0 -c-1"
+# Servir a pasta dist no PORT do Railway
+cmd = "npx serve -s dist -l ${PORT:-8080} -n"
