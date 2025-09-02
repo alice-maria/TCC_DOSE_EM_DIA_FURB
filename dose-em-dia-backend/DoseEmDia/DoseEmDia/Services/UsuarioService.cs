@@ -8,6 +8,7 @@ using DoseEmDia.Models.Exceptions;
 using DoseEmDia.Controllers.DTO;
 using DoseEmDia.Controllers;
 using DoseEmDia.Models.Enums;
+using Npgsql;
 
 public class UsuarioService
 {
@@ -31,66 +32,75 @@ public class UsuarioService
         return usuario;
     }
 
-    public async Task<Usuario> CriarUsuario(Usuario request)
+    public async Task<Usuario> CriarUsuario(Usuario request, CancellationToken ct = default)
     {
-        if (_context.Usuario.Any(u => u.Email == request.Email))
-            throw new UsuarioException.EmailJaCadastradoException(request.Email);
+        request.CPF = FormatacaoHelper.FormataCPF(request.CPF);
+        request.Telefone = FormatacaoHelper.FormataTelefone(request.Telefone);
 
-        using var transaction = await _context.Database.BeginTransactionAsync();
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        try
+        return await strategy.ExecuteAsync(async () =>
         {
+            await using var tx = await _context.Database.BeginTransactionAsync(ct);
+
+            // use AnyAsync em vez de Any (evita deadlocks e bloqueios desnecessários)
+            bool emailExiste = await _context.Usuario.AnyAsync(u => u.Email == request.Email, ct);
+            if (emailExiste)
+                throw new UsuarioException.EmailJaCadastradoException(request.Email);
+
             var endereco = new Endereco(
-                        request.Endereco.Logradouro,
-                        request.Endereco.Bairro,
-                        request.Endereco.Cidade,
-                        request.Endereco.Estado,
-                        FormatacaoHelper.FormataCEP(request.Endereco.CEP),
-                        request.Endereco.Pais
-                    );
-
-            _context.Endereco.Add(endereco);
-
-            request.Nome = request.Nome?.TrimEnd();
+                request.Endereco.Logradouro,
+                request.Endereco.Bairro,
+                request.Endereco.Cidade,
+                request.Endereco.Estado,
+                FormatacaoHelper.FormataCEP(request.Endereco.CEP),
+                request.Endereco.Pais
+            );
 
             var salt = CriptografiaHelper.GerarSalt();
 
             var usuario = new Usuario
             {
-                Nome = request.Nome,
+                Nome = request.Nome?.Trim(),
                 DataNascimento = request.DataNascimento,
                 Email = request.Email,
-                Telefone = FormatacaoHelper.FormataTelefone(request.Telefone),
-                CPF = FormatacaoHelper.FormataCPF(request.CPF),
+                Telefone = request.Telefone,
+                CPF = request.CPF,
                 Sexo = request.Sexo,
                 Senha = CriptografiaHelper.GerarHash(request.Senha, salt),
                 Salt = salt,
                 Endereco = endereco
             };
 
-            _context.Usuario.Add(usuario);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Usuario.Add(usuario);
+                await _context.SaveChangesAsync(ct);
 
-            int idade = CalcularIdade(usuario.DataNascimento);
-            await _vacinaService.GerarEVincularVacinas(usuario.IdUser, idade, usuario.Sexo);
+                int idade = CalcularIdade(usuario.DataNascimento);
+                await _vacinaService.GerarEVincularVacinas(usuario.IdUser, idade, usuario.Sexo);
 
-            await transaction.CommitAsync();
-
-            return usuario;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+                await tx.CommitAsync(ct);
+                return usuario;
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pg && pg.SqlState == "23505")
+            {
+                throw new UsuarioException.EmailJaCadastradoException(request.Email);
+            }
+        });
     }
 
     public async Task<Usuario> Login(LoginRequest request)
     {
-        var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Email == request.Email);
+        var usuario = await _context.Usuario
+            .FirstOrDefaultAsync(u => u.Email == request.Email);
+
+        if (usuario == null)
+            throw new UnauthorizedAccessException("Usuário ou senha inválidos.");
+
         bool senhaValida = CriptografiaHelper.VerificarSenha(request.Senha, usuario.Senha, usuario.Salt);
 
-        if (usuario == null || !senhaValida)
+        if (!senhaValida)
             throw new UnauthorizedAccessException("Usuário ou senha inválidos.");
 
         return usuario;
@@ -192,7 +202,7 @@ public class UsuarioService
     {
         var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Email == request.Email);
         if (usuario == null)
-            throw new UsuarioException.UsuarioNaoEncontradoException(usuario.IdUser);
+            throw new UsuarioException.UsuarioNaoEncontradoException(request.Email);
 
         var hashSenhaAtual = CriptografiaHelper.GerarHash(request.SenhaAtual, usuario.Salt);
         if (usuario.Senha != hashSenhaAtual)
