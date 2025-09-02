@@ -260,4 +260,36 @@ aside {
 .sidebar--expanded .rail-content {
   justify-content: flex-start;
 }
+
+/* Em um .vue com <style scoped> remova o scoped OU use :deep() */
+@media (max-width: 600px) {
+  :deep(.v-app-bar) {
+    min-height: 48px !important;  /* altura total */
+  }
+  :deep(.v-app-bar .v-toolbar__content) {
+    height: 48px !important;       /* alinha o conteúdo */
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  :deep(.v-toolbar-title) {
+    font-size: 0.95rem !important; /* título menor */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  :deep(.v-btn) {
+    min-width: 32px !important;
+    padding: 0 8px !important;
+  }
+  /* ícones mais compactos (se usar v-btn icon) */
+  :deep(.v-btn--icon) {
+    height: 32px !important;
+    width: 32px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  :deep(.v-main) { padding-top: 48px !important; }
+}
+
 </style>
