@@ -115,9 +115,11 @@ namespace DoseEmDia.Controllers
             return (stream.ToArray(), nomeArquivo);
         }
 
-        private string FormatCPF(string cpf)
+        private string FormatCPF(string? cpf)
         {
-            return Convert.ToUInt64(cpf).ToString(@"000\.000\.000\-00");
+            var digits = new string((cpf ?? "").Where(char.IsDigit).ToArray());
+            if (digits.Length != 11) return cpf ?? "";
+            return Convert.ToUInt64(digits).ToString(@"000\.000\.000\-00");
         }
 
         private string FormatTelefone(string telefone)

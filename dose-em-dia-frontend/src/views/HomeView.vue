@@ -23,12 +23,14 @@
 
       <div class="aviso-vacinas">
         <img src="@/assets/icons/aviso.svg" alt="Ícone de aviso" class="me-3" style="width: 24px; height: 24px;" />
-        As vacinas exibidas são fictícias e foram geradas automaticamente pelo sistema. Não substituem documentos oficiais.
+        As vacinas exibidas são fictícias e foram geradas automaticamente pelo sistema. Não substituem documentos
+        oficiais.
       </div>
 
       <!-- Filtros -->
       <div class="d-flex flex-wrap gap-2 mb-4">
-        <button class="btn-filtro" :class="filtro === '' ? 'btn-dark text-white' : 'btn-outline-dark'" @click="filtro = ''">
+        <button class="btn-filtro" :class="filtro === '' ? 'btn-dark text-white' : 'btn-outline-dark'"
+          @click="filtro = ''">
           Todas
         </button>
 
@@ -259,12 +261,15 @@ export default {
   line-height: 1.25;
   font-weight: 500;
 }
+
 /* ===== Mobile only ===== */
 @media (max-width: 600px) {
+
   /* Mantém sua margem de 95px conforme solicitado */
   .pagina-home {
     margin-left: 90px;
-    padding: 16px 12px;       /* respiro interno para não “colar” nas bordas */
+    padding: 16px 12px;
+    /* respiro interno para não “colar” nas bordas */
     box-sizing: border-box;
   }
 
@@ -274,21 +279,26 @@ export default {
   }
 
   .logo-container {
-    margin: 0;                /* remove offsets negativos no mobile */
+    margin: 0;
+    /* remove offsets negativos no mobile */
     flex-direction: row;
     align-items: center;
   }
 
   .logo-img {
-    height: 56px;             /* reduz a altura da logo */
+    height: 56px;
+    /* reduz a altura da logo */
     width: auto;
     object-fit: contain;
   }
 
   .mensagem-boas-vindas {
-    margin: 0 0 0 8px;        /* aproxima da logo */
-    font-size: 1rem;
-    line-height: 1.2;
+    margin: 0 0 0 8px;
+    font-size: 1.35rem;
+    /* antes 1rem, agora maior */
+    font-weight: 600;
+    /* dá mais presença */
+    line-height: 1.3;
   }
 
   /* Breadcrumbs mais legíveis e sem deslocamento vertical */

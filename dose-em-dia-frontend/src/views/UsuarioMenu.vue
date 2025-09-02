@@ -54,7 +54,7 @@ export default {
       this.$router.push('/editar-perfil');
     },
     abrirDialogSair() {
-      this.menuAberto = false;        // fecha o menu antes de abrir o diálogo
+      this.menuAberto = false;        
       this.dialogSair = true;
     },
     confirmarSaida() {
@@ -144,38 +144,37 @@ export default {
   }
 
   .saudacao {
-    font-size: 0.8rem;   /* tamanho menor */
-    font-weight: 400;    /* peso mais leve */
-    color: #374151;      /* cinza suave em vez de preto */
-    max-width: 48vw;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display: none !important;
   }
 
-  .v-dialog > .v-overlay__content {
+  .v-dialog>.v-overlay__content {
     align-items: center !important;
     justify-content: center !important;
   }
 
-  /* Remova o alinhamento ao rodapé */
   .v-dialog {
     align-items: center !important;
   }
 
-  /* Popup dimensionado e sem margem inferior fixa */
   .popup-sair {
     width: min(92vw, 420px);
     max-width: 420px;
-    max-height: calc(100vh - 48px); /* evita estourar em telas menores */
-    margin: 0 auto;                 /* centralizado */
+    max-height: calc(100vh - 48px);
+    margin: 0 auto;
     padding: 20px 16px;
     border-radius: 16px !important;
-    overflow: auto;                 /* rolagem, se necessário */
+    overflow: auto;
   }
 
-  .popup-sair__texto { font-size: 1.05rem !important; margin-bottom: 16px; }
-  .popup-sair__botoes { gap: 10px; }
+  .popup-sair__texto {
+    font-size: 1.05rem !important;
+    margin-bottom: 16px;
+  }
+
+  .popup-sair__botoes {
+    gap: 10px;
+  }
+
   .popup-sair__cancelar,
   .popup-sair__confirmar {
     width: 100%;
