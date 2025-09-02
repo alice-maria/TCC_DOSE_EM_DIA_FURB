@@ -259,104 +259,76 @@ export default {
   line-height: 1.25;
   font-weight: 500;
 }
-
-/* ====== MOBILE-ONLY ====== */
+/* ===== Mobile only ===== */
 @media (max-width: 600px) {
+  /* Mantém sua margem de 95px conforme solicitado */
   .pagina-home {
-    margin-left: 0;          /* remove deslocamento lateral */
-    padding: 12px !important;
+    margin-left: 95px;
+    padding: 16px 12px;       /* respiro interno para não “colar” nas bordas */
+    box-sizing: border-box;
   }
 
-  /* Cabeçalho */
+  /* Cabeçalho: logo + saudação em linha, compactos */
   .header {
     gap: 12px;
   }
 
   .logo-container {
+    margin: 0;                /* remove offsets negativos no mobile */
     flex-direction: row;
     align-items: center;
-    margin: 0;               /* zera margens negativas */
-    gap: 10px;
   }
 
   .logo-img {
-    height: 44px;            /* reduz logo */
+    height: 56px;             /* reduz a altura da logo */
     width: auto;
+    object-fit: contain;
   }
 
   .mensagem-boas-vindas {
-    margin: 0;               /* remove offset negativo */
+    margin: 0 0 0 8px;        /* aproxima da logo */
     font-size: 1rem;
     line-height: 1.2;
-    font-weight: 700;
   }
 
-  /* Breadcrumbs */
+  /* Breadcrumbs mais legíveis e sem deslocamento vertical */
   .meus-breadcrumbs {
-    padding-inline: 0 !important;
-    margin-bottom: 10px !important;
+    margin-top: 8px !important;
   }
 
   .breadcrumb-laranja {
+    font-size: 0.95rem;
     margin-top: 0;
-    font-size: 0.95rem;      /* tipografia menor */
-    font-weight: 800;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
   }
 
   .breadcrumb-home-img {
     width: 18px;
     height: 18px;
     margin-top: 0;
+    margin-right: 6px;
   }
 
-  /* Aviso */
+  /* Aviso compacto */
   .aviso-vacinas {
-    padding: 10px 12px;
+    padding: 0.75rem;
     font-size: 0.9rem;
-    border-radius: 10px;
-    margin-bottom: 14px;
+    border-radius: 6px;
   }
 
-  /* Filtros */
-  .d-flex.flex-wrap.gap-2.mb-4 {
-    gap: 8px !important;
-    margin-bottom: 12px !important;
-  }
-
+  /* Botões de filtro mais enxutos; continuam “pill” */
   .btn-filtro {
-    width: 100%;             /* botões em largura total */
-    padding: 10px 12px;
-    font-size: 0.95rem;
+    padding: 6px 12px;
+    font-size: 0.9rem;
   }
 
-  /* Cards de vacina */
-  .row.gx-4 {
-    --bs-gutter-x: 12px;     /* reduz espaçamento lateral */
+  /* Cards e grid: já é 1 coluna no mobile via row-cols-1; só ajusta gutter e altura mínima */
+  .row.row-cols-1.row-cols-md-3 {
+    --bs-gutter-x: 0.75rem;
+    --bs-gutter-y: 0.75rem;
   }
 
   .vacina-card {
-    min-height: unset;
-    background-color: #fff;  /* melhora contraste no mobile */
-    border-radius: 10px;
-  }
-
-  .v-card-title {
-    padding: 10px 12px 0 12px !important;
-  }
-
-  .v-card-text {
-    padding: 8px 12px 12px 12px !important;
-  }
-
-  .text-h6 {
-    font-size: 1rem !important;
-  }
-
-  .text-body-1 {
-    font-size: 0.95rem !important;
+    min-height: 88px;
   }
 }
 </style>

@@ -135,8 +135,20 @@ export default {
     width: 36px;
     height: 36px;
   }
+
+  /* Permite o texto encolher dentro do flex */
+  .usuario {
+    min-width: 0;            /* importante para ellipsis funcionar em flex */
+    max-width: 92vw;         /* evita extravasar a tela */
+  }
+
   .saudacao {
-    display: none;
+    display: inline-block;   /* precisa ser bloco/inline-block p/ ellipsis */
+    max-width: 48vw;         /* ajuste fino: espaço p/ ícone e padding */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: .95rem;
   }
 
   .usuario-menu-content {
@@ -155,14 +167,14 @@ export default {
   .usuario-menu-content .v-list-item-title {
     font-size: 16px !important;
   }
+
   .icone {
     width: 22px;
     height: 22px;
   }
 
-  .v-dialog {
-    align-items: flex-end; 
-  }
+  .v-dialog { align-items: flex-end; }
+
   .popup-sair {
     width: calc(100vw - 24px);
     max-width: 420px;
@@ -170,25 +182,13 @@ export default {
     padding: 20px 16px;
     border-radius: 16px !important;
   }
-  .popup-sair__texto {
-    font-size: 1.05rem !important;
-    margin-bottom: 16px;
-  }
-  .popup-sair__botoes {
-    gap: 10px;
-  }
-  .popup-sair__cancelar,
-  .popup-sair__confirmar {
+  .popup-sair__texto { font-size: 1.05rem !important; margin-bottom: 16px; }
+  .popup-sair__botoes { gap: 10px; }
+  .popup-sair__cancelar, .popup-sair__confirmar {
     width: 100%;
-    min-width: 0;      
+    min-width: 0;
     padding: 10px 14px;
     font-size: 1rem;
-  }
-}
-
-@media (max-width: 360px) {
-  .usuario-menu-content {
-    width: 94vw !important;
   }
 }
 </style>

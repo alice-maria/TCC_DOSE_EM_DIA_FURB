@@ -36,10 +36,10 @@ namespace DoseEmDia.Controllers
             var page = document.AddPage();
             var gfx = XGraphics.FromPdfPage(page);
 
-            var fontRegular = new XFont("Verdana", 11, XFontStyle.Regular);
-            var fontBold = new XFont("Verdana", 11, XFontStyle.Bold);
-            var fontTitle = new XFont("Verdana", 13, XFontStyle.Bold);
-            var fontSmall = new XFont("Verdana", 9, XFontStyle.Regular);
+            var fontRegular = new XFont("Arial", 11, XFontStyle.Regular);
+            var fontBold = new XFont("Arial", 11, XFontStyle.Bold);
+            var fontTitle = new XFont("Arial", 13, XFontStyle.Bold);
+            var fontSmall = new XFont("Arial", 9, XFontStyle.Regular);
 
             int y = 40;
 
