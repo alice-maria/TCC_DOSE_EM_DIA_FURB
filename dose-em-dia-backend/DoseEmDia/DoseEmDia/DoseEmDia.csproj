@@ -41,8 +41,9 @@
     <Folder Include="Migrations\" />
   </ItemGroup>
   <ItemGroup>
-  	<Content Include="wwwroot\**\*.*" CopyToOutputDirectory="Always" />
+  	<Content Update="wwwroot\**\*.*">
+  		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  		<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+  	</Content>
   </ItemGroup>
-
-
 </Project>
