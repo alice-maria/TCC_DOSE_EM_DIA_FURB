@@ -56,6 +56,8 @@ namespace DoseEmDia.Controllers
             const int QT_AVENCER = 2;
 
             var hoje = DateTime.Today;
+            var nascimento = hoje.AddYears(-idadeAtual).Date;
+
             var rand = new Random(unchecked((int)DateTime.Now.Ticks));
             var lista = new List<Vacina>();
 
@@ -74,8 +76,8 @@ namespace DoseEmDia.Controllers
                 for (int i = 0; i < quantidade && lista.Count < TOTAL; i++)
                 {
                     var esquema = elegiveis[rand.Next(elegiveis.Count)];
-                    var vacina = CriarVacinaParaStatus(esquema, status, hoje, rand);
-                    lista.Add(vacina);
+                    var vacina = CriarVacinaParaStatus(esquema, status, hoje, nascimento, rand);
+                    if (vacina != null) lista.Add(vacina);
                 }
             }
 
@@ -86,62 +88,134 @@ namespace DoseEmDia.Controllers
             while (lista.Count < TOTAL)
             {
                 var esquema = elegiveis[rand.Next(elegiveis.Count)];
-                lista.Add(CriarVacinaParaStatus(esquema, StatusVacina.Aplicada, hoje, rand));
+                var v = CriarVacinaParaStatus(esquema, StatusVacina.Aplicada, hoje, nascimento, rand);
+                if (v != null) lista.Add(v);
             }
 
             AplicarStatusComBaseNaValidade(lista);
-
             return lista;
         }
 
-        private Vacina CriarVacinaParaStatus(EsquemaVacinal esquema, StatusVacina status, DateTime hoje, Random rand)
+        private Vacina? CriarVacinaParaStatus(EsquemaVacinal esquema, StatusVacina statusDesejado, DateTime hoje, DateTime nascimento, Random rand)
         {
-            int validade = esquema.ValidadeMeses > 0 ? esquema.ValidadeMeses : 120;
+            var minDateIdade = nascimento.AddYears(esquema.IdadeMinima);
+            var maxDateIdade = esquema.IdadeMaxima.HasValue
+                ? nascimento.AddYears(esquema.IdadeMaxima.Value + 1).AddDays(-1)
+                : hoje;
 
-            DateTime vencimentoAlvo = status switch
+            var limiteDezAnos = hoje.AddYears(-10);
+            var minDate = new DateTime(Math.Max(minDateIdade.Ticks, limiteDezAnos.Ticks));
+            var maxDate = new DateTime(Math.Min(maxDateIdade.Ticks, hoje.Ticks));
+
+            if (minDate > maxDate)
+                return null;
+
+            int validade = (esquema.ValidadeMeses > 0 && esquema.ValidadeMeses < 999) ? esquema.ValidadeMeses : 0;
+
+            DateTime dataAplicacao;
+
+            if (statusDesejado == StatusVacina.AVencer && validade > 0)
             {
-                StatusVacina.EmAtraso => hoje.AddDays(-rand.Next(1, 366)),
-                StatusVacina.AVencer => hoje.AddDays(rand.Next(1, 31)),
-                _ => hoje.AddDays(rand.Next(31, 365)),
-            };
+                var inicioJanelaVenc = hoje.Date;
+                var fimJanelaVenc = FimDoMes(hoje).Date;
 
-            DateTime dataAplicacao = vencimentoAlvo.AddMonths(-validade);
+                var minVencPossivel = minDate.AddMonths(validade).Date;
 
-            var vacina = new Vacina
+                var inicioVencEfetivo = new DateTime(Math.Max(inicioJanelaVenc.Ticks, minVencPossivel.Ticks));
+                var fimVencEfetivo = fimJanelaVenc;
+
+                if (inicioVencEfetivo > fimVencEfetivo)
+                    return null; 
+
+                var vencimentoAlvo = DataAleatoriaEntre(inicioVencEfetivo, fimVencEfetivo, rand);
+                dataAplicacao = vencimentoAlvo.AddMonths(-validade);
+
+                if (dataAplicacao < minDate) dataAplicacao = minDate;
+                if (dataAplicacao > maxDate) dataAplicacao = maxDate;
+            }
+            else if (statusDesejado == StatusVacina.EmAtraso && validade > 0)
+            {
+                var minVenc = minDate.AddMonths(validade).Date;
+                var maxVenc = hoje.AddDays(-1).Date;
+
+                if (minVenc > maxVenc)
+                    return null;
+
+                var pisoVenc = new DateTime(Math.Max(minVenc.Ticks, hoje.AddYears(-1).Ticks));
+                if (pisoVenc > maxVenc) pisoVenc = minVenc;
+
+                var vencimentoAlvo = DataAleatoriaEntre(pisoVenc, maxVenc, rand);
+                dataAplicacao = vencimentoAlvo.AddMonths(-validade);
+
+                if (dataAplicacao < minDate) dataAplicacao = minDate;
+                if (dataAplicacao > maxDate) dataAplicacao = maxDate;
+            }
+            else
+            {
+                var upperSugerido = hoje.AddDays(-31);
+                var upper = new DateTime(Math.Min(maxDate.Ticks, upperSugerido.Ticks));
+                if (upper < minDate) upper = maxDate; 
+
+                dataAplicacao = DataAleatoriaEntre(minDate, upper, rand);
+            }
+
+            return new Vacina
             {
                 Nome = esquema.Nome,
                 IntervaloEntreDoses = esquema.Intervalo,
-                NumeroDoses = 0,                        
+                NumeroDoses = 0,
                 NumeroLote = rand.Next(100000, 999999),
                 DataAplicacao = dataAplicacao,
                 ValidadeMeses = esquema.ValidadeMeses,
                 Fabricante = esquema.Fabricante,
-                Status = status
+                Status = statusDesejado
             };
-
-            return vacina;
         }
 
         private void AplicarStatusComBaseNaValidade(List<Vacina> vacinas)
         {
+            var hoje = DateTime.Today;
+            var anoAtual = hoje.Year;
+            var mesAtual = hoje.Month;
+
             foreach (var vacina in vacinas)
             {
-                int validade = (vacina.ValidadeMeses ?? 0);
+                int validade = vacina.ValidadeMeses ?? 0;
 
-                if (validade <= 0) continue;
-
-                var vencimento = vacina.DataAplicacao.AddMonths(validade);
-                var diasRestantes = (vencimento - DateTime.Today).TotalDays;
-
-                var statusCalculado = diasRestantes < 0
-                    ? StatusVacina.EmAtraso
-                    : (diasRestantes <= 30 ? StatusVacina.AVencer : StatusVacina.Aplicada);
-
-                if (vacina.Status != statusCalculado)
+                if (validade <= 0 || validade >= 999)
                 {
-                    Console.WriteLine($"Aviso: {vacina.Nome} está marcada como {vacina.Status}, mas cálculo deu {statusCalculado}");
+                    vacina.Status = StatusVacina.Aplicada;
+                    continue;
+                }
+
+                var vencimento = vacina.DataAplicacao.AddMonths(validade).Date;
+
+                if (vencimento < hoje)
+                {
+                    vacina.Status = StatusVacina.EmAtraso;
+                }
+                else if (vencimento.Year == anoAtual && vencimento.Month == mesAtual)
+                {
+                    vacina.Status = StatusVacina.AVencer;
+                }
+                else
+                {
+                    vacina.Status = StatusVacina.Aplicada;
                 }
             }
+        }
+
+        private static DateTime FimDoMes(DateTime data)
+        {
+            var primeiroDiaMesSeguinte = new DateTime(data.Year, data.Month, 1).AddMonths(1);
+            return primeiroDiaMesSeguinte.AddDays(-1);
+        }
+
+        private static DateTime DataAleatoriaEntre(DateTime inicio, DateTime fim, Random rand)
+        {
+            if (fim < inicio) return inicio;
+            var range = (fim - inicio).Days;
+            return inicio.AddDays(rand.Next(0, range + 1));
         }
 
         private readonly List<EsquemaVacinal> _tabelaVacinas = new()
@@ -159,36 +233,35 @@ namespace DoseEmDia.Controllers
             new EsquemaVacinal { Nome = "DTP", IdadeMinima = 1, Intervalo = "15 meses + 4 anos", NumeroDoses = 2, ValidadeMeses = 48, Fabricante = "Butantan" },
             new EsquemaVacinal { Nome = "Hepatite A", IdadeMinima = 1, Intervalo = "15 meses", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "GSK" },
             new EsquemaVacinal { Nome = "Varicela", IdadeMinima = 1, Intervalo = "15 meses", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "MSD" },
-            
+
             // Adolescente
             new EsquemaVacinal { Nome = "HPV quadrivalente", IdadeMinima = 9, IdadeMaxima = 14, Sexo = "F", Intervalo = "2 doses com 6 meses de intervalo", NumeroDoses = 2, ValidadeMeses = 120, Fabricante = "MSD" },
             new EsquemaVacinal { Nome = "HPV quadrivalente", IdadeMinima = 9, IdadeMaxima = 14, Sexo = "M", Intervalo = "2 doses com 6 meses de intervalo", NumeroDoses = 2, ValidadeMeses = 120, Fabricante = "MSD" },
             new EsquemaVacinal { Nome = "Meningocócica ACWY", IdadeMinima = 11, IdadeMaxima = 14, Intervalo = "Dose única", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "Sanofi" },
-            
+
             // Adulto
             new EsquemaVacinal { Nome = "dT (Dupla adulto)", IdadeMinima = 10, Intervalo = "Reforço a cada 10 anos", NumeroDoses = 1, ValidadeMeses = 120, Fabricante = "Butantan" },
             new EsquemaVacinal { Nome = "Febre Amarela", IdadeMinima = 9, Intervalo = "Dose única ou reforço a depender da região", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "Bio-Manguinhos" },
             new EsquemaVacinal { Nome = "Tríplice Viral (SCR)", IdadeMinima = 20, Intervalo = "2 doses se não vacinado na infância", NumeroDoses = 2, ValidadeMeses = 240, Fabricante = "Fiocruz" },
             new EsquemaVacinal { Nome = "Hepatite B", IdadeMinima = 20, Intervalo = "3 doses", NumeroDoses = 3, ValidadeMeses = 240, Fabricante = "Butantan" },
             new EsquemaVacinal { Nome = "Covid-19", IdadeMinima = 6, Intervalo = "2 ou 3 doses + reforços anuais", NumeroDoses = 3, ValidadeMeses = 12, Fabricante = "Pfizer" },
-            
+
             // Idoso
             new EsquemaVacinal { Nome = "Pneumocócica 23-valente", IdadeMinima = 60, Intervalo = "Dose única ou esquema em 2 doses", NumeroDoses = 2, ValidadeMeses = 999, Fabricante = "GSK" },
             new EsquemaVacinal { Nome = "Influenza (trivalente)", IdadeMinima = 60, Intervalo = "Dose anual", NumeroDoses = 1, ValidadeMeses = 12, Fabricante = "Butantan" },
             new EsquemaVacinal { Nome = "Covid-19", IdadeMinima = 60, Intervalo = "Reforço a cada 6 meses", NumeroDoses = 4, ValidadeMeses = 6, Fabricante = "Pfizer" },
-
         };
 
         public class EsquemaVacinal
         {
-            public string Nome { get; set; }
+            public string Nome { get; set; } = default!;
             public int IdadeMinima { get; set; } // em anos
             public int? IdadeMaxima { get; set; } // null = sem limite
             public string? Sexo { get; set; } // "F", "M" ou null
-            public string Intervalo { get; set; }
+            public string Intervalo { get; set; } = default!;
             public int NumeroDoses { get; set; }
             public int ValidadeMeses { get; set; }
-            public string Fabricante { get; set; }
+            public string Fabricante { get; set; } = default!;
         }
     }
 }

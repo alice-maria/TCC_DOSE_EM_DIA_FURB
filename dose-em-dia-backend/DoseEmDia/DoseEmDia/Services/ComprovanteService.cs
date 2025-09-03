@@ -57,14 +57,24 @@ namespace DoseEmDia.Controllers
             gfx.DrawString("Certificado de Vacinação", fontTitle, XBrushes.Black,
                 new XRect(0, y, page.Width, 20), XStringFormats.TopCenter);
             y += 20;
-            gfx.DrawString($"Gerado em: {DateTime.Now:dd/MM/yyyy} às {DateTime.Now:HH:mm}", fontSmall, XBrushes.Black,
+            gfx.DrawString($"Gerado em: {DateTime.Now.AddHours(-3):dd/MM/yyyy} às {DateTime.Now.AddHours(-3):HH:mm}", fontSmall, XBrushes.Black,
                 new XRect(0, y, page.Width, 20), XStringFormats.TopCenter);
             y += 30;
+
+            var fontLogo = new XFont("Arial", 16, XFontStyle.Bold);
+            var brushLogo = new XSolidBrush(XColors.OrangeRed);
+
+            string textoLogo = "Dose em Dia";
+            var tamanho = gfx.MeasureString(textoLogo, fontLogo);
+            double logoX = page.Width - tamanho.Width - 40; // margem direita
+            double logoY = 30;
+
+            gfx.DrawString(textoLogo, fontLogo, brushLogo, logoX, logoY);
 
             // Vacinas
             foreach (var vacina in vacinas)
             {
-                gfx.DrawString($"✓ {vacina.Nome} - {vacina.NumeroDoses}", fontBold, XBrushes.Black, 70, y); y += 20;
+                gfx.DrawString($"✓ {vacina.Nome}", fontBold, XBrushes.Black, 70, y); y += 20;
                 gfx.DrawString($"Aplicada em: {vacina.DataAplicacao:dd/MM/yyyy}", fontRegular, XBrushes.Black, 70, y); y += 25;
 
                 if (y > page.Height - 100)

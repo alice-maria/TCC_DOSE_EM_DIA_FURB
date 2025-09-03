@@ -262,32 +262,25 @@ export default {
   font-weight: 500;
 }
 
-/* ===== Mobile only ===== */
 @media (max-width: 600px) {
-
-  /* Mantém sua margem de 95px conforme solicitado */
   .pagina-home {
     margin-left: 90px;
     padding: 16px 12px;
-    /* respiro interno para não “colar” nas bordas */
     box-sizing: border-box;
   }
 
-  /* Cabeçalho: logo + saudação em linha, compactos */
   .header {
     gap: 12px;
   }
 
   .logo-container {
     margin: 0;
-    /* remove offsets negativos no mobile */
     flex-direction: row;
     align-items: center;
   }
 
   .logo-img {
     height: 56px;
-    /* reduz a altura da logo */
     width: auto;
     object-fit: contain;
   }
@@ -295,13 +288,10 @@ export default {
   .mensagem-boas-vindas {
     margin: 0 0 0 8px;
     font-size: 1.35rem;
-    /* antes 1rem, agora maior */
     font-weight: 600;
-    /* dá mais presença */
     line-height: 1.3;
   }
 
-  /* Breadcrumbs mais legíveis e sem deslocamento vertical */
   .meus-breadcrumbs {
     margin-top: 8px !important;
   }
@@ -318,20 +308,17 @@ export default {
     margin-right: 6px;
   }
 
-  /* Aviso compacto */
   .aviso-vacinas {
     padding: 0.75rem;
     font-size: 0.9rem;
     border-radius: 6px;
   }
 
-  /* Botões de filtro mais enxutos; continuam “pill” */
   .btn-filtro {
     padding: 6px 12px;
     font-size: 0.9rem;
   }
 
-  /* Cards e grid: já é 1 coluna no mobile via row-cols-1; só ajusta gutter e altura mínima */
   .row.row-cols-1.row-cols-md-3 {
     --bs-gutter-x: 0.75rem;
     --bs-gutter-y: 0.75rem;

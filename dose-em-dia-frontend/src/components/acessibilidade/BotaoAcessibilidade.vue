@@ -237,7 +237,7 @@ export default {
 @media (max-width: 600px) {
   .acessibilidade-container {
     right: 12px;
-    bottom: 660px; 
+    bottom: 560px; 
   }
 
   .acessibilidade-wrap .acessibilidade-tooltip {
