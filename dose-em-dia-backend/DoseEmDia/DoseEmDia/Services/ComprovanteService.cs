@@ -49,20 +49,6 @@ namespace DoseEmDia.Controllers
             gfx.DrawString($"E-mail: {usuario.Email}", fontBold, XBrushes.Blue, 40, y); y += 20;
             gfx.DrawString($"Telefone: {FormatTelefone(usuario.Telefone)}", fontBold, XBrushes.Blue, 40, y); y += 25;
 
-            // Logo do sistema
-            var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagens", "logo.png");
-            if (System.IO.File.Exists(logoPath))
-            {
-                var image = XImage.FromFile(logoPath);
-                double logoWidth = 140;
-                double logoHeight = 120;
-                double marginRight = 40;
-                double logoX = page.Width - logoWidth - marginRight;
-                double logoY = 20;
-
-                gfx.DrawImage(image, logoX, logoY, logoWidth, logoHeight);
-            }
-
             // Linha divisória
             gfx.DrawLine(XPens.Black, 40, y, page.Width - 40, y);
             y += 30;
@@ -78,14 +64,7 @@ namespace DoseEmDia.Controllers
             // Vacinas
             foreach (var vacina in vacinas)
             {
-                // Caminho do ícone
-                var iconePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagens", "check-icon.png");
-                if (System.IO.File.Exists(iconePath))
-                {
-                    var icone = XImage.FromFile(iconePath);
-                    gfx.DrawImage(icone, 45, y, 16, 16); // ⬅️ ajuste a posição e tamanho como desejar
-                }
-                gfx.DrawString($"{vacina.Nome} - {vacina.NumeroDoses}", fontBold, XBrushes.Black, 70, y); y += 20;
+                gfx.DrawString($"✓ {vacina.Nome} - {vacina.NumeroDoses}", fontBold, XBrushes.Black, 70, y); y += 20;
                 gfx.DrawString($"Aplicada em: {vacina.DataAplicacao:dd/MM/yyyy}", fontRegular, XBrushes.Black, 70, y); y += 25;
 
                 if (y > page.Height - 100)

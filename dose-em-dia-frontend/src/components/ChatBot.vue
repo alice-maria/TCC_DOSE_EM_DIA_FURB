@@ -745,88 +745,117 @@ export default {
 .btn-educacao:hover {
   background: #e0e0e0;
 }
-
-@media (min-width: 420px) {
-  .grid-educacao {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.chatbot-popup {
-  padding-bottom: 80px;
-}
-
-/* =========================
-   CHATBOT - MOBILE STYLE
-   ========================= */
+/* ===============================
+   CHATBOT — MOBILE (até 600px)
+   =============================== */
 @media (max-width: 600px) {
-  .chatbot-popup {
-    width: 100vw;
-    height: 100vh;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    border-radius: 0;
-    padding: 20px 16px 100px 16px; /* mais espaço no fundo para botões */
+  /* Botão flutuante (compacto e fora da safe area) */
+  .chatbot-toggle {
+     z-index: 2001;
+     bottom: calc(14px + env(safe-area-inset-bottom));
+     right: calc(14px + env(safe-area-inset-right));
+  }
+  .chatbot-toggle img {
+     width: 50px;
+     height: 50px;
   }
 
-  .chatbot-toggle img {
-    width: 52px;
-    height: 52px;
+  /* Pop-up compacto (sem tela cheia) */
+  .chatbot-popup {
+    /* Variáveis locais (evita :root e não exige mexer no template) */
+    --maxw: 340px;              /* largura máxima desejada no mobile */
+    --minw: 272px;              /* largura mínima confortável */
+    --maxh: 68vh;               /* não ocupa a tela toda */
+    --padx: 14px;
+    --pady: 14px;
+    --radius: 14px;
+
+    /* deslocamento quando sidebar abrir (ajustado mais abaixo via :global) */
+    --sidebar-offset-mobile: 0px;
+
+    z-index: 2001;
+    width: min(92vw, var(--maxw));
+    min-width: var(--minw);
+    max-height: var(--maxh);
+    height: auto;
+    bottom: calc(72px + env(safe-area-inset-bottom)); /* afasta do botão flutuante */
+    right: calc(14px + env(safe-area-inset-right) + var(--sidebar-offset-mobile));
+    left: auto;
+    border-radius: var(--radius);
+    padding: calc(var(--pady) + 4px) var(--padx) calc(var(--pady) + 56px) var(--padx);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* o scroll vai no filho direto (abaixo) */
+    box-shadow: 0 10px 28px rgba(0,0,0,.22);
   }
+
+  /* ÁREA ROLÁVEL do conteúdo interno (não precisa class no template) */
+  .chatbot-popup > div {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow: auto; /* rolagem só aqui */
+  }
+
+  /* Botão fechar e tipografia levemente menores */
+  .fechar-chat { top: 8px; right: 8px; padding: 6px; }
+  .fechar-chat img { width: 18px; height: 18px; opacity: .85; }
 
   .mensagem.bot {
-    font-size: 0.9rem;
-    padding: 10px 14px;
     max-width: 100%;
+    font-size: .92rem;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border-radius: 16px 16px 16px 6px;
   }
 
+  /* Opções / atalhos */
   .opcao button,
   .card-atalho,
-  .btn-educacao,
+  .btn-educacao {
+    width: 100%;
+    padding: 12px;
+    font-size: .92rem;
+    text-align: center;
+  }
+  .grid-educacao { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 8px; }
+  .educacao-titulo { font-size: 1rem; margin-bottom: 6px; }
+  .educacao-lista { margin: 6px 0 10px 18px; }
+  .educacao-lista li { margin: 4px 0; }
+
+  /* Formulário de suporte */
+  .form-suporte { width: 100%; max-width: 100%; padding: 0 4px; gap: 10px; }
+  .form-suporte input,
+  .form-suporte textarea { max-width: 100%; font-size: .95rem; padding: 10px 12px; }
+
+  /* Botões de ação “grudados” no rodapé do popup (sem ocupar a tela toda) */
   .voltar,
   .btn-acao {
-    font-size: 0.9rem;
+    position: sticky;
+    bottom: 8px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 8px 0 0 0;
     padding: 12px;
-    width: 100%;
+    font-size: .95rem;
+    border-radius: 10px;
+    z-index: 1;
   }
 
-  .opcao button,
-  .card-atalho {
-    text-align: center; /* centraliza para mobile */
-  }
-
-  .grid-educacao {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .educacao-card .educacao-titulo {
-    font-size: 1rem;
-  }
-
-  .form-suporte {
-    width: 100%;
-    max-width: 100%;
-    padding: 0 8px;
-  }
-
-  .form-suporte input,
-  .form-suporte textarea {
-    max-width: 100%;
-    font-size: 0.9rem;
-    padding: 8px 10px;
-  }
-
-  .fechar-chat {
-    top: 8px;
-    right: 8px;
-  }
-
-  .fechar-chat img {
-    width: 18px;
-    height: 18px;
-  }
+  /* Limpeza de estilos que conflitam no mobile */
+  .chatbot-popup { padding-bottom: 16px; }
+  .btn-acao { margin-top: 0; }
+  .voltarEducacao { margin-top: 0 !important; }
 }
 
+@media (max-width: 600px) {
+  :global(html.sidebar-aberta) .chatbot-popup {
+    --sidebar-offset-mobile: 8vw;   /* ajuste fino conforme a largura real do seu sidebar */
+  }
+  :global(html.sidebar-aberta) .chatbot-toggle {
+    right: calc(14px + env(safe-area-inset-right) + 8vw);
+  }
+}
 </style>
