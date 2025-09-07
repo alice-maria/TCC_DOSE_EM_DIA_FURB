@@ -3,158 +3,86 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using DoseEmDia.Controllers.DTO;
-using DoseEmDia.Controllers.Helpers;
-using DoseEmDia.Models;
-using DoseEmDia.Models.db;
-using DoseEmDia.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
-namespace DoseEmDia.Services
+namespace DoseEmDia.Services.Geo
 {
-    public class PostoVacinacaoLocService : IPostoVacinacaoService
+    public sealed class PostoVacinacaoLocService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly HttpClient _httpClient;
-        private readonly IConfiguration _configuration;
-        private const int LIMITE_REQUISICOES = 20;
+        private readonly HttpClient _http;
+        private readonly IConfiguration _config;
 
-        public PostoVacinacaoLocService(
-            ApplicationDbContext context,
-            IHttpClientFactory httpClientFactory,
-            IConfiguration configuration)
+        public PostoVacinacaoLocService(HttpClient http, IConfiguration config)
         {
-            _context = context;
-            _httpClient = httpClientFactory.CreateClient();
-            _httpClient.Timeout = TimeSpan.FromSeconds(8);
-            _configuration = configuration;
+            _http = http ?? throw new ArgumentNullException(nameof(http));
+            _http.Timeout = TimeSpan.FromSeconds(10);
+            _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
-        public async Task<IReadOnlyList<PostoVacinacaoResponse>> BuscarPostosVacinaAsync(
-            int usuarioId,
+        /// <summary>
+        /// Fluxo 2 etapas: (1) geocodifica o endereço → lat/lng; (2) busca UBS/Clínicas próximas e retorna ordenado por distância.
+        /// </summary>
+        public async Task<IReadOnlyList<NearPlaceResult>> BuscarPostosMaisProximosAsync(
+            string enderecoTexto,
+            int raioMetros = 10_000,
+            int limite = 3,
             CancellationToken ct = default)
         {
-            // --- rate limit simples (não propagar ct de request no SaveChanges) ---
-            for (var tentativa = 0; tentativa < 3; tentativa++)
-            {
-                var contador = await _context.ContadorRequisicoes.FirstOrDefaultAsync(ct);
-                if (contador is null)
-                {
-                    contador = new ContadorRequisicoes { Id = 1, Requisicoes = 0 };
-                    _context.ContadorRequisicoes.Add(contador);
-                    await _context.SaveChangesAsync(CancellationToken.None);
-                }
+            if (string.IsNullOrWhiteSpace(enderecoTexto))
+                throw new ArgumentException("Endereço não pode ser vazio.", nameof(enderecoTexto));
 
-                if (contador.Requisicoes >= LIMITE_REQUISICOES)
-                    throw new InvalidOperationException("Limite de requisições atingido. Entre em contato com o suporte.");
+            var (lat, lng) = await GeocodeAsync(enderecoTexto, ct)
+                ?? throw new InvalidOperationException("Não foi possível geocodificar o endereço.");
 
-                contador.Requisicoes++;
+            var candidatos = await BrowseHealthAsync(lat, lng, raioMetros, ct);
 
-                try
-                {
-                    await _context.SaveChangesAsync(CancellationToken.None);
-                    break;
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (tentativa == 2) throw;
-                    await Task.Delay(50);
-                }
-            }
+            // Se a HERE não fornecer distance, calcule por Haversine.
+            foreach (var c in candidatos.Where(c => c.DistanceMeters is null))
+                c.DistanceMeters = (int)Math.Round(HaversineMeters(lat, lng, c.Latitude, c.Longitude));
 
-            // --- usuário + endereço ---
-            using var dbCts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-            var usuario = await _context.Usuario
-                .Include(u => u.Endereco)
-                .FirstOrDefaultAsync(u => u.IdUser == usuarioId, dbCts.Token);
-
-            if (usuario?.Endereco == null)
-                throw new InvalidOperationException("Endereço do usuário não encontrado.");
-
-            var cidadeAlvo = (usuario.Endereco.Cidade ?? "").Trim();
-            var ufAlvo = (usuario.Endereco.Estado ?? "").Trim();
-
-            // --- geocode com candidatos ---
-            (double lat, double lng)? coord = null;
-            foreach (var termo in CandidatosEndereco(usuario.Endereco))
-            {
-                coord = await GeocodeHereAsync(termo, ct);
-                if (coord is not null) break;
-            }
-
-            if (coord is null)
-                throw new InvalidOperationException("Não foi possível obter coordenadas para o endereço informado.");
-
-            var (latitude, longitude) = coord.Value;
-
-            // --- browse com termos e fallback por categorias + raio progressivo ---
-            var raios = new[] { 5000, 10000, 15000 };
-            var termos = new[] { "Unidade Básica de Saúde", "UBS", "Posto de Saúde", "Unidade de Saúde", "Clínica" };
-            var agregados = new List<(int Dist, PostoVacinacaoResponse Resp)>();
-
-            foreach (var raio in raios)
-            {
-                foreach (var termo in termos)
-                {
-                    var blocos = await BrowseHereTextoAsync(latitude, longitude, raio, termo, cidadeAlvo, ufAlvo, ct);
-                    agregados.AddRange(blocos);
-                    if (agregados.Count >= 3) return Top3(agregados);
-                }
-
-                var cats = await BrowseHereCategoriasAsync(latitude, longitude, raio, cidadeAlvo, ufAlvo, ct);
-                agregados.AddRange(cats);
-                if (agregados.Count >= 3) return Top3(agregados);
-            }
-
-            return Top3(agregados);
+            return candidatos
+                .Where(c => c.DistanceMeters.HasValue)
+                .OrderBy(c => c.DistanceMeters!.Value)
+                .Take(Math.Max(1, limite))
+                .ToList();
         }
 
-        // -------------------- HERE: Geocode --------------------
-        private async Task<(double lat, double lng)?> GeocodeHereAsync(string enderecoCompleto, CancellationToken ct)
+        // ---------- PASSO 1: GEOCODING ----------
+        private async Task<(double lat, double lng)?> GeocodeAsync(string endereco, CancellationToken ct)
         {
-            var apiKey = _configuration["Here:ApiKey"];
-            if (string.IsNullOrWhiteSpace(apiKey))
-                throw new InvalidOperationException("Chave da HERE API não configurada (Here:ApiKey).");
-
+            var apiKey = ObterApiKey();
             var url =
                 "https://geocode.search.hereapi.com/v1/geocode" +
-                $"?q={Uri.EscapeDataString(enderecoCompleto)}" +
-                $"&in=countryCode:BRA&lang=pt-BR&limit=3" +
-                $"&apiKey={apiKey}";
+                $"?q={Uri.EscapeDataString(endereco)}&in=countryCode:BRA&lang=pt-BR&limit=3&apiKey={apiKey}";
 
             using var resp = await GetComRetryAsync(url, ct);
             if (!resp.IsSuccessStatusCode) return null;
 
-            var json = await resp.Content.ReadAsStringAsync(ct);
+            var json = await resp.Content.ReadAsStringAsync(); // sem CT (compatível c/ várias versões)
             using var doc = JsonDocument.Parse(json);
 
             if (!doc.RootElement.TryGetProperty("items", out var items) ||
-                items.ValueKind != JsonValueKind.Array ||
-                items.GetArrayLength() == 0)
+                items.ValueKind != JsonValueKind.Array || items.GetArrayLength() == 0)
                 return null;
 
             JsonElement? melhor = null;
-            int melhorScore = -1;
+            var melhorScore = -1;
             foreach (var item in items.EnumerateArray())
             {
-                int score = 0;
-                if (item.TryGetProperty("resultType", out var rt))
+                var score = item.TryGetProperty("resultType", out var rt) switch
                 {
-                    switch (rt.GetString())
-                    {
-                        case "houseNumber": score = 3; break;
-                        case "street": score = 2; break;
-                        case "locality": score = 1; break;
-                    }
-                }
-                if (score > melhorScore) { melhor = item; melhorScore = score; }
+                    true when rt.GetString() == "houseNumber" => 3,
+                    true when rt.GetString() == "street" => 2,
+                    true when rt.GetString() == "locality" => 1,
+                    _ => 0
+                };
+                if (score > melhorScore) { melhorScore = score; melhor = item; }
             }
 
-            var escolhido = melhor.HasValue ? melhor.Value : items.EnumerateArray().First();
+            JsonElement escolhido = melhor ?? items.EnumerateArray().First();
             if (!escolhido.TryGetProperty("position", out var pos)) return null;
 
             if (pos.TryGetProperty("lat", out var latEl) &&
@@ -166,183 +94,141 @@ namespace DoseEmDia.Services
             return null;
         }
 
-        // -------------------- HERE: Browse (texto) --------------------
-        private async Task<List<(int Dist, PostoVacinacaoResponse Resp)>> BrowseHereTextoAsync(
-            double latitude, double longitude, int raio, string termo,
-            string cidadeAlvo, string ufAlvo, CancellationToken ct)
+        // ---------- PASSO 2: BROWSE ----------
+        private async Task<List<NearPlaceResult>> BrowseHealthAsync(double lat, double lng, int raioMetros, CancellationToken ct)
         {
-            var apiKey = _configuration["Here:ApiKey"];
-            if (string.IsNullOrWhiteSpace(apiKey))
-                return new List<(int, PostoVacinacaoResponse)>();
+            var apiKey = ObterApiKey();
+            var baseCoord = $"{lat.ToString(CultureInfo.InvariantCulture)},{lng.ToString(CultureInfo.InvariantCulture)}";
+            var termos = new[] { "Unidade Básica de Saúde", "UBS", "Posto de Saúde", "Unidade de Saúde", "Clínica" };
 
-            var baseCoord = $"{latitude.ToString(CultureInfo.InvariantCulture)},{longitude.ToString(CultureInfo.InvariantCulture)}";
-            var q = Uri.EscapeDataString(termo);
+            var resultados = new List<NearPlaceResult>();
 
-            var url =
-                "https://discover.search.hereapi.com/v1/browse" +
-                $"?q={q}" +
-                $"&in=circle:{baseCoord};r={raio}" +
-                $"&at={baseCoord}" +
-                $"&limit=20" +
-                $"&lang=pt-BR" +
-                $"&apiKey={apiKey}";
+            // 2a) termos texto
+            foreach (var termo in termos)
+            {
+                var url =
+                    "https://discover.search.hereapi.com/v1/browse" +
+                    $"?q={Uri.EscapeDataString(termo)}" +
+                    $"&in=circle:{baseCoord};r={raioMetros}" +
+                    $"&at={baseCoord}" +
+                    $"&limit=20&lang=pt-BR&apiKey={apiKey}";
 
-            using var resp = await GetComRetryAsync(url, ct);
-            if (!resp.IsSuccessStatusCode) return new List<(int, PostoVacinacaoResponse)>();
+                resultados.AddRange(await FetchBrowsePageAsync(url, ct));
+            }
 
-            var json = await resp.Content.ReadAsStringAsync(ct);
-            using var doc = JsonDocument.Parse(json);
-            if (!doc.RootElement.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array)
-                return new List<(int, PostoVacinacaoResponse)>();
-
-            return MapearRespostas(items, cidadeAlvo, ufAlvo);
-        }
-
-        // -------------------- HERE: Browse (categorias) --------------------
-        private async Task<List<(int Dist, PostoVacinacaoResponse Resp)>> BrowseHereCategoriasAsync(
-            double latitude, double longitude, int raio,
-            string cidadeAlvo, string ufAlvo, CancellationToken ct)
-        {
-            var apiKey = _configuration["Here:ApiKey"];
-            if (string.IsNullOrWhiteSpace(apiKey))
-                return new List<(int, PostoVacinacaoResponse)>();
-
-            // UBS geralmente aparece como clínica municipal; hospital como fallback.
+            // 2b) categorias (fallback)
             var categories = "health-care.clinic,health-care.hospital";
-            var baseCoord = $"{latitude.ToString(CultureInfo.InvariantCulture)},{longitude.ToString(CultureInfo.InvariantCulture)}";
-
-            var url =
-                "https://discover.search.hereapi.com/v1/browse" +
-                $"?categories={categories}" +
-                $"&in=circle:{baseCoord};r={raio}" +
-                $"&at={baseCoord}" +
-                $"&limit=20" +
-                $"&lang=pt-BR" +
-                $"&apiKey={apiKey}";
-
-            using var resp = await GetComRetryAsync(url, ct);
-            if (!resp.IsSuccessStatusCode) return new List<(int, PostoVacinacaoResponse)>();
-
-            var json = await resp.Content.ReadAsStringAsync(ct);
-            using var doc = JsonDocument.Parse(json);
-            if (!doc.RootElement.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array)
-                return new List<(int, PostoVacinacaoResponse)>();
-
-            return MapearRespostas(items, cidadeAlvo, ufAlvo);
-        }
-
-        // -------------------- Mapeamento comum + filtro tolerante --------------------
-        private static List<(int Dist, PostoVacinacaoResponse Resp)> MapearRespostas(
-            JsonElement items, string cidadeAlvo, string ufAlvo)
-        {
-            static string Norm(string? s)
             {
-                if (string.IsNullOrWhiteSpace(s)) return "";
-                var nf = s.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
-                var sb = new StringBuilder(nf.Length);
-                foreach (var ch in nf)
-                {
-                    var cat = CharUnicodeInfo.GetUnicodeCategory(ch);
-                    if (cat != UnicodeCategory.NonSpacingMark) sb.Append(ch);
-                }
-                return sb.ToString().Normalize(NormalizationForm.FormC);
+                var url =
+                    "https://discover.search.hereapi.com/v1/browse" +
+                    $"?categories={categories}" +
+                    $"&in=circle:{baseCoord};r={raioMetros}" +
+                    $"&at={baseCoord}" +
+                    $"&limit=20&lang=pt-BR&apiKey={apiKey}";
+                resultados.AddRange(await FetchBrowsePageAsync(url, ct));
             }
 
-            var alvoCidade = Norm(cidadeAlvo);
-            var alvoUF = Norm(ufAlvo);
-
-            bool UFMatch(string v)
-            {
-                var n = Norm(v);
-                if (string.IsNullOrEmpty(alvoUF)) return true;
-                if (n == alvoUF) return true;
-                if (alvoUF == "sc" && (n == "sc" || n == "santacatarina")) return true;
-                return false;
-            }
-
-            var lista = new List<(int Dist, PostoVacinacaoResponse Resp)>();
-
-            foreach (var item in items.EnumerateArray())
-            {
-                if (!item.TryGetProperty("address", out var address)) continue;
-
-                string GetAddr(string prop) =>
-                    address.TryGetProperty(prop, out var el) ? (el.GetString() ?? string.Empty) : string.Empty;
-
-                var logradouro = GetAddr("street");
-                var bairro = GetAddr("district");
-                var cidade = GetAddr("city");
-                var estado = GetAddr("state");
-
-                // filtra apenas se info existir em ambos os lados
-                if (!string.IsNullOrWhiteSpace(cidadeAlvo) && !string.IsNullOrWhiteSpace(cidade))
-                    if (Norm(cidade) != alvoCidade) continue;
-
-                if (!string.IsNullOrWhiteSpace(ufAlvo) && !string.IsNullOrWhiteSpace(estado))
-                    if (!UFMatch(estado)) continue;
-
-                var distanciaMetros = item.TryGetProperty("distance", out var distEl)
-                    ? distEl.GetInt32() : int.MaxValue;
-
-                if (!item.TryGetProperty("position", out var pos)) continue;
-                if (!pos.TryGetProperty("lat", out var latEl)) continue;
-                if (!pos.TryGetProperty("lng", out var lngEl)) continue;
-
-                var lat = latEl.GetDouble();
-                var lng = lngEl.GetDouble();
-
-                var nome = item.TryGetProperty("title", out var titleEl) ? (titleEl.GetString() ?? "") : "";
-
-                var resp = new PostoVacinacaoResponse
-                {
-                    Nome = string.IsNullOrWhiteSpace(nome) ? "Unidade de Saúde" : nome,
-                    EnderecoCompleto = $"{logradouro}, {bairro} - {cidade}/{estado}"
-                        .Trim()
-                        .TrimStart(',')
-                        .Replace(" ,", ","),
-                    Distancia = FormatacaoHelper.FormatarDistancia(distanciaMetros),
-                    LinkGoogleMaps = GerarLinkGoogleMaps(lat, lng)
-                };
-
-                lista.Add((distanciaMetros, resp));
-            }
-
-            return lista
-                .GroupBy(x => $"{x.Resp.Nome}|{x.Resp.EnderecoCompleto}|{x.Resp.LinkGoogleMaps}")
-                .Select(g => g.OrderBy(t => t.Dist).First())
-                .OrderBy(t => t.Dist)
+            // Dedup por (nome + lat + lng)
+            return resultados
+                .GroupBy(x => $"{x.Name}|{x.Latitude:0.000000}|{x.Longitude:0.000000}")
+                .Select(g => g.OrderBy(r => r.DistanceMeters ?? int.MaxValue).First())
                 .ToList();
         }
 
-        // -------------------- Montagem de endereço (candidatos) --------------------
-        private static IEnumerable<string> CandidatosEndereco(Endereco e)
+        private async Task<List<NearPlaceResult>> FetchBrowsePageAsync(string url, CancellationToken ct)
         {
-            string J(string? s) => string.IsNullOrWhiteSpace(s) ? "" : s.Trim();
-            var log = J(e.Logradouro);
-            var bai = J(e.Bairro);
-            var cid = J(e.Cidade);
-            var uf = J(e.Estado);
-            var cep = new string((e.CEP ?? "").Where(char.IsDigit).ToArray());
+            using var resp = await GetComRetryAsync(url, ct);
+            if (!resp.IsSuccessStatusCode) return new List<NearPlaceResult>();
 
-            var full = string.Join(", ", new[] { log, bai, cid, uf }.Where(s => !string.IsNullOrWhiteSpace(s)).Append("Brasil"));
-            if (!string.IsNullOrWhiteSpace(full)) yield return full;                    // Rua, Bairro, Cidade, UF, Brasil
-            if (!string.IsNullOrWhiteSpace(cep) && cep.Length == 8) yield return $"{cep}, Brasil"; // CEP, Brasil
-            if (!string.IsNullOrWhiteSpace(cid) && !string.IsNullOrWhiteSpace(uf)) yield return $"{cid}, {uf}, Brasil"; // Cidade, UF, Brasil
+            var json = await resp.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+
+            if (!doc.RootElement.TryGetProperty("items", out var items) ||
+                items.ValueKind != JsonValueKind.Array)
+                return new List<NearPlaceResult>();
+
+            var lista = new List<NearPlaceResult>();
+            foreach (var item in items.EnumerateArray())
+            {
+                if (!item.TryGetProperty("position", out var pos)) continue;
+                if (!pos.TryGetProperty("lat", out var latEl)) continue;
+                if (!pos.TryGetProperty("lng", out var lngEl)) continue;
+                if (!latEl.TryGetDouble(out var plat) || !lngEl.TryGetDouble(out var plng)) continue;
+
+                var name = item.TryGetProperty("title", out var tEl) ? (tEl.GetString() ?? "") : "";
+                var address = ParseAddress(item);
+
+                int? distance = null;
+                if (item.TryGetProperty("distance", out var dEl) && dEl.TryGetInt32(out var d))
+                    distance = d;
+
+                lista.Add(new NearPlaceResult
+                {
+                    Name = string.IsNullOrWhiteSpace(name) ? "Unidade de Saúde" : name.Trim(),
+                    Address = address,
+                    Latitude = plat,
+                    Longitude = plng,
+                    DistanceMeters = distance,
+                    DistanceText = distance is null ? null : FormatDistance(distance.Value),
+                    GoogleMapsLink = $"https://www.google.com/maps/search/?api=1&query={plat.ToString(CultureInfo.InvariantCulture)},{plng.ToString(CultureInfo.InvariantCulture)}"
+                });
+            }
+
+            return lista;
         }
 
-        // -------------------- HTTP com retry leve --------------------
+        // ---------- Helpers ----------
+        private static string ParseAddress(JsonElement item)
+        {
+            if (!item.TryGetProperty("address", out var address)) return "";
+            string Get(string key) => address.TryGetProperty(key, out var el) ? el.GetString() ?? "" : "";
+
+            var street = Get("street");
+            var district = Get("district");
+            var city = Get("city");
+            var state = Get("state");
+
+            var texto = $"{street}, {district} - {city}/{state}".Trim();
+            return texto.TrimStart(',').Replace(" ,", ",").Replace("  ", " ");
+        }
+
+        private static string FormatDistance(int meters) =>
+            meters < 1000 ? $"{meters} m" : $"{(meters / 1000.0):0.0} km";
+
+        private static double HaversineMeters(double lat1, double lon1, double lat2, double lon2)
+        {
+            static double ToRad(double deg) => Math.PI * deg / 180.0;
+            const double R = 6_371_000.0; // metros
+            var dLat = ToRad(lat2 - lat1);
+            var dLon = ToRad(lon2 - lon1);
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                    Math.Cos(ToRad(lat1)) * Math.Cos(ToRad(lat2)) *
+                    Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            return R * c;
+        }
+
+        private string ObterApiKey()
+        {
+            var key = _config["Here:ApiKey"];
+            if (string.IsNullOrWhiteSpace(key)) key = _config["HERE:ApiKey"];
+            if (string.IsNullOrWhiteSpace(key))
+                throw new InvalidOperationException("Chave da HERE API não configurada (Here:ApiKey ou HERE:ApiKey).");
+            return key;
+        }
+
         private async Task<HttpResponseMessage> GetComRetryAsync(string url, CancellationToken ct)
         {
             const int maxTentativas = 3;
-            for (int i = 1; i <= maxTentativas; i++)
+            for (var i = 1; i <= maxTentativas; i++)
             {
                 try
                 {
-                    var resp = await _httpClient.GetAsync(url, ct);
+                    var resp = await _http.GetAsync(url, ct);
                     if ((int)resp.StatusCode == 429 || (int)resp.StatusCode >= 500)
                     {
                         if (i == maxTentativas) return resp;
-                        await Task.Delay(200 * i);
+                        await Task.Delay(200 * i, ct);
                         continue;
                     }
                     return resp;
@@ -350,25 +236,26 @@ namespace DoseEmDia.Services
                 catch (TaskCanceledException) when (!ct.IsCancellationRequested)
                 {
                     if (i == maxTentativas) throw;
-                    await Task.Delay(200 * i);
+                    await Task.Delay(200 * i, ct);
                 }
                 catch (HttpRequestException)
                 {
                     if (i == maxTentativas) throw;
-                    await Task.Delay(200 * i);
+                    await Task.Delay(200 * i, ct);
                 }
             }
             throw new InvalidOperationException("Falha inesperada no retry HTTP.");
         }
+    }
 
-        private static List<PostoVacinacaoResponse> Top3(List<(int Dist, PostoVacinacaoResponse Resp)> agregados) =>
-            agregados
-                .OrderBy(t => t.Dist)
-                .Take(3)
-                .Select(t => t.Resp)
-                .ToList();
-
-        private static string GerarLinkGoogleMaps(double latitude, double longitude) =>
-            $"https://www.google.com/maps/search/?api=1&query={latitude.ToString(CultureInfo.InvariantCulture)},{longitude.ToString(CultureInfo.InvariantCulture)}";
+    public sealed class NearPlaceResult
+    {
+        public string Name { get; set; } = "";
+        public string Address { get; set; } = "";
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public int? DistanceMeters { get; set; }
+        public string? DistanceText { get; set; }
+        public string GoogleMapsLink { get; set; } = "";
     }
 }

@@ -1,257 +1,284 @@
 <template>
-    <v-container fluid class="pa-0">
-        <div class="pagina-postos">
-            <!-- Cabeçalho -->
-            <div class="header">
-                <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
-                <div class="usuario">
-                    <UsuarioMenu />
-                </div>
-            </div>
-            <!-- Breadcrumbs -->
-            <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs">
-                <template #item="{ item }">
-                    <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]"
-                        @click="item.to && navegar(item.to)" style="cursor: pointer;">
-                        <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt=""
-                            class="breadcrumb-home-img" />
-                        {{ item.text }}
-                    </span>
-                </template>
-            </v-breadcrumbs>
-            <!-- Conteúdo -->
-            <div class="conteudo">
-                <div class="lista px-6 pb-8">
-                    <!-- Overlay de carregamento -->
-                    <v-overlay v-model="carregando" :persistent="true" class="d-flex align-center justify-center">
-                        <div class="loading-card">
-                            <v-progress-circular indeterminate size="36" width="4"></v-progress-circular>
-                            <div class="mt-3 text-center">
-                                <div class="fw-600">Buscando postos próximos…</div>
-                                <div class="text-caption text-medium-emphasis" v-if="progresso > 0 && progresso < 100">
-                                    {{ progresso }}%
-                                </div>
-                                <div class="text-caption text-medium-emphasis" v-else>
-                                    Isso pode levar alguns segundos.
-                                </div>
-                            </div>
-                        </div>
-                    </v-overlay>
-                    <v-card v-for="(posto, idx) in postos" :key="idx" class="m3-card mb-3" variant="elevated"
-                        elevation="1" :ripple="true" @click="abrirMapa(posto.linkGoogleMaps)">
-                        <div class="card-conteudo">
-                            <div class="texto">
-                                <v-card-title class="m3-card__title">{{ posto.nome }}</v-card-title>
-                                <v-card-subtitle class="m3-card__subtitle">
-                                    {{ posto.enderecoCompleto }}
-                                </v-card-subtitle>
-                                <p class="distancia" v-if="posto.distancia">Aprox. {{ posto.distancia }}</p>
-                            </div>
-                            <a :href="posto.linkGoogleMaps" target="_blank" rel="noopener noreferrer" @click.stop>
-                                <img src="@/assets/icons/seta.svg" alt="Ir" class="seta" />
-                            </a>
-                        </div>
-                    </v-card>
-                    <p v-if="!carregando && postos.length === 0 && !erro" class="text-center mt-4 text-gray-600">
-                        Nenhum posto de vacinação encontrado.
-                    </p>
-                    <p v-if="erro" class="text-center mt-4" style="color:#dc2626">
-                        {{ erro }}
-                    </p>
-                </div>
-            </div>
+  <v-container fluid class="pa-0">
+    <div class="pagina-postos">
+      <!-- Cabeçalho -->
+      <div class="header">
+        <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
+        <div class="usuario">
+          <UsuarioMenu />
         </div>
-    </v-container>
+      </div>
+
+      <!-- Breadcrumbs -->
+      <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs">
+        <template #item="{ item }">
+          <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
+            style="cursor: pointer;">
+            <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
+            {{ item.text }}
+          </span>
+        </template>
+      </v-breadcrumbs>
+
+      <!-- Conteúdo -->
+      <div class="conteudo">
+        <div class="lista px-6 pb-8">
+          <!-- Overlay de carregamento -->
+          <v-overlay v-model="carregando" :persistent="true" class="d-flex align-center justify-center">
+            <div class="loading-card">
+              <v-progress-circular indeterminate size="36" width="4" />
+              <div class="mt-3 text-center">
+                <div class="fw-600">Buscando postos próximos…</div>
+                <div class="text-caption text-medium-emphasis" v-if="progresso > 0 && progresso < 100">
+                  {{ progresso }}%
+                </div>
+                <div class="text-caption text-medium-emphasis" v-else>
+                  Isso pode levar alguns segundos.
+                </div>
+              </div>
+            </div>
+          </v-overlay>
+
+          <v-card v-for="posto in postos" :key="posto.linkGoogleMaps || posto.nome + posto.enderecoCompleto"
+            class="m3-card mb-3" variant="elevated" elevation="1" :ripple="true"
+            @click="abrirMapa(posto.linkGoogleMaps)">
+            <div class="card-conteudo">
+              <div class="texto">
+                <v-card-title class="m3-card__title">{{ posto.nome }}</v-card-title>
+                <v-card-subtitle class="m3-card__subtitle">
+                  {{ posto.enderecoCompleto }}
+                </v-card-subtitle>
+                <p class="distancia" v-if="posto.distancia">Aprox. {{ posto.distancia }}</p>
+              </div>
+              <a :href="posto.linkGoogleMaps" target="_blank" rel="noopener noreferrer" @click.stop>
+                <img src="@/assets/icons/seta.svg" alt="Ir" class="seta" />
+              </a>
+            </div>
+          </v-card>
+
+          <p v-if="!carregando && postos.length === 0 && !erro" class="text-center mt-4 text-gray-600">
+            Nenhum posto de vacinação encontrado.
+          </p>
+          <p v-if="erro" class="text-center mt-4" style="color:#dc2626">
+            {{ erro }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import UsuarioMenu from '@/views/UsuarioMenu.vue'
+import { api } from '@/services/api' // seu axios com baseURL já configurado
 
 const router = useRouter()
 
 const nomeUsuario = ref('')
 const breadcrumbs = ref([
-    { text: 'Início', to: '/home', icon: 'mdi-home' },
-    { text: 'Postos de saúde mais próximos' }
+  { text: 'Início', to: '/home', icon: 'mdi-home' },
+  { text: 'Postos de saúde mais próximos' }
 ])
 
 const postos = ref([])
 const carregando = ref(false)
 const erro = ref('')
-
-const API_POSTOS = 'http://localhost:5054/api/localizacao/buscar-postos'
+const progresso = ref(0)
+let timer = null
 
 function navegar(to) {
-    router.push(to)
+  router.push(to)
+}
+
+function abrirMapa(link) {
+  if (!link) return
+  window.open(link, '_blank', 'noopener,noreferrer')
+}
+
+function iniciarProgresso() {
+  progresso.value = 0
+  clearInterval(timer)
+  // animação simples para feedback visual enquanto a API responde
+  timer = setInterval(() => {
+    if (progresso.value < 90) progresso.value += 5
+  }, 250)
+}
+
+function finalizarProgresso() {
+  clearInterval(timer)
+  progresso.value = 100
+  setTimeout(() => (progresso.value = 0), 600)
 }
 
 async function buscarPostosPorUsuario(usuarioId) {
-    if (carregando.value) return
-    carregando.value = true
-    erro.value = ''
+  if (carregando.value) return
+  carregando.value = true
+  erro.value = ''
+  iniciarProgresso()
 
-    try {
-        const resp = await axios.get(API_POSTOS, {
-            params: { usuarioId },          
-            validateStatus: () => true,
-            timeout: 12000
-        })
+  try {
+    const resp = await api.get('/localizacao/buscar-postos', {
+      params: { usuarioId },
+      validateStatus: () => true,
+      timeout: 12000
+    })
 
-        if (resp.status === 200) {
-            postos.value = Array.isArray(resp.data) ? resp.data : []
-            if (postos.value.length === 0) {
-                erro.value = 'Nenhum posto de vacinação encontrado nas proximidades.'
-            }
-        } else if (resp.status === 400) {
-            erro.value = typeof resp.data === 'string'
-                ? resp.data
-                : 'Não foi possível determinar o endereço do usuário.'
-        } else if (resp.status === 404) {
-            erro.value = 'Usuário não encontrado.'
-        } else if (resp.status === 429) {
-            erro.value = typeof resp.data === 'string'
-                ? resp.data
-                : 'Limite de requisições atingido. Tente novamente mais tarde.'
-        } else if (resp.status === 502) {
-            erro.value = 'Falha ao consultar o serviço externo. Tente novamente em instantes.'
-        } else {
-            erro.value = typeof resp.data === 'string'
-                ? resp.data
-                : `Erro ao buscar postos (HTTP ${resp.status}).`
-        }
-    } catch (e) {
-        console.error(e)
-        erro.value = 'Erro de rede ao consultar o servidor.'
-    } finally {
-        carregando.value = false
+    if (resp.status === 200) {
+      postos.value = Array.isArray(resp.data) ? resp.data : []
+      if (postos.value.length === 0) {
+        erro.value = 'Nenhum posto de vacinação encontrado nas proximidades.'
+      }
+    } else if (resp.status === 400) {
+      erro.value = typeof resp.data === 'string'
+        ? resp.data
+        : 'Não foi possível determinar o endereço do usuário.'
+    } else if (resp.status === 404) {
+      erro.value = 'Usuário não encontrado.'
+    } else if (resp.status === 429) {
+      erro.value = typeof resp.data === 'string'
+        ? resp.data
+        : 'Limite de requisições atingido. Tente novamente mais tarde.'
+    } else if (resp.status >= 500) {
+      erro.value = 'Falha ao consultar o serviço. Tente novamente em instantes.'
+    } else {
+      erro.value = typeof resp.data === 'string'
+        ? resp.data
+        : `Erro ao buscar postos (HTTP ${resp.status}).`
     }
+  } catch (e) {
+    console.error(e)
+    erro.value = 'Erro de rede ao consultar o servidor.'
+  } finally {
+    finalizarProgresso()
+    carregando.value = false
+  }
 }
 
 onMounted(async () => {
-    nomeUsuario.value = localStorage.getItem('usuarioNome') || 'Gabriela'
-    const usuarioId = localStorage.getItem('usuarioId')
-    if (!usuarioId) {
-        erro.value = 'Não foi possível identificar o usuário. Faça login novamente.'
-        return
-    }
-
-    await buscarPostosPorUsuario(Number(usuarioId))
+  nomeUsuario.value = localStorage.getItem('usuarioNome') || 'Usuário'
+  const usuarioId = localStorage.getItem('usuarioId')
+  if (!usuarioId) {
+    erro.value = 'Não foi possível identificar o usuário. Faça login novamente.'
+    return
+  }
+  await buscarPostosPorUsuario(Number(usuarioId))
 })
+
+onBeforeUnmount(() => clearInterval(timer))
 </script>
 
 <style scoped>
 .pagina-postos {
-    margin-left: 95px;
+  margin-left: 95px;
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem 2rem;
-    background: #fff;
-    border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: #fff;
+  border-bottom: 1px solid #eee;
 }
 
 .titulo {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #f97316;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #f97316;
 }
 
 .usuario {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .breadcrumb-link {
-    color: #6b7280;
-    transition: color .2s;
-    font-size: 1.1rem;
+  color: #6b7280;
+  transition: color .2s;
+  font-size: 1.1rem;
 }
 
 .breadcrumb-link:hover {
-    color: #f97316;
-    text-decoration: underline;
+  color: #f97316;
+  text-decoration: underline;
 }
 
 .breadcrumb-laranja {
-    color: #f97316 !important;
-    font-weight: 900;
-    font-size: 1.1rem;
+  color: #f97316 !important;
+  font-weight: 900;
+  font-size: 1.1rem;
 }
 
 .breadcrumb-home-img {
-    margin-top: -5px;
+  margin-top: -5px;
 }
 
 .conteudo {
-    background: white;
-    min-height: calc(100vh - 160px);
+  background: white;
+  min-height: calc(100vh - 160px);
 }
 
 .lista {
-    max-width: 1150px;
-    margin: 0 auto;
-    margin-left: -2px;
+  max-width: 1150px;
+  margin: 0 auto;
+  margin-left: -2px;
 }
 
 .m3-card {
-    border-radius: 12px;
-    transition: box-shadow .15s ease, transform .05s ease, background .2s ease;
-    cursor: pointer;
-    min-height: 110px;
+  border-radius: 12px;
+  transition: box-shadow .15s ease, transform .05s ease, background .2s ease;
+  cursor: pointer;
+  min-height: 110px;
 }
 
 .m3-card:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, .08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .08);
 }
 
 .m3-card:active {
-    transform: translateY(1px);
+  transform: translateY(1px);
 }
 
 .card-conteudo {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    padding: 12px 18px;
-    gap: 12px;
-    margin-left: -10px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 12px 18px;
+  gap: 12px;
+  margin-left: -10px;
 }
 
 .texto {
-    min-width: 0;
+  min-width: 0;
 }
 
 .m3-card__title {
-    font-weight: 700;
-    color: #1f2937;
-    font-size: 1rem;
-    line-height: 1.3;
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 1rem;
+  line-height: 1.3;
 }
 
 .m3-card__subtitle {
-    color: #6b7280;
-    font-size: .9rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  color: #6b7280;
+  font-size: .9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .distancia {
-    font-size: .85rem;
-    color: #10b981;
-    margin-top: 2px;
+  font-size: .85rem;
+  color: #10b981;
+  margin-top: 2px;
 }
 
 .seta {
-    width: 20px;
-    height: 20px;
-    opacity: .7;
+  width: 20px;
+  height: 20px;
+  opacity: .7;
 }
 
 .loading-card {
@@ -263,5 +290,12 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+/* Mobile: evita que o sidebar cubra conteúdo */
+@media (max-width: 600px) {
+  .pagina-postos {
+    margin-left: 0;
+  }
 }
 </style>

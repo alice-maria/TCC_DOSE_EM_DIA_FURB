@@ -15,12 +15,14 @@ public class UsuarioService
     private readonly ApplicationDbContext _context;
     private readonly EnvioEmail _envioEmail;
     private readonly VacinaService _vacinaService;
+    private readonly ILogger<UsuarioService> _logger;
 
-    public UsuarioService(ApplicationDbContext context, EnvioEmail envioEmail, VacinaService vacinaService)
+    public UsuarioService(ApplicationDbContext context, EnvioEmail envioEmail, VacinaService vacinaService, ILogger<UsuarioService> logger)
     {
         _context = context;
         _envioEmail = envioEmail;
         _vacinaService = vacinaService;
+        _logger = logger;
     }
 
     public async Task<Usuario> BuscarPorCpf(string cpf)
@@ -136,11 +138,10 @@ public class UsuarioService
     }
 
 
-    public async Task EsqueciSenha(string email)
+    public async Task EsqueciSenha(string email, CancellationToken ct = default)
     {
         var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Email == email);
-        if (usuario == null)
-            throw new UsuarioException.UsuarioNaoEncontradoException(email);
+        if (usuario is null) return;
 
         usuario.TokenRedefinicaoSenha = _envioEmail.GerarToken();
         usuario.TokenExpiracao = DateTime.Now.AddMinutes(15);
@@ -150,8 +151,19 @@ public class UsuarioService
         var emailEnviado = false;
         try
         {
-            await _envioEmail.EnviarEmailRedefinicaoSenhaAsync(usuario.Email, usuario.TokenRedefinicaoSenha);
-            emailEnviado = true;
+            var envioTask = _envioEmail.EnviarEmailRedefinicaoSenhaAsync(usuario.Email, usuario.TokenRedefinicaoSenha);
+            var completed = await Task.WhenAny(envioTask, Task.Delay(TimeSpan.FromSeconds(15), ct)) == envioTask;
+
+            if (completed)
+            {
+                await envioTask;
+                emailEnviado = true;
+            }
+            else
+            {
+                emailEnviado = false;
+                _logger.LogWarning("Timeout ao enviar e-mail de redefinição para {Email}", email);
+            }
         }
         catch (Exception ex)
         {
@@ -291,7 +303,7 @@ public class UsuarioService
         return idade;
     }
 
-    private async Task RegistrarNotificacaoAsync( int usuarioId, TipoNotificacao tipo, string titulo, string mensagem, bool emailEnviado)
+    private async Task RegistrarNotificacaoAsync(int usuarioId, TipoNotificacao tipo, string titulo, string mensagem, bool emailEnviado)
     {
         _context.Notificacao.Add(new Notificacao
         {
@@ -299,7 +311,7 @@ public class UsuarioService
             Tipo = tipo,
             Titulo = titulo,
             Mensagem = mensagem,
-            DataEnvio = DateTime.UtcNow,    
+            DataEnvio = DateTime.UtcNow,
             Visualizada = false,
             EmailEnviado = emailEnviado
         });

@@ -60,6 +60,7 @@
               </v-card-title>
               <v-card-text class="pt-1">
                 <p class="mb-1 text-body-1">Aplicada em: {{ formatarData(vacina.dataAplicacao) }}</p>
+                <p class="mb-1 text-body-1">Lote: {{ vacina.lote }}</p>
                 <p class="mb-0 text-body-1">Status: {{ mapearStatus(vacina.status) }}</p>
               </v-card-text>
             </v-card>
@@ -171,6 +172,7 @@ export default {
               dataAplicacao: v.dataAplicacao ?? v.DataAplicacao ?? v.data ?? null,
               status: v.status,
               statusLabel,
+              lote: v.numeroLote ?? v.NumeroLote ?? 'Não informado',
             };
           });
 
