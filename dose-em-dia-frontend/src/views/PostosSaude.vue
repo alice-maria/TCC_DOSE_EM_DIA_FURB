@@ -72,7 +72,14 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import UsuarioMenu from '@/views/UsuarioMenu.vue'
-import { api } from '@/services/api' // seu axios com baseURL já configurado
+import axios from 'axios' 
+
+const baseURL = (process.env.VUE_APP_API_BASE_URL || 'https://doseemdiabackend-production.up.railway.app').replace(/\/+$/, '');
+
+const api = axios.create({
+  baseURL,
+  timeout: 20000,
+});
 
 const router = useRouter()
 
