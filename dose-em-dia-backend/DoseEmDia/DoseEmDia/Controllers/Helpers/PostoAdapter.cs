@@ -5,8 +5,7 @@ namespace DoseEmDia.Services.Geo
 {
     public static class PostoAdapter
     {
-        public static IReadOnlyList<PostoVacinacaoResponse> ToPostoVacinacaoResponse(
-            IEnumerable<NearPlaceResult> src)
+        public static IReadOnlyList<PostoVacinacaoResponse> ToPostoVacinacaoResponse(IEnumerable<PostoMaisProximo> src)
         {
             return src.Select(x => new PostoVacinacaoResponse
             {
@@ -19,9 +18,7 @@ namespace DoseEmDia.Services.Geo
                     ? "—"
                     : (x.DistanceMeters < 1000
                         ? $"{x.DistanceMeters} m"
-                        : $"{(x.DistanceMeters.Value / 1000.0):0.0} km"),
-                LinkGoogleMaps =
-                    $"https://www.google.com/maps/search/?api=1&query={x.Latitude.ToString(CultureInfo.InvariantCulture)},{x.Longitude.ToString(CultureInfo.InvariantCulture)}"
+                        : $"{(x.DistanceMeters.Value / 1000.0):0.0} km")
             }).ToList();
         }
     }

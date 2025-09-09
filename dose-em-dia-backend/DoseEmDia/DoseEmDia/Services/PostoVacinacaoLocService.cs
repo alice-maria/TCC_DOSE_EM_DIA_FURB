@@ -15,11 +15,7 @@ namespace DoseEmDia.Services.Geo
             _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
-        public async Task<IReadOnlyList<NearPlaceResult>> BuscarPostosMaisProximosAsync(
-            string enderecoTexto,
-            int raioMetros = 10_000,
-            int limite = 3,
-            CancellationToken ct = default)
+        public async Task<IReadOnlyList<PostoMaisProximo>> BuscarPostosMaisProximosAsync(string enderecoTexto, int raioMetros = 10_000, int limite = 3, CancellationToken ct = default)         
         {
             if (string.IsNullOrWhiteSpace(enderecoTexto))
                 throw new ArgumentException("Endereço não pode ser vazio.", nameof(enderecoTexto));
@@ -27,9 +23,8 @@ namespace DoseEmDia.Services.Geo
             var (lat, lng) = await GeocodeAsync(enderecoTexto, ct)
                 ?? throw new InvalidOperationException("Não foi possível geocodificar o endereço.");
 
-            var candidatos = await BrowseHealthAsync(lat, lng, raioMetros, ct);
+            var candidatos = await PesquisarResultadosAsync(lat, lng, raioMetros, ct);
 
-            // Se a HERE não fornecer distance, calcule por Haversine e formate a DistanceText.
             foreach (var c in candidatos.Where(c => c.DistanceMeters is null))
             {
                 c.DistanceMeters = (int)Math.Round(HaversineMeters(lat, lng, c.Latitude, c.Longitude));
@@ -43,7 +38,6 @@ namespace DoseEmDia.Services.Geo
                 .ToList();
         }
 
-        // ---------- PASSO 1: GEOCODING ----------
         private async Task<(double lat, double lng)?> GeocodeAsync(string endereco, CancellationToken ct)
         {
             var apiKey = ObterApiKey();
@@ -55,7 +49,7 @@ namespace DoseEmDia.Services.Geo
             using var resp = await GetComRetryAsync(url, ct);
             if (!resp.IsSuccessStatusCode) return null;
 
-            var json = await resp.Content.ReadAsStringAsync(); // sem CT p/ compatibilidade
+            var json = await resp.Content.ReadAsStringAsync(); 
             using var doc = JsonDocument.Parse(json);
 
             if (!doc.RootElement.TryGetProperty("items", out var items) ||
@@ -88,15 +82,13 @@ namespace DoseEmDia.Services.Geo
             return null;
         }
 
-        // ---------- PASSO 2: BUSCA DE ESTABELECIMENTOS ----------
-        private async Task<List<NearPlaceResult>> BrowseHealthAsync(double lat, double lng, int raioMetros, CancellationToken ct)
+        private async Task<List<PostoMaisProximo>> PesquisarResultadosAsync(double lat, double lng, int raioMetros, CancellationToken ct)
         {
             var apiKey = ObterApiKey();
             var baseCoord = $"{lat.ToString(CultureInfo.InvariantCulture)},{lng.ToString(CultureInfo.InvariantCulture)}";
 
-            // Texto livre (usar DISCOVER para termos)
             var termos = new[] { "Unidade Básica de Saúde", "UBS", "Posto de Saúde", "Unidade de Saúde", "Clínica" };
-            var resultados = new List<NearPlaceResult>();
+            var resultados = new List<PostoMaisProximo>();
 
             foreach (var termo in termos)
             {
@@ -108,7 +100,6 @@ namespace DoseEmDia.Services.Geo
                 resultados.AddRange(await FetchBrowsePageAsync(url, ct));
             }
 
-            // Categorias (usar BROWSE)
             var categories = "health-care.clinic,health-care.hospital";
             {
                 var url =
@@ -120,26 +111,25 @@ namespace DoseEmDia.Services.Geo
                 resultados.AddRange(await FetchBrowsePageAsync(url, ct));
             }
 
-            // Dedup por (nome normalizado + lat + lng) e prioriza menor distância
             return resultados
                 .GroupBy(x => $"{(x.Name ?? "").Trim().ToLowerInvariant()}|{x.Latitude:0.000000}|{x.Longitude:0.000000}")
                 .Select(g => g.OrderBy(r => r.DistanceMeters ?? int.MaxValue).First())
                 .ToList();
         }
 
-        private async Task<List<NearPlaceResult>> FetchBrowsePageAsync(string url, CancellationToken ct)
+        private async Task<List<PostoMaisProximo>> FetchBrowsePageAsync(string url, CancellationToken ct)
         {
             using var resp = await GetComRetryAsync(url, ct);
-            if (!resp.IsSuccessStatusCode) return new List<NearPlaceResult>();
+            if (!resp.IsSuccessStatusCode) return new List<PostoMaisProximo>();
 
             var json = await resp.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(json);
 
             if (!doc.RootElement.TryGetProperty("items", out var items) ||
                 items.ValueKind != JsonValueKind.Array)
-                return new List<NearPlaceResult>();
+                return new List<PostoMaisProximo>();
 
-            var lista = new List<NearPlaceResult>();
+            var lista = new List<PostoMaisProximo>();
             foreach (var item in items.EnumerateArray())
             {
                 if (!item.TryGetProperty("position", out var pos)) continue;
@@ -154,22 +144,20 @@ namespace DoseEmDia.Services.Geo
                 if (item.TryGetProperty("distance", out var dEl) && dEl.TryGetInt32(out var d))
                     distance = d;
 
-                lista.Add(new NearPlaceResult
+                lista.Add(new PostoMaisProximo
                 {
                     Name = string.IsNullOrWhiteSpace(name) ? "Unidade de Saúde" : name.Trim(),
                     Address = address,
                     Latitude = plat,
                     Longitude = plng,
                     DistanceMeters = distance,
-                    DistanceText = distance is null ? null : FormatDistance(distance.Value),
-                    GoogleMapsLink = $"https://www.google.com/maps/search/?api=1&query={plat.ToString(CultureInfo.InvariantCulture)},{plng.ToString(CultureInfo.InvariantCulture)}"
+                    DistanceText = distance is null ? null : FormatDistance(distance.Value)
                 });
             }
 
             return lista;
         }
 
-        // ---------- Helpers ----------
         private static string ParseAddress(JsonElement item)
         {
             if (!item.TryGetProperty("address", out var address)) return "";
@@ -224,7 +212,6 @@ namespace DoseEmDia.Services.Geo
                 {
                     var resp = await _http.GetAsync(url, ct);
 
-                    // 429: respeita Retry-After, se presente
                     if ((int)resp.StatusCode == 429)
                     {
                         if (i == maxTentativas) return resp;
@@ -234,7 +221,6 @@ namespace DoseEmDia.Services.Geo
                         continue;
                     }
 
-                    // 5xx: pequeno backoff
                     if ((int)resp.StatusCode >= 500)
                     {
                         if (i == maxTentativas) return resp;
@@ -261,7 +247,7 @@ namespace DoseEmDia.Services.Geo
         }
     }
 
-    public sealed class NearPlaceResult
+    public sealed class PostoMaisProximo
     {
         public string Name { get; set; } = "";
         public string Address { get; set; } = "";
@@ -269,6 +255,5 @@ namespace DoseEmDia.Services.Geo
         public double Longitude { get; set; }
         public int? DistanceMeters { get; set; }
         public string? DistanceText { get; set; }
-        public string GoogleMapsLink { get; set; } = "";
     }
 }

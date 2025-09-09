@@ -329,8 +329,9 @@ onBeforeUnmount(() => {
 
 .distancia {
   font-size: .85rem;
-  color: #10b981;
+  color: #f97316;
   margin-top: 2px;
+  margin-left: -10px;
 }
 
 .seta {
@@ -350,7 +351,7 @@ onBeforeUnmount(() => {
   align-items: center;
 }
 
-/* Mobile: evita que o sidebar cubra conteúdo */
+/* Mobile */
 @media (max-width: 600px) {
   .pagina-postos {
     margin-left: 0;

@@ -8,7 +8,5 @@
         public double Longitude { get; set; }
         public int DistanciaMetros { get; set; }
         public string Distancia { get; set; } = "";
-        public string LinkGoogleMaps { get; set; } = "";
     }
-
 }
