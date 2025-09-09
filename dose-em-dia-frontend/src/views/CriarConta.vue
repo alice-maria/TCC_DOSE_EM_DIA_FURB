@@ -727,7 +727,6 @@ export default {
 }
 
 .v-tab[disabled] {
-  pointer-events: auto;   
-  cursor: not-allowed;    
+  pointer-events: auto;      
 }
 </style>
