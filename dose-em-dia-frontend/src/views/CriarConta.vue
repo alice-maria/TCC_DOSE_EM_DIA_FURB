@@ -11,24 +11,20 @@
         </div>
       </div>
     </header>
-    <!-- FUNDO LARANJA COM FORMULÁRIO -->
     <div class="container-laranja">
       <div class="formulario-caixa">
 
         <v-progress-linear :model-value="percentualPreenchido" color="#b2443a" height="6" rounded class="mb-6" />
-
         <v-form @submit.prevent="criarConta" ref="form">
-          <!-- Abas -->
           <v-tabs v-model="abaAtiva" background-color="#fff4e1" grow @update:modelValue="onTabChange">
             <v-tab :value="'pessoal'">Dados Pessoais</v-tab>
-            <v-tooltip :text="!dadosPessoaisOk ? 'Preencha todos os dados pessoais antes de acessar esta aba' : ''"
-              location="top">
-              <template #activator="{ props }">
-                <v-tab v-bind="props" :value="'endereco'" :disabled="!dadosPessoaisOk">
-                  Endereço
-                </v-tab>
-              </template>
-            </v-tooltip>
+            <div class="tab-tooltip-activator">
+              <v-tab :value="'endereco'" :disabled="!dadosPessoaisOk">
+                Endereço
+              </v-tab>
+              <v-tooltip v-if="!dadosPessoaisOk" activator="parent" location="top"
+                text="Preencha todos os dados pessoais antes de acessar esta aba" />
+            </div>
           </v-tabs>
 
           <v-window v-model="abaAtiva" class="mt-4">
@@ -87,7 +83,6 @@
                     As senhas não coincidem.
                   </p>
                 </div>
-                <!-- Checkbox ajustado visualmente -->
                 <v-checkbox v-model="privacidade" density="compact" class="checkbox-privacidade"
                   :rules="[v => !!v || 'É necessário aceitar a política de privacidade.']">
                   <template #label>
@@ -728,5 +723,10 @@ export default {
     display: block;
     text-align: center;
   }
+}
+
+.tab-tooltip-activator {
+  display: inline-flex;
+  align-items: center;
 }
 </style>

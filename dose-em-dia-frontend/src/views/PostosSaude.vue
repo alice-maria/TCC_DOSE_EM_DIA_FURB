@@ -12,8 +12,8 @@
       <!-- Breadcrumbs -->
       <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs">
         <template #item="{ item }">
-          <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
-            style="cursor: pointer;">
+          <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]"
+                @click="item.to && navegar(item.to)" style="cursor: pointer;">
             <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
@@ -39,9 +39,15 @@
             </div>
           </v-overlay>
 
-          <v-card v-for="posto in postos" :key="posto.linkGoogleMaps || posto.nome + posto.enderecoCompleto"
-            class="m3-card mb-3" variant="elevated" elevation="1" :ripple="true"
-            @click="abrirMapa(posto.linkGoogleMaps)">
+          <v-card
+            v-for="posto in postos"
+            :key="posto.linkGoogleMaps || (posto.nome + posto.enderecoCompleto)"
+            class="m3-card mb-3"
+            variant="elevated"
+            elevation="1"
+            :ripple="true"
+            @click="abrirMapa(posto.linkGoogleMaps)"
+          >
             <div class="card-conteudo">
               <div class="texto">
                 <v-card-title class="m3-card__title">{{ posto.nome }}</v-card-title>
@@ -72,14 +78,14 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import UsuarioMenu from '@/views/UsuarioMenu.vue'
-import axios from 'axios' 
+import axios from 'axios'
 
-const baseURL = (process.env.VUE_APP_API_BASE_URL || 'https://doseemdiabackend-production.up.railway.app').replace(/\/+$/, '');
+const baseURL = (process.env.VUE_APP_API_BASE_URL || 'https://doseemdiabackend-production.up.railway.app').replace(/\/+$/, '')
 
 const api = axios.create({
   baseURL,
   timeout: 20000,
-});
+})
 
 const router = useRouter()
 
@@ -94,6 +100,7 @@ const carregando = ref(false)
 const erro = ref('')
 const progresso = ref(0)
 let timer = null
+let controller = null // AbortController para abortar requisições em andamento
 
 function navegar(to) {
   router.push(to)
@@ -107,7 +114,6 @@ function abrirMapa(link) {
 function iniciarProgresso() {
   progresso.value = 0
   clearInterval(timer)
-  // animação simples para feedback visual enquanto a API responde
   timer = setInterval(() => {
     if (progresso.value < 90) progresso.value += 5
   }, 250)
@@ -119,34 +125,72 @@ function finalizarProgresso() {
   setTimeout(() => (progresso.value = 0), 600)
 }
 
-async function buscarPostosPorUsuario(usuarioId) {
+/** Converte string de distância (ex: "850 m", "1,2 km") para metros (número) */
+function distanciaParaMetros(txt) {
+  if (!txt || typeof txt !== 'string') return Number.POSITIVE_INFINITY
+  const s = txt.trim().toLowerCase()
+  if (s.endsWith('km')) {
+    const n = parseFloat(s.replace('km', '').replace(/\./g, '').replace(',', '.').trim())
+    return isNaN(n) ? Number.POSITIVE_INFINITY : n * 1000
+  }
+  if (s.endsWith('m')) {
+    const n = parseInt(s.replace('m', '').trim(), 10)
+    return isNaN(n) ? Number.POSITIVE_INFINITY : n
+  }
+  return Number.POSITIVE_INFINITY
+}
+
+/** Mapeia qualquer DTO do backend para o formato esperado pelo card */
+function normalizarPosto(p) {
+  return {
+    nome: p?.nome ?? p?.Name ?? p?.name ?? 'Unidade de Saúde',
+    enderecoCompleto: p?.enderecoCompleto ?? p?.Address ?? p?.address ?? '',
+    distancia: p?.distancia ?? p?.DistanceText ?? p?.distanceText ?? null,
+    linkGoogleMaps: p?.linkGoogleMaps ?? p?.GoogleMapsLink ?? p?.googleMapsLink ?? ''
+  }
+}
+
+/** Busca e normaliza os postos; tenta 1 retry se receber 429 */
+async function buscarPostosPorUsuario(usuarioId, jaRepetiu = false) {
   if (carregando.value) return
   carregando.value = true
   erro.value = ''
   iniciarProgresso()
 
+  // Aborta chamada anterior, se houver
+  if (controller) controller.abort()
+  controller = new AbortController()
+
   try {
-    const resp = await api.get('/localizacao/buscar-postos', {
+    const resp = await api.get('/api/localizacao/proximos', {
       params: { usuarioId },
       validateStatus: () => true,
-      timeout: 12000
+      timeout: 12000,
+      signal: controller.signal
     })
 
     if (resp.status === 200) {
-      postos.value = Array.isArray(resp.data) ? resp.data : []
+      const arr = Array.isArray(resp.data) ? resp.data : (Array.isArray(resp.data?.postos) ? resp.data.postos : [])
+      const normalizados = arr.map(normalizarPosto)
+
+      // Ordena por distância (quando disponível)
+      normalizados.sort((a, b) => distanciaParaMetros(a.distancia) - distanciaParaMetros(b.distancia))
+      postos.value = normalizados
+
       if (postos.value.length === 0) {
         erro.value = 'Nenhum posto de vacinação encontrado nas proximidades.'
       }
+    } else if (resp.status === 429 && !jaRepetiu) {
+      // Retry simples: espera curto e tenta uma vez
+      await new Promise(r => setTimeout(r, 800))
+      await buscarPostosPorUsuario(usuarioId, true)
+      return
     } else if (resp.status === 400) {
       erro.value = typeof resp.data === 'string'
         ? resp.data
         : 'Não foi possível determinar o endereço do usuário.'
     } else if (resp.status === 404) {
       erro.value = 'Usuário não encontrado.'
-    } else if (resp.status === 429) {
-      erro.value = typeof resp.data === 'string'
-        ? resp.data
-        : 'Limite de requisições atingido. Tente novamente mais tarde.'
     } else if (resp.status >= 500) {
       erro.value = 'Falha ao consultar o serviço. Tente novamente em instantes.'
     } else {
@@ -155,8 +199,12 @@ async function buscarPostosPorUsuario(usuarioId) {
         : `Erro ao buscar postos (HTTP ${resp.status}).`
     }
   } catch (e) {
-    console.error(e)
-    erro.value = 'Erro de rede ao consultar o servidor.'
+    if (axios.isCancel?.(e)) {
+      // navegação/abort — silencioso
+    } else {
+      console.error(e)
+      erro.value = 'Erro de rede ao consultar o servidor.'
+    }
   } finally {
     finalizarProgresso()
     carregando.value = false
@@ -173,7 +221,10 @@ onMounted(async () => {
   await buscarPostosPorUsuario(Number(usuarioId))
 })
 
-onBeforeUnmount(() => clearInterval(timer))
+onBeforeUnmount(() => {
+  clearInterval(timer)
+  if (controller) controller.abort()
+})
 </script>
 
 <style scoped>

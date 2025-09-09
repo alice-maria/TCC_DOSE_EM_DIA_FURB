@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Globalization;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 
 namespace DoseEmDia.Services.Geo
 {
@@ -22,9 +15,6 @@ namespace DoseEmDia.Services.Geo
             _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
-        /// <summary>
-        /// Fluxo 2 etapas: (1) geocodifica o endereço → lat/lng; (2) busca UBS/Clínicas próximas e retorna ordenado por distância.
-        /// </summary>
         public async Task<IReadOnlyList<NearPlaceResult>> BuscarPostosMaisProximosAsync(
             string enderecoTexto,
             int raioMetros = 10_000,
@@ -39,9 +29,12 @@ namespace DoseEmDia.Services.Geo
 
             var candidatos = await BrowseHealthAsync(lat, lng, raioMetros, ct);
 
-            // Se a HERE não fornecer distance, calcule por Haversine.
+            // Se a HERE não fornecer distance, calcule por Haversine e formate a DistanceText.
             foreach (var c in candidatos.Where(c => c.DistanceMeters is null))
+            {
                 c.DistanceMeters = (int)Math.Round(HaversineMeters(lat, lng, c.Latitude, c.Longitude));
+                c.DistanceText = FormatDistance(c.DistanceMeters.Value);
+            }
 
             return candidatos
                 .Where(c => c.DistanceMeters.HasValue)
@@ -54,6 +47,7 @@ namespace DoseEmDia.Services.Geo
         private async Task<(double lat, double lng)?> GeocodeAsync(string endereco, CancellationToken ct)
         {
             var apiKey = ObterApiKey();
+
             var url =
                 "https://geocode.search.hereapi.com/v1/geocode" +
                 $"?q={Uri.EscapeDataString(endereco)}&in=countryCode:BRA&lang=pt-BR&limit=3&apiKey={apiKey}";
@@ -61,7 +55,7 @@ namespace DoseEmDia.Services.Geo
             using var resp = await GetComRetryAsync(url, ct);
             if (!resp.IsSuccessStatusCode) return null;
 
-            var json = await resp.Content.ReadAsStringAsync(); // sem CT (compatível c/ várias versões)
+            var json = await resp.Content.ReadAsStringAsync(); // sem CT p/ compatibilidade
             using var doc = JsonDocument.Parse(json);
 
             if (!doc.RootElement.TryGetProperty("items", out var items) ||
@@ -82,7 +76,7 @@ namespace DoseEmDia.Services.Geo
                 if (score > melhorScore) { melhorScore = score; melhor = item; }
             }
 
-            JsonElement escolhido = melhor ?? items.EnumerateArray().First();
+            var escolhido = melhor ?? items.EnumerateArray().First();
             if (!escolhido.TryGetProperty("position", out var pos)) return null;
 
             if (pos.TryGetProperty("lat", out var latEl) &&
@@ -94,29 +88,27 @@ namespace DoseEmDia.Services.Geo
             return null;
         }
 
-        // ---------- PASSO 2: BROWSE ----------
+        // ---------- PASSO 2: BUSCA DE ESTABELECIMENTOS ----------
         private async Task<List<NearPlaceResult>> BrowseHealthAsync(double lat, double lng, int raioMetros, CancellationToken ct)
         {
             var apiKey = ObterApiKey();
             var baseCoord = $"{lat.ToString(CultureInfo.InvariantCulture)},{lng.ToString(CultureInfo.InvariantCulture)}";
-            var termos = new[] { "Unidade Básica de Saúde", "UBS", "Posto de Saúde", "Unidade de Saúde", "Clínica" };
 
+            // Texto livre (usar DISCOVER para termos)
+            var termos = new[] { "Unidade Básica de Saúde", "UBS", "Posto de Saúde", "Unidade de Saúde", "Clínica" };
             var resultados = new List<NearPlaceResult>();
 
-            // 2a) termos texto
             foreach (var termo in termos)
             {
                 var url =
-                    "https://discover.search.hereapi.com/v1/browse" +
+                    "https://discover.search.hereapi.com/v1/discover" +
                     $"?q={Uri.EscapeDataString(termo)}" +
-                    $"&in=circle:{baseCoord};r={raioMetros}" +
                     $"&at={baseCoord}" +
                     $"&limit=20&lang=pt-BR&apiKey={apiKey}";
-
                 resultados.AddRange(await FetchBrowsePageAsync(url, ct));
             }
 
-            // 2b) categorias (fallback)
+            // Categorias (usar BROWSE)
             var categories = "health-care.clinic,health-care.hospital";
             {
                 var url =
@@ -128,9 +120,9 @@ namespace DoseEmDia.Services.Geo
                 resultados.AddRange(await FetchBrowsePageAsync(url, ct));
             }
 
-            // Dedup por (nome + lat + lng)
+            // Dedup por (nome normalizado + lat + lng) e prioriza menor distância
             return resultados
-                .GroupBy(x => $"{x.Name}|{x.Latitude:0.000000}|{x.Longitude:0.000000}")
+                .GroupBy(x => $"{(x.Name ?? "").Trim().ToLowerInvariant()}|{x.Latitude:0.000000}|{x.Longitude:0.000000}")
                 .Select(g => g.OrderBy(r => r.DistanceMeters ?? int.MaxValue).First())
                 .ToList();
         }
@@ -192,8 +184,13 @@ namespace DoseEmDia.Services.Geo
             return texto.TrimStart(',').Replace(" ,", ",").Replace("  ", " ");
         }
 
-        private static string FormatDistance(int meters) =>
-            meters < 1000 ? $"{meters} m" : $"{(meters / 1000.0):0.0} km";
+        private static string FormatDistance(int meters)
+        {
+            var km = meters / 1000.0;
+            return meters < 1000
+                ? $"{meters} m"
+                : string.Format(new CultureInfo("pt-BR"), "{0:0.0} km", km);
+        }
 
         private static double HaversineMeters(double lat1, double lon1, double lat2, double lon2)
         {
@@ -220,17 +217,32 @@ namespace DoseEmDia.Services.Geo
         private async Task<HttpResponseMessage> GetComRetryAsync(string url, CancellationToken ct)
         {
             const int maxTentativas = 3;
+
             for (var i = 1; i <= maxTentativas; i++)
             {
                 try
                 {
                     var resp = await _http.GetAsync(url, ct);
-                    if ((int)resp.StatusCode == 429 || (int)resp.StatusCode >= 500)
+
+                    // 429: respeita Retry-After, se presente
+                    if ((int)resp.StatusCode == 429)
                     {
                         if (i == maxTentativas) return resp;
+                        var wait = resp.Headers.RetryAfter?.Delta ?? TimeSpan.FromMilliseconds(200 * i);
+                        resp.Dispose();
+                        await Task.Delay(wait, ct);
+                        continue;
+                    }
+
+                    // 5xx: pequeno backoff
+                    if ((int)resp.StatusCode >= 500)
+                    {
+                        if (i == maxTentativas) return resp;
+                        resp.Dispose();
                         await Task.Delay(200 * i, ct);
                         continue;
                     }
+
                     return resp;
                 }
                 catch (TaskCanceledException) when (!ct.IsCancellationRequested)
@@ -244,6 +256,7 @@ namespace DoseEmDia.Services.Geo
                     await Task.Delay(200 * i, ct);
                 }
             }
+
             throw new InvalidOperationException("Falha inesperada no retry HTTP.");
         }
     }
