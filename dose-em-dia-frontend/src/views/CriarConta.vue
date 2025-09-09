@@ -19,9 +19,16 @@
 
         <v-form @submit.prevent="criarConta" ref="form">
           <!-- Abas -->
-          <v-tabs v-model="abaAtiva" background-color="#fff4e1" grow>
+          <v-tabs v-model="abaAtiva" background-color="#fff4e1" grow @update:modelValue="onTabChange">
             <v-tab :value="'pessoal'">Dados Pessoais</v-tab>
-            <v-tab :value="'endereco'">Endereço</v-tab>
+            <v-tooltip :text="!dadosPessoaisOk ? 'Preencha todos os dados pessoais antes de acessar esta aba' : ''"
+              location="top">
+              <template #activator="{ props }">
+                <v-tab v-bind="props" :value="'endereco'" :disabled="!dadosPessoaisOk">
+                  Endereço
+                </v-tab>
+              </template>
+            </v-tooltip>
           </v-tabs>
 
           <v-window v-model="abaAtiva" class="mt-4">
@@ -80,33 +87,44 @@
                     As senhas não coincidem.
                   </p>
                 </div>
-
                 <!-- Checkbox ajustado visualmente -->
                 <v-checkbox v-model="privacidade" density="compact" class="checkbox-privacidade"
                   :rules="[v => !!v || 'É necessário aceitar a política de privacidade.']">
                   <template #label>
                     <span>
-                      Aceito as <a href="/aceitar-politica-privacidade" target="_blank">políticas de privacidade</a>
+                      Aceito as
+                      <v-tooltip text="Clique para ler mais sobre as políticas de privacidade" location="top">
+                        <template #activator="{ props }">
+                          <a v-bind="props" href="/aceitar-politica-privacidade" target="_blank">
+                            políticas de privacidade
+                          </a>
+                        </template>
+                      </v-tooltip>
+                      *
                     </span>
                   </template>
                 </v-checkbox>
-
                 <div class="d-flex justify-end mt-6">
+                  <!-- Entrar -->
                   <v-btn variant="outlined" color="orange" class="botao-japossuiconta me-3" @click="$router.push('/')">
-                    <template #append>
-                      <span class="caption d-block">Entrar! Já possuo uma conta</span>
-                    </template>
+                    <template #append><span class="caption d-block">Entrar! Já possuo uma conta</span></template>
                   </v-btn>
-                  <v-btn variant="outlined" color="orange" class="botao-secundario" @click="abaAtiva = 'endereco'"
-                    :disabled="!dadosPessoaisOk">
-                    <template #append>
-                      <span class="caption d-block">Avançar</span>
+                  <v-tooltip :text="!dadosPessoaisOk ? 'Preencha todos os dados pessoais antes de avançar' : ''"
+                    :disabled="dadosPessoaisOk" location="top">
+                    <template #activator="{ props }">
+                      <span v-bind="props">
+                        <v-btn variant="outlined" color="orange" class="botao-secundario" @click="abaAtiva = 'endereco'"
+                          :disabled="!dadosPessoaisOk">
+                          <template #append>
+                            <span class="caption d-block">Avançar</span>
+                          </template>
+                        </v-btn>
+                      </span>
                     </template>
-                  </v-btn>
+                  </v-tooltip>
                 </div>
               </v-container>
             </v-window-item>
-
             <v-window-item value="endereco">
               <v-container>
                 <v-text-field label="CEP*" v-model="form.cep" variant="outlined" v-mask="'#####-###'" @blur="buscarCep"
@@ -288,42 +306,35 @@ export default {
       console.log("E-mail:", field);
       console.log("E-mail Válido:", this.emailValido);
     },
-
     validarSenha() {
       const senha = this.form.senha;
-
       let letraMaiscula = 0;
       let numero = 0;
       let caracterEspecial = 0;
       const caracteresEspeciais = "/([~`!@#$%^&*+=\\-\\[\\]\\\\';,/{}|\":<>?])";
 
-      //usar valores ASCII melhora a performance ;)
+      //usar valores ASCII melhora a performance 
       for (let i = 0; i < senha.length; i++) {
         const valorAscii = senha.charCodeAt(i);
-
         // Verifica se é letra maiúscula (A-Z)
         if (valorAscii >= 65 && valorAscii <= 90) {
           letraMaiscula++;
         }
-
         // Verifica se é número (0-9)
         if (valorAscii >= 48 && valorAscii <= 57) {
           numero++;
         }
-
         // Verifica se é caractere especial
         if (caracteresEspeciais.indexOf(senha[i]) !== -1) {
           caracterEspecial++;
         }
       }
-
       // Verifica se atende aos requisitos
       this.senhaValida = (senha.length >= 7) &&
         (letraMaiscula >= 1) &&
         (numero >= 1) &&
         (caracterEspecial >= 1);
     },
-
     async buscarCep() {
       const cepLimpo = this.form.cep.replace(/\D/g, "");
       if (cepLimpo.length !== 8) return;
@@ -401,7 +412,14 @@ export default {
     },
     fecharErro() {
       this.dialogErro = false;
-    }
+    },
+    onTabChange(novaAba) {
+      if (novaAba === 'endereco' && !this.dadosPessoaisOk) {
+        this.$nextTick(() => { this.abaAtiva = 'pessoal'; });
+        return;
+      }
+      this.abaAtiva = novaAba;
+    },
   },
 };
 </script>
@@ -604,7 +622,7 @@ export default {
 /* Mobile */
 @media (max-width: 600px) {
   .pagina {
-    height: auto;            
+    height: auto;
     min-height: 100vh;
     overflow: auto;
   }
@@ -619,12 +637,12 @@ export default {
   }
 
   .logo-img {
-    height: 64px;           
+    height: 64px;
     margin-top: 0;
   }
 
   .titulo-principal {
-    font-size: 1.25rem;     
+    font-size: 1.25rem;
     margin-top: 0;
   }
 
@@ -634,7 +652,7 @@ export default {
 
   .container-laranja {
     margin-top: 0;
-    padding: 1rem 0.5rem;   
+    padding: 1rem 0.5rem;
     border-top-width: 4px;
   }
 
@@ -642,11 +660,11 @@ export default {
     max-width: 100%;
     width: 100%;
     height: auto;
-    max-height: none;       
-    padding: 1rem;          
+    max-height: none;
+    padding: 1rem;
     margin-top: 0;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
   }
 
   .v-container {
@@ -657,6 +675,7 @@ export default {
     overflow-x: auto;
     white-space: nowrap;
   }
+
   .v-tab {
     flex: 1 0 auto;
   }
@@ -675,13 +694,14 @@ export default {
     align-items: stretch;
     gap: 0.5rem;
   }
+
   .botao-principal,
   .botao-secundario,
   .botao-japossuiconta,
   .botao-redirecionamento {
     width: 100%;
     padding: 12px 16px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
   }
 
   .checkbox-privacidade {
@@ -709,5 +729,4 @@ export default {
     text-align: center;
   }
 }
-
 </style>
