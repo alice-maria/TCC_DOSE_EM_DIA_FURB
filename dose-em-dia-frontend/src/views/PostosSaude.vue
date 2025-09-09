@@ -12,8 +12,8 @@
       <!-- Breadcrumbs -->
       <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs">
         <template #item="{ item }">
-          <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]"
-                @click="item.to && navegar(item.to)" style="cursor: pointer;">
+          <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
+            style="cursor: pointer;">
             <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
@@ -39,15 +39,9 @@
             </div>
           </v-overlay>
 
-          <v-card
-            v-for="posto in postos"
-            :key="posto.linkGoogleMaps || (posto.nome + posto.enderecoCompleto)"
-            class="m3-card mb-3"
-            variant="elevated"
-            elevation="1"
-            :ripple="true"
-            @click="abrirMapa(posto.linkGoogleMaps)"
-          >
+          <v-card v-for="posto in postos" :key="posto.linkGoogleMaps || (posto.nome + posto.enderecoCompleto)"
+            class="m3-card mb-3" variant="elevated" elevation="1" :ripple="true"
+            @click="abrirMapa(posto.linkGoogleMaps)">
             <div class="card-conteudo">
               <div class="texto">
                 <v-card-title class="m3-card__title">{{ posto.nome }}</v-card-title>
@@ -331,7 +325,7 @@ onBeforeUnmount(() => {
   font-size: .85rem;
   color: #f97316;
   margin-top: 2px;
-  margin-left: -10px;
+  margin-left: 10px;
 }
 
 .seta {
@@ -354,7 +348,7 @@ onBeforeUnmount(() => {
 /* Mobile */
 @media (max-width: 600px) {
   .pagina-postos {
-    margin-left: 0;
+    margin-left: 95px;
   }
 }
 </style>
