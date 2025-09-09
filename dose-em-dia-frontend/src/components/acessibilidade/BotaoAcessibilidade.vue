@@ -103,9 +103,7 @@ export default {
 :root {
   --acc-bg: #ffffff;
   --acc-surface: #f5f6f8;
-  --acc-panel: #f7f7f9; 
   --acc-border: #e5e7eb;
-  --acc-divider: #111827; 
   --acc-text: #111827;
   --acc-primary: #3084ee;
   --acc-shadow: 0 4px 16px rgba(17, 24, 39, 0.12), 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -151,26 +149,14 @@ export default {
   top: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;                     
-  padding: 8px 0;             
+  gap: 10px;
+  padding: 14px;
   min-width: 420px;
-  background: var(--acc-panel);
+  background: #fff;
   border: 1px solid var(--acc-border);
   border-radius: 14px;
   box-shadow: var(--acc-shadow);
   z-index: 10000;
-  overflow: hidden;          
-}
-
-.acessibilidade-menu button + button {
-  border-top: 1px solid var(--acc-divider);
-}
-
-.acessibilidade-menu button:hover {
-  background: rgba(0,0,0,.03);
-}
-.acessibilidade-menu button:active {
-  background: rgba(0,0,0,.06);
 }
 
 .acessibilidade-menu button {
@@ -246,6 +232,17 @@ export default {
   font-size: 13px;
   line-height: 1.2;
   color: #fff;
+}
+
+.acessibilidade-menu {
+  background: #f5f6f8;
+  gap: 0;             
+  padding: 8px 0;     
+  overflow: hidden;   
+}
+
+.acessibilidade-menu button + button {
+  border-top: 1px solid var(--acc-border); 
 }
 
 @media (max-width: 600px) {

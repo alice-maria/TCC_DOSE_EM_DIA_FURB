@@ -18,15 +18,16 @@
         <v-form @submit.prevent="criarConta" ref="form">
           <v-tabs v-model="abaAtiva" background-color="#fff4e1" grow @update:modelValue="onTabChange">
             <v-tab :value="'pessoal'">Dados Pessoais</v-tab>
-            <div class="tab-tooltip-activator">
-              <v-tab :value="'endereco'" :disabled="!dadosPessoaisOk">
-                Endereço
-              </v-tab>
-              <v-tooltip v-if="!dadosPessoaisOk" activator="parent" location="top"
-                text="Preencha todos os dados pessoais antes de acessar esta aba" />
-            </div>
-          </v-tabs>
 
+            <v-tooltip :disabled="dadosPessoaisOk" text="Preencha todos os dados pessoais antes de acessar esta aba"
+              location="top">
+              <template #activator="{ props }">
+                <v-tab v-bind="props" :value="'endereco'" :disabled="!dadosPessoaisOk">
+                  Endereço
+                </v-tab>
+              </template>
+            </v-tooltip>
+          </v-tabs>
           <v-window v-model="abaAtiva" class="mt-4">
             <!-- Aba Dados Pessoais -->
             <v-window-item value="pessoal">
@@ -725,8 +726,8 @@ export default {
   }
 }
 
-.tab-tooltip-activator {
-  display: inline-flex;
-  align-items: center;
+.v-tab[disabled] {
+  pointer-events: auto;   
+  cursor: not-allowed;    
 }
 </style>
