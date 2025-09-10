@@ -8,12 +8,12 @@ namespace DoseEmDia.Api.Controllers
 {
     [ApiController]
     [Route("api/localizacao")]
-    public class LocalizacaoController : ControllerBase
+    public class PostoVacinacaoLocController : ControllerBase
     {
         private readonly PostoVacinacaoLocService _svc;
         private readonly ApplicationDbContext _db;
 
-        public LocalizacaoController(PostoVacinacaoLocService svc, ApplicationDbContext db)
+        public PostoVacinacaoLocController(PostoVacinacaoLocService svc, ApplicationDbContext db)
         {
             _svc = svc ?? throw new ArgumentNullException(nameof(svc));
             _db = db ?? throw new ArgumentNullException(nameof(db));
@@ -50,7 +50,7 @@ namespace DoseEmDia.Api.Controllers
                     $"{(string.IsNullOrWhiteSpace(cep) ? "" : $", {cep}")}";
             }
 
-            var near = await _svc.BuscarPostosMaisProximosAsync(endereco!, raioMetros, limite, ct);
+            var near = await _svc.PostosMaisProximos(endereco!, raioMetros, limite, ct);
 
             var dto = PostoAdapter.ToPostoVacinacaoResponse(near);
             return Ok(dto);

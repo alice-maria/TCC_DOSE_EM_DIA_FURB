@@ -15,7 +15,7 @@ namespace DoseEmDia.Services.Geo
             _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
-        public async Task<IReadOnlyList<PostoMaisProximo>> BuscarPostosMaisProximosAsync(string enderecoTexto, int raioMetros = 10_000, int limite = 3, CancellationToken ct = default)         
+        public async Task<IReadOnlyList<PostoMaisProximo>> PostosMaisProximos(string enderecoTexto, int raioMetros = 10_000, int limite = 3, CancellationToken ct = default)         
         {
             if (string.IsNullOrWhiteSpace(enderecoTexto))
                 throw new ArgumentException("Endereço não pode ser vazio.", nameof(enderecoTexto));

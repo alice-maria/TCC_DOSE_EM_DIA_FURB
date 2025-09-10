@@ -325,7 +325,7 @@ onBeforeUnmount(() => {
   font-size: .85rem;
   color: #f97316;
   margin-top: 2px;
-  margin-left: 10px;
+  margin-left: 12px;
 }
 
 .seta {
