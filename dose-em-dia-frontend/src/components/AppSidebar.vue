@@ -39,6 +39,10 @@
           </div>
         </li>
       </ul>
+      <!-- Versão do sistema -->
+      <div class="sidebar-version">
+        v1.3.7
+      </div>
     </aside>
     <v-dialog v-model="showLogoutDialog" max-width="320">
       <v-card class="popup-sair">
@@ -133,7 +137,7 @@ aside {
 }
 
 .sidebar--collapsed {
-   width: 4.5em;
+  width: 4.5em;
 }
 
 @media (min-width: 769px) and (max-width: 1200px) {
@@ -144,6 +148,7 @@ aside {
   .sidebar--collapsed {
     width: 3.5em !important;
   }
+
   .sidebar--expanded {
     width: clamp(16em, 18em, 28em) !important;
   }
@@ -261,4 +266,12 @@ aside {
   justify-content: flex-start;
 }
 
+.sidebar-version {
+  margin-top: auto;      
+  font-size: 0.7rem;     
+  color: #fff;          
+  text-align: center;
+  padding: 8px 0;
+  opacity: 0.8;          
+}
 </style>

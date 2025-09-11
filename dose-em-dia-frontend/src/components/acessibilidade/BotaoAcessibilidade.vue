@@ -103,7 +103,7 @@ export default {
 :root {
   --acc-bg: #ffffff;
   --acc-surface: #f5f6f8;
-  --acc-border: #e5e7eb;
+  --acc-border: #8c8c8c;
   --acc-text: #111827;
   --acc-primary: #3084ee;
   --acc-shadow: 0 4px 16px rgba(17, 24, 39, 0.12), 0 1px 2px rgba(0, 0, 0, 0.05);

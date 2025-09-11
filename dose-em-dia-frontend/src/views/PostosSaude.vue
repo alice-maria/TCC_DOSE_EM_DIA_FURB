@@ -94,7 +94,7 @@ const carregando = ref(false)
 const erro = ref('')
 const progresso = ref(0)
 let timer = null
-let controller = null // AbortController para abortar requisições em andamento
+let controller = null 
 
 function navegar(to) {
   router.push(to)
@@ -119,7 +119,6 @@ function finalizarProgresso() {
   setTimeout(() => (progresso.value = 0), 600)
 }
 
-/** Converte string de distância (ex: "850 m", "1,2 km") para metros (número) */
 function distanciaParaMetros(txt) {
   if (!txt || typeof txt !== 'string') return Number.POSITIVE_INFINITY
   const s = txt.trim().toLowerCase()
@@ -134,7 +133,6 @@ function distanciaParaMetros(txt) {
   return Number.POSITIVE_INFINITY
 }
 
-/** Mapeia qualquer DTO do backend para o formato esperado pelo card */
 function normalizarPosto(p) {
   return {
     nome: p?.nome ?? p?.Name ?? p?.name ?? 'Unidade de Saúde',
@@ -144,14 +142,12 @@ function normalizarPosto(p) {
   }
 }
 
-/** Busca e normaliza os postos; tenta 1 retry se receber 429 */
 async function buscarPostosPorUsuario(usuarioId, jaRepetiu = false) {
   if (carregando.value) return
   carregando.value = true
   erro.value = ''
   iniciarProgresso()
 
-  // Aborta chamada anterior, se houver
   if (controller) controller.abort()
   controller = new AbortController()
 
@@ -167,7 +163,6 @@ async function buscarPostosPorUsuario(usuarioId, jaRepetiu = false) {
       const arr = Array.isArray(resp.data) ? resp.data : (Array.isArray(resp.data?.postos) ? resp.data.postos : [])
       const normalizados = arr.map(normalizarPosto)
 
-      // Ordena por distância (quando disponível)
       normalizados.sort((a, b) => distanciaParaMetros(a.distancia) - distanciaParaMetros(b.distancia))
       postos.value = normalizados
 
@@ -175,7 +170,6 @@ async function buscarPostosPorUsuario(usuarioId, jaRepetiu = false) {
         erro.value = 'Nenhum posto de vacinação encontrado nas proximidades.'
       }
     } else if (resp.status === 429 && !jaRepetiu) {
-      // Retry simples: espera curto e tenta uma vez
       await new Promise(r => setTimeout(r, 800))
       await buscarPostosPorUsuario(usuarioId, true)
       return
@@ -194,7 +188,6 @@ async function buscarPostosPorUsuario(usuarioId, jaRepetiu = false) {
     }
   } catch (e) {
     if (axios.isCancel?.(e)) {
-      // navegação/abort — silencioso
     } else {
       console.error(e)
       erro.value = 'Erro de rede ao consultar o servidor.'

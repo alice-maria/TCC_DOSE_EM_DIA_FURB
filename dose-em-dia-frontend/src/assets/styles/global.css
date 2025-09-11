@@ -1,102 +1,272 @@
-html { font-size: 16px; }
-html.fonte-baixa { font-size: 17px; }
-html.fonte-media { font-size: 18px; }
-html.fonte-alta  { font-size: 19px; }
+html {
+  font-size: 16px;
+}
+
+html.fonte-baixa {
+  font-size: 17px;
+}
+
+html.fonte-media {
+  font-size: 18px;
+}
+
+html.fonte-alta {
+  font-size: 19px;
+}
+
+html.fonte-baixa .v-card-title,
+html.fonte-baixa .v-list-item-title,
+html.fonte-baixa .m3-card__title,
+html.fonte-baixa .titulo {
+  font-size: 1.15em !important;
+}
+
+html.fonte-media .v-card-title,
+html.fonte-media .v-list-item-title,
+html.fonte-media .m3-card__title,
+html.fonte-media .titulo {
+  font-size: 1.25em !important;
+}
+
+html.fonte-alta .v-card-title,
+html.fonte-alta .v-list-item-title,
+html.fonte-alta .m3-card__title,
+html.fonte-alta .titulo {
+  font-size: 1.35em !important;
+}
+
+html.fonte-baixa .v-card-subtitle,
+html.fonte-baixa .v-list-item-subtitle,
+html.fonte-baixa .m3-card__subtitle {
+  font-size: 1.10em !important;
+}
+
+html.fonte-media .v-card-subtitle,
+html.fonte-media .v-list-item-subtitle,
+html.fonte-media .m3-card__subtitle {
+  font-size: 1.20em !important;
+}
+
+html.fonte-alta .v-card-subtitle,
+html.fonte-alta .v-list-item-subtitle,
+html.fonte-alta .m3-card__subtitle {
+  font-size: 1.30em !important;
+}
+
+html.fonte-baixa input.form-control,
+html.fonte-baixa textarea.form-control,
+html.fonte-baixa select.form-control { font-size: 1.08em !important; }
+
+html.fonte-media input.form-control,
+html.fonte-media textarea.form-control,
+html.fonte-media select.form-control { font-size: 1.18em !important; }
+
+html.fonte-alta  input.form-control,
+html.fonte-alta  textarea.form-control,
+html.fonte-alta  select.form-control { font-size: 1.28em !important; }
+
+html.fonte-media input.form-control::placeholder,
+html.fonte-media textarea.form-control::placeholder { font-size: 1.05em !important; }
+
+html.fonte-alta  input.form-control::placeholder,
+html.fonte-alta  textarea.form-control::placeholder { font-size: 1.1em !important; }
+
+html.fonte-media .linha-dado input.form-control { height: 3.4rem !important; }
+html.fonte-alta  .linha-dado input.form-control { height: 3.6rem !important; }
 
 body.fonte-baixa * { font-size: 1.03em; }
-body.fonte-media * { font-size: 1.05em; }
-body.fonte-alta  * { font-size: 1.07em; }
 
-body.fonte-baixa h1 { font-size: 3.7rem !important; }
-body.fonte-baixa h2 { font-size: 2rem !important; }
-body.fonte-baixa h3 { font-size: 1.8rem !important; }
-body.fonte-baixa h4 { font-size: 1.5rem !important; }
-body.fonte-baixa h5 { font-size: 1.3rem !important; }
-body.fonte-baixa h6 { font-size: 1.1rem !important; }
+body.fonte-media * {
+  font-size: 1.05em;
+}
 
-body.fonte-media h1 { font-size: 3.9rem !important; }
-body.fonte-media h2 { font-size: 2.2rem !important; }
-body.fonte-media h3 { font-size: 2rem !important; }
-body.fonte-media h4 { font-size: 1.7rem !important; }
-body.fonte-media h5 { font-size: 1.5rem !important; }
-body.fonte-media h6 { font-size: 1.2rem !important; }
+body.fonte-alta * {
+  font-size: 1.07em;
+}
 
-body.fonte-alta h1 { font-size: 4.0rem !important; }
-body.fonte-alta h2 { font-size: 2.4rem !important; }
-body.fonte-alta h3 { font-size: 2.2rem !important; }
-body.fonte-alta h4 { font-size: 1.9rem !important; }
-body.fonte-alta h5 { font-size: 1.6rem !important; }
-body.fonte-alta h6 { font-size: 1.3rem !important; }
+body.fonte-baixa h1 {
+  font-size: 3.7rem !important;
+}
 
-body.fonte-baixa p { font-size: 1.03em !important; }
-body.fonte-media p { font-size: 1.05em !important; }
-body.fonte-alta  p { font-size: 1.07em !important; }
+body.fonte-baixa h2 {
+  font-size: 2rem !important;
+}
+
+body.fonte-baixa h3 {
+  font-size: 1.8rem !important;
+}
+
+body.fonte-baixa h4 {
+  font-size: 1.5rem !important;
+}
+
+body.fonte-baixa h5 {
+  font-size: 1.3rem !important;
+}
+
+body.fonte-baixa h6 {
+  font-size: 1.1rem !important;
+}
+
+body.fonte-media h1 {
+  font-size: 3.9rem !important;
+}
+
+body.fonte-media h2 {
+  font-size: 2.2rem !important;
+}
+
+body.fonte-media h3 {
+  font-size: 2rem !important;
+}
+
+body.fonte-media h4 {
+  font-size: 1.7rem !important;
+}
+
+body.fonte-media h5 {
+  font-size: 1.5rem !important;
+}
+
+body.fonte-media h6 {
+  font-size: 1.2rem !important;
+}
+
+body.fonte-alta h1 {
+  font-size: 4.0rem !important;
+}
+
+body.fonte-alta h2 {
+  font-size: 2.4rem !important;
+}
+
+body.fonte-alta h3 {
+  font-size: 2.2rem !important;
+}
+
+body.fonte-alta h4 {
+  font-size: 1.9rem !important;
+}
+
+body.fonte-alta h5 {
+  font-size: 1.6rem !important;
+}
+
+body.fonte-alta h6 {
+  font-size: 1.3rem !important;
+}
+
+body.fonte-baixa p {
+  font-size: 1.03em !important;
+}
+
+body.fonte-media p {
+  font-size: 1.05em !important;
+}
+
+body.fonte-alta p {
+  font-size: 1.07em !important;
+}
 
 body.fonte-baixa button,
 body.fonte-media button,
-body.fonte-alta  button,
+body.fonte-alta button,
 body.fonte-baixa .btn-login,
 body.fonte-media .btn-login,
-body.fonte-alta  .btn-login,
+body.fonte-alta .btn-login,
 body.fonte-baixa .btn-criar-conta,
 body.fonte-media .btn-criar-conta,
-body.fonte-alta  .btn-criar-conta {
+body.fonte-alta .btn-criar-conta {
   font-size: inherit !important;
 }
 
-body.fonte-baixa .v-btn { font-size: 0.8em !important; }
-body.fonte-media .v-btn { font-size: 1.0em !important; }
-body.fonte-alta  .v-btn { font-size: 1.03em !important; }
+body.fonte-baixa .v-btn {
+  font-size: 0.8em !important;
+}
+
+body.fonte-media .v-btn {
+  font-size: 1.0em !important;
+}
+
+body.fonte-alta .v-btn {
+  font-size: 1.03em !important;
+}
 
 body.fonte-baixa .aviso-comprovante,
-body.fonte-baixa .icone-aviso { font-size: 1.03em !important; }
+body.fonte-baixa .icone-aviso {
+  font-size: 1.03em !important;
+}
 
 body.fonte-media .aviso-comprovante,
-body.fonte-media .icone-aviso { font-size: 1.05em !important; }
+body.fonte-media .icone-aviso {
+  font-size: 1.05em !important;
+}
 
 body.fonte-alta .aviso-comprovante,
-body.fonte-alta .icone-aviso { font-size: 1.1em !important; }
+body.fonte-alta .icone-aviso {
+  font-size: 1.1em !important;
+}
 
-body.fonte-baixa .usa-escala { font-size: 1.05em !important; }
-body.fonte-media .usa-escala { font-size: 1.07em !important; }
-body.fonte-alta  .usa-escala { font-size: 1.1em !important; }
+body.fonte-baixa .usa-escala {
+  font-size: 1.05em !important;
+}
 
-body.fonte-baixa .secao-titulo { font-size: 1.10em !important; }
-body.fonte-media .secao-titulo { font-size: 1.20em !important; }
-body.fonte-alta  .secao-titulo { font-size: 1.30em !important; }
+body.fonte-media .usa-escala {
+  font-size: 1.07em !important;
+}
+
+body.fonte-alta .usa-escala {
+  font-size: 1.1em !important;
+}
+
+body.fonte-baixa .secao-titulo {
+  font-size: 1.10em !important;
+}
+
+body.fonte-media .secao-titulo {
+  font-size: 1.20em !important;
+}
+
+body.fonte-alta .secao-titulo {
+  font-size: 1.30em !important;
+}
 
 body.fonte-baixa .lista,
 body.fonte-baixa .lista li,
-body.fonte-baixa .lista ul { font-size: 1.03em !important; }
+body.fonte-baixa .lista ul {
+  font-size: 1.03em !important;
+}
 
 body.fonte-media .lista,
 body.fonte-media .lista li,
-body.fonte-media .lista ul { font-size: 1.05em !important; } 
+body.fonte-media .lista ul {
+  font-size: 1.05em !important;
+}
 
 body.fonte-alta .lista,
-body.fonte-alta .lista li { font-size: 1.07em !important; }
+body.fonte-alta .lista li {  font-size: 1.07em !important;}
 
 .meus-breadcrumbs :deep(.v-breadcrumbs-item),
 .meus-breadcrumbs :deep(.v-breadcrumbs-item a),
 .meus-breadcrumbs :deep(.v-breadcrumbs-item span),
 .meus-breadcrumbs :deep(.v-breadcrumbs-divider) {
-  font-size: 1.125rem;     
-  line-height: 1.75rem;    
+  font-size: 1.125rem;
+  line-height: 1.75rem;
 }
 
 .breadcrumb-link {
-  font-size: 1.125rem;     
-  font-weight: 500;        
+  font-size: 1.125rem;
+  font-weight: 500;
 }
 
 .breadcrumb-home-img {
   width: 20px;
   height: 20px;
   margin-right: 6px;
-  transform: translateY(1px); 
+  transform: translateY(1px);
 }
 
-.meus-breadcrumbs :deep(.v-breadcrumbs-divider) {margin: 0 10px;}
+.meus-breadcrumbs :deep(.v-breadcrumbs-divider) {  margin: 0 10px;}
 
 :root {
   --color-bg: #000000;
@@ -158,13 +328,9 @@ body.contraste-alto select {
   border: 1px solid var(--color-fg) !important;
 }
 
-body.contraste-alto *:focus {
-  outline: 2px solid var(--color-accent) !important;
-}
+body.contraste-alto *:focus {  outline: 2px solid var(--color-accent) !important;}
 
-body.contraste-alto img {
-  filter: brightness(0.9) contrast(1.2) !important;
-}
+body.contraste-alto img {  filter: brightness(0.9) contrast(1.2) !important;}
 
 body.contraste-alto h1,
 body.contraste-alto h2,
@@ -185,17 +351,28 @@ body.contraste-alto hr {
   background: var(--color-fg);
 }
 
-body.contraste-alto .sidebar { background-color: var(--sidebar-bg) !important; color: var(--sidebar-fg) !important; }
+body.contraste-alto .sidebar {
+  background-color: var(--sidebar-bg) !important;
+  color: var(--sidebar-fg) !important;
+}
+
 body.contraste-alto .rail-item,
 body.contraste-alto .rail-content,
-body.contraste-alto .rail-label { color: var(--sidebar-fg) !important; }
+body.contraste-alto .rail-label {
+  color: var(--sidebar-fg) !important;
+}
 
-body.contraste-alto .popup-sair { background-color: var(--dialog-bg) !important; color: var(--dialog-fg) !important; }
+body.contraste-alto .popup-sair {
+  background-color: var(--dialog-bg) !important;
+  color: var(--dialog-fg) !important;
+}
+
 body.contraste-alto .popup-sair__cancelar {
   background-color: var(--btn-cancel-bg) !important;
   color: var(--btn-cancel-fg) !important;
   border-color: var(--btn-cancel-fg) !important;
 }
+
 body.contraste-alto .popup-sair__confirmar {
   background-color: var(--btn-confirm-bg) !important;
   color: var(--btn-confirm-fg) !important;
@@ -207,27 +384,65 @@ body.contraste-alto :not(.sidebar):not(.popup-sair):not(.v-overlay__content):not
   border-color: var(--color-fg) !important;
 }
 
-body.contraste-alto a { color: var(--color-accent) !important; text-decoration: underline; }
-body.contraste-alto *:focus { outline: 2px solid var(--color-accent) !important; }
-body.contraste-alto img { filter: brightness(0.9) contrast(1.2) !important; }
-body.contraste-alto hr  { border-color: var(--color-fg); height: 1px; background: var(--color-fg); }
+body.contraste-alto a {
+  color: var(--color-accent) !important;
+  text-decoration: underline;
+}
+
+body.contraste-alto *:focus {
+  outline: 2px solid var(--color-accent) !important;
+}
+
+body.contraste-alto img {
+  filter: brightness(0.9) contrast(1.2) !important;
+}
+
+body.contraste-alto hr {
+  border-color: var(--color-fg);
+  height: 1px;
+  background: var(--color-fg);
+}
 
 body.fonte-dislexia * {
   font-family: 'OpenDyslexic', Arial, sans-serif !important;
 }
 
-body.espacamento-letras-baixo { --ls: 0.1em; --card-tracking: 0.1em; }
-body.espacamento-letras-medio { --ls: 0.2em; --card-tracking: 0.2em; }
-body.espacamento-letras-alto  { --ls: 0.3em; --card-tracking: 0.3em; }
+body.espacamento-letras-baixo {
+  --ls: 0.1em;
+  --card-tracking: 0.1em;
+}
 
-body[class*="espacamento-letras-"] * { letter-spacing: var(--ls) !important; }
+body.espacamento-letras-medio {
+  --ls: 0.2em;
+  --card-tracking: 0.2em;
+}
+
+body.espacamento-letras-alto {
+  --ls: 0.3em;
+  --card-tracking: 0.3em;
+}
+
+body[class*="espacamento-letras-"] * {
+  letter-spacing: var(--ls) !important;
+}
+
 body[class*="espacamento-letras-"] .vacina-card,
 body[class*="espacamento-letras-"] .vacina-card * {
   letter-spacing: var(--card-tracking) !important;
 }
 
-body.espacamento-linhas-baixo { --lh: 1.80; }
-body.espacamento-linhas-medio { --lh: 1.90; }
-body.espacamento-linhas-alto  { --lh: 2.00; }
+body.espacamento-linhas-baixo {
+  --lh: 1.80;
+}
 
-body[class*="espacamento-linhas-"] * { line-height: var(--lh) !important; }
+body.espacamento-linhas-medio {
+  --lh: 1.90;
+}
+
+body.espacamento-linhas-alto {
+  --lh: 2.00;
+}
+
+body[class*="espacamento-linhas-"] * {
+  line-height: var(--lh) !important;
+}

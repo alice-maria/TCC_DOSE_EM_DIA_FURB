@@ -412,8 +412,8 @@ export default {
 }
 
 .linha-dado input.form-control {
-  height: 50px;
-  font-size: 1.0rem;
+  height: 3.125rem;
+  font-size: 1em;
   padding: 12px 16px;
   line-height: 1.5;
   border: 1.5px solid #ccc;
