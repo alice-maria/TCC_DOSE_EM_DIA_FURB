@@ -188,6 +188,7 @@ async function buscarPostosPorUsuario(usuarioId, jaRepetiu = false) {
     }
   } catch (e) {
     if (axios.isCancel?.(e)) {
+      return;
     } else {
       console.error(e)
       erro.value = 'Erro de rede ao consultar o servidor.'
