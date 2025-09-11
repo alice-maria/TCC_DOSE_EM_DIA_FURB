@@ -281,16 +281,15 @@ onBeforeUnmount(() => {
 .m3-card {
   border-radius: 12px;
   transition: box-shadow .15s ease, transform .05s ease, background .2s ease;
-  cursor: pointer;
   min-height: 110px;
 }
 
 .m3-card:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, .08);
+  box-shadow: none;
 }
 
 .m3-card:active {
-  transform: translateY(1px);
+  transform: none;
 }
 
 .card-conteudo {

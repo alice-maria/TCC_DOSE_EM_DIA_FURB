@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using DoseEmDia.Controllers.DTO;
+﻿using DoseEmDia.Controllers.DTO;
 
 namespace DoseEmDia.Services.Geo
 {

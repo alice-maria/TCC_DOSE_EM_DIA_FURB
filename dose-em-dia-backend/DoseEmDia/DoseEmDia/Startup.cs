@@ -6,6 +6,7 @@ using DoseEmDia.Services;
 using DoseEmDia.Controllers;
 using Microsoft.OpenApi.Models;
 using DoseEmDia.Controllers.Helpers;
+using SendGrid;
 
 namespace DoseEmDia
 {
@@ -25,6 +26,17 @@ namespace DoseEmDia
                 });
 
             // Serviços de domínio
+
+            services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
+
+            // Usa a API key do SendGrid a partir do ambiente/secret
+            services.AddSingleton<ISendGridClient>(sp =>
+            {
+                var apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY")
+                             ?? Configuration["SendGrid:ApiKey"]
+                             ?? throw new InvalidOperationException("SendGrid API key não configurada.");
+                return new SendGridClient(apiKey);
+            });
             services.AddScoped<EnvioEmail>();
             services.AddScoped<UsuarioService>();
             services.AddScoped<VacinaService>();
