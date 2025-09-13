@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.Metadata; 
 
 namespace DoseEmDia.Models.db
 {
@@ -21,6 +22,25 @@ namespace DoseEmDia.Models.db
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            var toUnspecified = new ValueConverter<DateTime, DateTime>(
+                v => DateTime.SpecifyKind(v, DateTimeKind.Unspecified),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Unspecified));
+
+            var toUnspecifiedNullable = new ValueConverter<DateTime?, DateTime?>(
+                v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Unspecified) : v,
+                v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Unspecified) : v);
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime))
+                        property.SetValueConverter(toUnspecified);
+                    else if (property.ClrType == typeof(DateTime?))
+                        property.SetValueConverter(toUnspecifiedNullable);
+                }
+            }
 
             // Endereco
             modelBuilder.Entity<Endereco>().ToTable("Endereco");
@@ -69,14 +89,9 @@ namespace DoseEmDia.Models.db
                 .HasForeignKey(n => n.UsuarioId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            var toUnspecified = new ValueConverter<DateTime, DateTime>(
-                v => DateTime.SpecifyKind(v, DateTimeKind.Unspecified),   
-                v => DateTime.SpecifyKind(v, DateTimeKind.Unspecified));  
-
             modelBuilder.Entity<Notificacao>()
                 .Property(n => n.DataEnvio)
-                .HasColumnType("timestamp without time zone")
-                .HasConversion(toUnspecified);
+                .HasColumnType("timestamp without time zone");
 
             modelBuilder.Entity<Notificacao>()
                 .Property(n => n.Tipo)
@@ -89,6 +104,7 @@ namespace DoseEmDia.Models.db
             // Contador de Requisições
             modelBuilder.Entity<ContadorRequisicoes>().ToTable("ContadorRequisicoes");
             modelBuilder.Entity<ContadorRequisicoes>().HasKey(c => c.Id);
+
         }
     }
 }

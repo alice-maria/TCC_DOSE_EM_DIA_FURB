@@ -142,11 +142,12 @@ public class UsuarioService
         var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Email == email, ct);
 
         if (usuario is null)
-            return true; 
+            return true;
 
-        var token = _envioEmail.GerarToken(); 
-        usuario.TokenRedefinicaoSenha = token;          
-        usuario.TokenExpiracao = DateTime.UtcNow.AddMinutes(15);
+        var token = _envioEmail.GerarToken();
+        usuario.TokenRedefinicaoSenha = token;
+        var expiresUtc = DateTime.UtcNow.AddMinutes(15);
+        usuario.TokenExpiracao = DateTime.SpecifyKind(expiresUtc, DateTimeKind.Unspecified);
 
         await _context.SaveChangesAsync(ct);
 
