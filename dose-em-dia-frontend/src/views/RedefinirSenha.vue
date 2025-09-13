@@ -186,12 +186,7 @@ export default {
           email: this.form.email,
           senhaAtual: this.form.senhaAtual,
           novaSenha: this.form.senha
-        }, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
         });
-
         this.dialogSucesso = true;
       } catch (err) {
         this.mensagem = err.response?.data || 'Erro ao alterar a senha.';

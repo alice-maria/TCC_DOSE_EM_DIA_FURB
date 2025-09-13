@@ -39,9 +39,8 @@
             </div>
           </v-overlay>
 
-          <v-card v-for="posto in postos" :key="posto.linkGoogleMaps || (posto.nome + posto.enderecoCompleto)"
-            class="m3-card mb-3" variant="elevated" elevation="1" :ripple="true"
-            @click="abrirMapa(posto.linkGoogleMaps)">
+          <v-card v-for="posto in postos" :key="posto.nome + posto.enderecoCompleto"
+            class="m3-card mb-3" variant="elevated" elevation="1" :ripple="true">
             <div class="card-conteudo">
               <div class="texto">
                 <v-card-title class="m3-card__title">{{ posto.nome }}</v-card-title>
@@ -50,12 +49,8 @@
                 </v-card-subtitle>
                 <p class="distancia" v-if="posto.distancia">Aprox. {{ posto.distancia }}</p>
               </div>
-              <a :href="posto.linkGoogleMaps" target="_blank" rel="noopener noreferrer" @click.stop>
-                <img src="@/assets/icons/seta.svg" alt="Ir" class="seta" />
-              </a>
             </div>
           </v-card>
-
           <p v-if="!carregando && postos.length === 0 && !erro" class="text-center mt-4 text-gray-600">
             Nenhum posto de vacinação encontrado.
           </p>
@@ -100,11 +95,6 @@ function navegar(to) {
   router.push(to)
 }
 
-function abrirMapa(link) {
-  if (!link) return
-  window.open(link, '_blank', 'noopener,noreferrer')
-}
-
 function iniciarProgresso() {
   progresso.value = 0
   clearInterval(timer)
@@ -138,7 +128,6 @@ function normalizarPosto(p) {
     nome: p?.nome ?? p?.Name ?? p?.name ?? 'Unidade de Saúde',
     enderecoCompleto: p?.enderecoCompleto ?? p?.Address ?? p?.address ?? '',
     distancia: p?.distancia ?? p?.DistanceText ?? p?.distanceText ?? null,
-    linkGoogleMaps: p?.linkGoogleMaps ?? p?.GoogleMapsLink ?? p?.googleMapsLink ?? ''
   }
 }
 
@@ -319,12 +308,6 @@ onBeforeUnmount(() => {
   color: #f97316;
   margin-top: 2px;
   margin-left: 12px;
-}
-
-.seta {
-  width: 20px;
-  height: 20px;
-  opacity: .7;
 }
 
 .loading-card {

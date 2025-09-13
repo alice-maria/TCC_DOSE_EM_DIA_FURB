@@ -71,12 +71,11 @@ export default {
       menuCloseIcon,  // expandido
       menuItems: [
         { title: 'Início', imgSrc: require('@/assets/icons/sidebar/home.svg'), route: '/home' },
-        { title: 'Configurações', imgSrc: require('@/assets/icons/sidebar/config.svg'), route: '/configuracoes' },
-        { title: 'Exportar Comprovante', imgSrc: require('@/assets/icons/sidebar/pdf.svg'), route: '/exportar-comprovante' },
-        { title: 'Vacinas pelo Mundo', imgSrc: require('@/assets/icons/sidebar/mundo.svg'), route: '/vacinas-mundo' },
         { title: 'Postos de Saúde', imgSrc: require('@/assets/icons/sidebar/localizacao.svg'), route: '/postos-saude' },
+        { title: 'Vacinas pelo Mundo', imgSrc: require('@/assets/icons/sidebar/mundo.svg'), route: '/vacinas-mundo' },
+        { title: 'Exportar Comprovante', imgSrc: require('@/assets/icons/sidebar/pdf.svg'), route: '/exportar-comprovante' },
         { title: 'Notificações', imgSrc: require('@/assets/icons/sidebar/notificacao.svg'), route: '/historico-notificacoes' },
-        { title: 'Meu perfil', imgSrc: require('@/assets/icons/sidebar/perfil.svg'), route: '/editar-perfil' },
+        { title: 'Configurações', imgSrc: require('@/assets/icons/sidebar/config.svg'), route: '/configuracoes' },
         { title: 'Sair', imgSrc: require('@/assets/icons/sidebar/sair.svg'), action: 'logout' }
       ]
     };

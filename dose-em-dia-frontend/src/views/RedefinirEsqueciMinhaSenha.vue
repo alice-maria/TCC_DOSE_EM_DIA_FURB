@@ -138,7 +138,7 @@ export default {
       }
 
       try {
-        await api.put('/api/usuario/alterar-senha', {
+        await api.put('/api/usuario/redefinir-senha', {
           email: this.form.email,
           senhaAtual: this.form.senhaAtual,
           novaSenha: this.form.senha

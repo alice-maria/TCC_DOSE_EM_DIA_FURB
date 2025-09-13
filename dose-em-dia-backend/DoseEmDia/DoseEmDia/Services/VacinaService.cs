@@ -57,9 +57,7 @@ namespace DoseEmDia.Controllers
 
             var hoje = DateTime.Today;
             var nascimento = hoje.AddYears(-idadeAtual).Date;
-
             var rand = new Random(unchecked((int)DateTime.Now.Ticks));
-            var lista = new List<Vacina>();
 
             var elegiveis = _tabelaVacinas
                 .Where(e =>
@@ -71,26 +69,91 @@ namespace DoseEmDia.Controllers
             if (!elegiveis.Any())
                 elegiveis = _tabelaVacinas.ToList();
 
-            void adicionar(StatusVacina status, int quantidade)
+            var maxPorNome = elegiveis
+                .GroupBy(e => e.Nome, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+
+            var countPorNome = maxPorNome.Keys.ToDictionary(k => k, _ => 0, StringComparer.OrdinalIgnoreCase);
+
+            var maxPossivel = maxPorNome.Values.Sum();
+            var alvoTotal = Math.Min(TOTAL, maxPossivel);
+
+            var lista = new List<Vacina>();
+
+            var esquemaBCG = elegiveis.FirstOrDefault(e => e.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase))
+                          ?? _tabelaVacinas.FirstOrDefault(e => e.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase));
+
+            if (esquemaBCG != null)
             {
-                for (int i = 0; i < quantidade && lista.Count < TOTAL; i++)
+                if (!maxPorNome.ContainsKey(esquemaBCG.Nome))
+                    maxPorNome[esquemaBCG.Nome] = 1;
+                if (!countPorNome.ContainsKey(esquemaBCG.Nome))
+                    countPorNome[esquemaBCG.Nome] = 0;
+
+                if (countPorNome[esquemaBCG.Nome] < maxPorNome[esquemaBCG.Nome] && lista.Count < alvoTotal)
                 {
-                    var esquema = elegiveis[rand.Next(elegiveis.Count)];
-                    var vacina = CriarVacinaParaStatus(esquema, status, hoje, nascimento, rand);
-                    if (vacina != null) lista.Add(vacina);
+                    var dataAplicacaoBCG = nascimento;
+
+                    var bcg = new Vacina
+                    {
+                        Nome = esquemaBCG.Nome,
+                        IntervaloEntreDoses = esquemaBCG.Intervalo,
+                        NumeroDoses = 1,
+                        NumeroLote = rand.Next(100000, 999999),
+                        DataAplicacao = dataAplicacaoBCG,
+                        ValidadeMeses = esquemaBCG.ValidadeMeses,
+                        Fabricante = esquemaBCG.Fabricante,
+                        Status = StatusVacina.Aplicada
+                    };
+
+                    lista.Add(bcg);
+                    countPorNome[esquemaBCG.Nome]++;
                 }
             }
 
-            adicionar(StatusVacina.Aplicada, QT_APLICADAS);
-            adicionar(StatusVacina.EmAtraso, QT_ATRASO);
-            adicionar(StatusVacina.AVencer, QT_AVENCER);
-
-            while (lista.Count < TOTAL)
+            void tentarAdicionar(StatusVacina status, int quantidade)
             {
-                var esquema = elegiveis[rand.Next(elegiveis.Count)];
-                var v = CriarVacinaParaStatus(esquema, StatusVacina.Aplicada, hoje, nascimento, rand);
-                if (v != null) lista.Add(v);
+                if (quantidade <= 0) return;
+
+                int adicionadas = 0;
+                int tentativas = 0;
+                int maxTentativas = quantidade * 20;
+
+                while (adicionadas < quantidade && lista.Count < alvoTotal && tentativas < maxTentativas)
+                {
+                    tentativas++;
+
+                    var candidatos = elegiveis
+                        .Where(e => countPorNome.TryGetValue(e.Nome, out var cnt)
+                                    ? cnt < maxPorNome[e.Nome]
+                                    : true) 
+                        .ToList();
+                    if (candidatos.Count == 0) break;
+
+                    var esquema = candidatos[rand.Next(candidatos.Count)];
+                    var vacina = CriarVacinaParaStatus(esquema, status, hoje, nascimento, rand);
+                    if (vacina == null) continue;
+
+                    if (!countPorNome.ContainsKey(vacina.Nome))
+                        countPorNome[vacina.Nome] = 0;
+                    if (!maxPorNome.ContainsKey(vacina.Nome))
+                        maxPorNome[vacina.Nome] = 1;
+
+                    if (countPorNome[vacina.Nome] < maxPorNome[vacina.Nome])
+                    {
+                        lista.Add(vacina);
+                        countPorNome[vacina.Nome]++;
+                        adicionadas++;
+                    }
+                }
             }
+
+            tentarAdicionar(StatusVacina.Aplicada, QT_APLICADAS);
+            tentarAdicionar(StatusVacina.EmAtraso, QT_ATRASO);
+            tentarAdicionar(StatusVacina.AVencer, QT_AVENCER);
+
+            int faltantes = alvoTotal - lista.Count;
+            tentarAdicionar(StatusVacina.Aplicada, faltantes);
 
             AplicarStatusComBaseNaValidade(lista);
             return lista;
@@ -240,11 +303,11 @@ namespace DoseEmDia.Controllers
             new EsquemaVacinal { Nome = "Meningocócica ACWY", IdadeMinima = 11, IdadeMaxima = 14, Intervalo = "Dose única", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "Sanofi" },
 
             // Adulto
-            new EsquemaVacinal { Nome = "dT (Dupla adulto)", IdadeMinima = 10, Intervalo = "Reforço a cada 10 anos", NumeroDoses = 1, ValidadeMeses = 120, Fabricante = "Butantan" },
+            new EsquemaVacinal { Nome = "dT (Dupla adulto)", IdadeMinima = 15, Intervalo = "Reforço a cada 10 anos", NumeroDoses = 1, ValidadeMeses = 120, Fabricante = "Butantan" },
             new EsquemaVacinal { Nome = "Febre Amarela", IdadeMinima = 9, Intervalo = "Dose única ou reforço a depender da região", NumeroDoses = 1, ValidadeMeses = 999, Fabricante = "Bio-Manguinhos" },
             new EsquemaVacinal { Nome = "Tríplice Viral (SCR)", IdadeMinima = 20, Intervalo = "2 doses se não vacinado na infância", NumeroDoses = 2, ValidadeMeses = 240, Fabricante = "Fiocruz" },
             new EsquemaVacinal { Nome = "Hepatite B", IdadeMinima = 20, Intervalo = "3 doses", NumeroDoses = 3, ValidadeMeses = 240, Fabricante = "Butantan" },
-            new EsquemaVacinal { Nome = "Covid-19", IdadeMinima = 6, Intervalo = "2 ou 3 doses + reforços anuais", NumeroDoses = 3, ValidadeMeses = 12, Fabricante = "Pfizer" },
+            new EsquemaVacinal { Nome = "Covid-19", IdadeMinima = 15, Intervalo = "2 ou 3 doses + reforços anuais", NumeroDoses = 3, ValidadeMeses = 12, Fabricante = "Pfizer" },
 
             // Idoso
             new EsquemaVacinal { Nome = "Pneumocócica 23-valente", IdadeMinima = 60, Intervalo = "Dose única ou esquema em 2 doses", NumeroDoses = 2, ValidadeMeses = 999, Fabricante = "GSK" },
