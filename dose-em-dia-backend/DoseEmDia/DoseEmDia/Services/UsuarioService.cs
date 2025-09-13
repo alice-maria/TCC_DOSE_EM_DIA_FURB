@@ -137,46 +137,50 @@ public class UsuarioService
         await _context.SaveChangesAsync();
     }
 
-
-    public async Task EsqueciSenha(string email, CancellationToken ct = default)
+    public async Task<bool> EsqueciSenha(string email, CancellationToken ct = default)
     {
-        var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Email == email);
-        if (usuario is null) return;
+        var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Email == email, ct);
 
-        usuario.TokenRedefinicaoSenha = _envioEmail.GerarToken();
-        usuario.TokenExpiracao = DateTime.Now.AddMinutes(15);
+        if (usuario is null)
+            return true; 
 
-        await _context.SaveChangesAsync();
+        var token = _envioEmail.GerarToken(); 
+        usuario.TokenRedefinicaoSenha = token;          
+        usuario.TokenExpiracao = DateTime.UtcNow.AddMinutes(15);
+
+        await _context.SaveChangesAsync(ct);
 
         var emailEnviado = false;
         try
         {
-            var envioTask = _envioEmail.EnviarEmailRedefinicaoSenhaAsync(usuario.Email, usuario.TokenRedefinicaoSenha);
+            var envioTask = _envioEmail.EnviarEmailRedefinicaoSenhaAsync(usuario.Email, token, ct);
             var completed = await Task.WhenAny(envioTask, Task.Delay(TimeSpan.FromSeconds(15), ct)) == envioTask;
 
             if (completed)
             {
-                await envioTask;
+                await envioTask; 
                 emailEnviado = true;
             }
             else
             {
-                emailEnviado = false;
                 _logger.LogWarning("Timeout ao enviar e-mail de redefinição para {Email}", email);
             }
         }
+        catch (EmailException ex)
+        {
+            _logger.LogError(ex, "Falha ao enviar e-mail de redefinição para {Email}", email);
+        }
         catch (Exception ex)
         {
-            emailEnviado = false;
-            throw new EmailException("Falha ao enviar o e-mail. Verifique as configurações.", ex);
+            _logger.LogError(ex, "Erro inesperado ao processar esqueciSenha para {Email}", email);
         }
 
-        var limite = DateTime.UtcNow.AddMinutes(-5);
+        var cincoMinutosAtras = DateTime.UtcNow.AddMinutes(-5);
 
         var haRegistroRecente = await _context.Notificacao.AnyAsync(n =>
-        n.UsuarioId == usuario.IdUser &&
-        n.Tipo == TipoNotificacao.RedefinicaoSenha &&
-        n.DataEnvio > limite);
+            n.UsuarioId == usuario.IdUser &&
+            n.Tipo == TipoNotificacao.RedefinicaoSenha &&
+            n.DataEnvio > cincoMinutosAtras, ct);
 
         if (!haRegistroRecente)
         {
@@ -188,6 +192,8 @@ public class UsuarioService
                 emailEnviado
             );
         }
+
+        return true; // resposta sempre “ok” para o chamador
     }
 
     public async Task RedefinirSenha(RedefinirSenhaRequest request)
