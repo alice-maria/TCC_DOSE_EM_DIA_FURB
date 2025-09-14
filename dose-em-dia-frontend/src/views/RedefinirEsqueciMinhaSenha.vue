@@ -179,13 +179,11 @@ export default {
           numero++;
         }
 
-        // Verifica se é caractere especial
         if (caracteresEspeciais.indexOf(senha[i]) !== -1) {
           caracterEspecial++;
         }
       }
 
-      // Verifica se atende aos requisitos
       this.senhaValida = (senha.length >= 7) &&
         (letraMaiscula >= 1) &&
         (numero >= 1) &&
@@ -193,7 +191,7 @@ export default {
     },
     confirmarAlteracaoSenha() {
       this.dialogConfirmacao = false;
-      this.redefinirSenha(); // chama o método real de alteração
+      this.redefinirSenha(); 
     }
   }
 };
@@ -202,6 +200,7 @@ export default {
 <style scoped>
 .pagina-redefinirSenha {
   margin-left: 95px;
+  margin-top: 50px;
 }
 
 .header {

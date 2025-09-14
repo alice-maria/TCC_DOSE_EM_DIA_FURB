@@ -57,6 +57,15 @@ export default {
       this.toggleMenu();
       e.currentTarget.blur(); 
     },
+    fecharMenu() {
+      this.menuAberto = false;
+    },
+    handleClickFora(e) {
+      const container = this.$el; 
+      if (container && !container.contains(e.target)) {
+        this.fecharMenu();
+      }
+    },
     toggleContraste() {
       document.body.classList.toggle("contraste-alto");
     },
@@ -96,6 +105,12 @@ export default {
       else if (this.linhaNivel === 3) document.body.classList.add("espacamento-linhas-alto");
     }
   },
+  mounted() {
+    document.addEventListener("click", this.handleClickFora);
+  },
+  beforeUnmount() {
+    document.removeEventListener("click", this.handleClickFora);
+  }
 };
 </script>
 

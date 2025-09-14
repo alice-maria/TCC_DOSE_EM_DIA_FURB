@@ -3,7 +3,7 @@
     <button class="chatbot-toggle" @click="alternarChat" ref="botao" aria-label="Abrir chatbot">
       <img src="@/imagens/ChatBotVitta.png" alt="Abrir chatbot" />
     </button>
-    <div v-show="visivel" ref="chat" class="chatbot-popup chatbot" role="dialog" aria-modal="true">
+    <div v-show="visivel" ref="chat" class="chatbot-popup chatbot" role="dialog" aria-modal="true" @click.stop>
       <transition name="chat-fade">
         <div v-if="visivel">
           <button class="fechar-chat" @click="fecharChat" aria-label="Fechar chatbot">
@@ -165,7 +165,7 @@
               <div class="mensagem bot">
                 <p><strong>Informações de contato:</strong></p>
                 <p>SAC: 0800 123 4567</p>
-                <p>E-mail: suporte@doseemdia.com.br</p>
+                <p>E-mail: notificadoseemdia@gmail.com</p>
                 <p>Atendimento: Seg a Sex, 08h às 18h</p>
               </div>
               <button class="voltar" @click="subEstadoSuporte = null">Voltar</button>
@@ -238,6 +238,24 @@ export default {
   },
   methods: {
     alternarChat() { this.visivel = !this.visivel; },
+    handleGlobalClick(e) {
+      if (!this.visivel) return;
+      const chat  = this.$refs.chat;
+      const botao = this.$refs.botao;
+      const alvo  = e.target;
+
+      const clicouDentroChat  = chat  && chat.contains(alvo);
+      const clicouNoBotao     = botao && botao.contains(alvo);
+
+      if (!clicouDentroChat && !clicouNoBotao) {
+        this.fecharChat();
+      }
+    },
+    handleKeydown(e) {
+      if (this.visivel && (e.key === 'Escape' || e.key === 'Esc')) {
+        this.fecharChat();
+      }
+    },
     fecharChat() {
       this.visivel = false;
       this.estado = 'boasVindas';
@@ -360,6 +378,14 @@ export default {
     abrirCalendario() {
       window.open('https://www.gov.br/saude/pt-br/vacinacao/calendario', '_blank');
     }
+  },
+  mounted() {
+    document.addEventListener('click', this.handleGlobalClick, true);
+    document.addEventListener('keydown', this.handleKeydown);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleGlobalClick, true);
+    document.removeEventListener('keydown', this.handleKeydown);
   }
 };
 </script>
