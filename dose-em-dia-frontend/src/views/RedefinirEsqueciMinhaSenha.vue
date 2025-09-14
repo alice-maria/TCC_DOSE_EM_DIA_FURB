@@ -7,15 +7,6 @@
       </div>
 
       <v-form @submit.prevent="redefinirSenha" class="form-senha">
-        <!-- Senha atual -->
-        <v-text-field v-model="form.senhaAtual" label="Senha atual:*" variant="outlined"
-          :type="mostrarSenhaAtual ? 'text' : 'password'" required>
-          <template #append-inner>
-            <img :src="mostrarSenhaAtual ? iconeOlhoAberto : iconeOlhoFechado" class="icone-olho-custom"
-              @click.stop="mostrarSenhaAtual = !mostrarSenhaAtual" />
-          </template>
-        </v-text-field>
-
         <!-- Nova senha -->
         <v-text-field v-model="form.senha" label="Nova senha:*" variant="outlined"
           :type="mostrarNovaSenha ? 'text' : 'password'" required @input="validarSenha"
@@ -106,7 +97,6 @@ export default {
   data() {
     return {
       mensagem: '',
-      mostrarSenhaAtual: false,
       mostrarNovaSenha: false,
       mostrarConfirmarSenha: false,
       senhaValida: false,
@@ -115,11 +105,11 @@ export default {
       dialogConfirmacao: false,
       dialogSucesso: false,
       mostrarErro: false,
+      carregando: false,
+      token: '',
       form: {
-        senhaAtual: '',
         senha: '',
         confirmarSenha: '',
-        email: ''
       },
     };
   },
@@ -137,21 +127,25 @@ export default {
         return;
       }
 
-      try {
-        await api.put('/api/usuario/redefinir-senha', {
-          email: this.form.email,
-          senhaAtual: this.form.senhaAtual,
-          novaSenha: this.form.senha
-        }, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        });
-
-        this.dialogSucesso = true;
-      } catch (err) {
-        this.mensagem = err.response?.data || 'Erro ao alterar a senha.';
+      if (!this.token) {
+        this.mensagem = 'Link inválido ou token ausente.';
         this.mostrarErro = true;
+        return;
+      }
+
+      try {
+        this.carregando = true;
+        await api.post('/api/usuario/redefinir-senha', {
+          token: this.token,
+          novaSenha: this.form.senha
+        }); 
+        this.dialogSucesso = true;
+
+      } catch (err) {
+        this.mensagem = err.response?.data?.message || err.response?.data || 'Erro ao alterar a senha.';
+        this.mostrarErro = true;
+      } finally {
+        this.carregando = false;
       }
     },
     navegar(destino) {
@@ -191,15 +185,18 @@ export default {
     },
     confirmarAlteracaoSenha() {
       this.dialogConfirmacao = false;
-      this.redefinirSenha(); 
+      this.redefinirSenha();
     }
+  },
+  mounted() {
+    this.token = this.$route.query.token ?? '';
   }
 };
 </script>
 
 <style scoped>
 .pagina-redefinirSenha {
-  margin-left: 95px;
+  margin-left: 90px;
   margin-top: 50px;
 }
 
@@ -248,7 +245,7 @@ export default {
 
 .popup-confirmacao {
   background-color: #f97316;
-  border-radius: 20px;
+  border-radius: 25px !important;
   padding: 20px;
   text-align: center;
 }
@@ -284,7 +281,7 @@ export default {
 
 .popup-sucesso {
   background-color: #f46c20;
-  border-radius: 24px !important; /* forçar arredondamento */
+  border-radius: 25px !important;
   padding: 40px 20px;
   width: 300px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
@@ -304,9 +301,22 @@ export default {
   margin-top: 16px;
 }
 
-.btn-popupok{
+.btn-popupok {
   display: flex;
   justify-content: center;
+  align-items: center;
   margin-top: 20px;
+  width: 100%;
+}
+
+.btn-popupok button {
+  background-color: #fff;
+  color: #ff6600;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
 }
 </style>

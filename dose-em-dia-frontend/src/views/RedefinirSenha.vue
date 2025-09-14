@@ -91,7 +91,7 @@
         Senha alterada com sucesso!
       </v-card-text>
       <v-card-actions class="botoes-popup">
-        <v-btn class="btn-popupok" @click="$router.push('/')">Ok</v-btn>
+        <v-btn class="btn-popupok">Ok</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -232,7 +232,7 @@ export default {
     },
     confirmarAlteracaoSenha() {
       this.dialogConfirmacao = false;
-      this.redefinirSenha(); // chama o método real de alteração
+      this.redefinirSenha(); 
     }
   }
 };
@@ -353,7 +353,6 @@ export default {
 .popup-sucesso {
   background-color: #f46c20;
   border-radius: 24px !important;
-  /* forçar arredondamento */
   padding: 40px 20px;
   width: 300px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
@@ -375,7 +374,20 @@ export default {
 
 .btn-popupok {
   display: flex;
-  justify-content: center;
+  justify-content: center;  
+  align-items: center;      
   margin-top: 20px;
+  width: 100%;
+}
+
+.btn-popupok button {
+  background-color: #fff;   
+  color: #ff6600;           
+  border: none;
+  padding: 10px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
 }
 </style>
