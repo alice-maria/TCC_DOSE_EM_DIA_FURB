@@ -138,13 +138,12 @@ namespace DoseEmDia.Models.db
                 e.HasKey(x => x.IdEndereco);
 
                 e.Property(x => x.Logradouro).HasMaxLength(255);
-                e.Property(x => x.Numero).IsRequired().HasMaxLength(20);
+                e.Property(x => x.Numero).IsRequired().HasMaxLength(20);  
 
                 e.HasOne(x => x.Cep)
                     .WithMany(c => c.Enderecos)
                     .HasForeignKey(x => x.CepId)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .IsRequired(false); 
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 e.HasIndex(x => x.CepId);
             });

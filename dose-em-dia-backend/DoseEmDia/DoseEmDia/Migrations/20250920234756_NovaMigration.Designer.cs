@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DoseEmDia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250901021345_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250920234756_NovaMigration")]
+    partial class NovaMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -24,22 +24,6 @@ namespace DoseEmDia.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DoseEmDia.Models.db.ContadorRequisicoes", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Requisicoes")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ContadorRequisicoes", (string)null);
-                });
-
             modelBuilder.Entity("DoseEmDia.Models.Endereco", b =>
                 {
                     b.Property<int>("IdEndereco")
@@ -49,33 +33,106 @@ namespace DoseEmDia.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdEndereco"));
 
-                    b.Property<string>("Bairro")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CEP")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Cidade")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<long>("CepId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Logradouro")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
-                    b.Property<string>("Pais")
+                    b.Property<string>("Numero")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.HasKey("IdEndereco");
 
+                    b.HasIndex("CepId");
+
                     b.ToTable("Endereco", (string)null);
+                });
+
+            modelBuilder.Entity("DoseEmDia.Models.Localizacao.Cep", b =>
+                {
+                    b.Property<long>("IdCep")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("IdCep"));
+
+                    b.Property<string>("Bairro")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<long>("CidadeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(9)
+                        .HasColumnType("character varying(9)");
+
+                    b.HasKey("IdCep");
+
+                    b.HasIndex("CidadeId");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("Cep", (string)null);
+                });
+
+            modelBuilder.Entity("DoseEmDia.Models.Localizacao.Cidade", b =>
+                {
+                    b.Property<long>("IdCidade")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("IdCidade"));
+
+                    b.Property<int>("EstadoId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.HasKey("IdCidade");
+
+                    b.HasIndex("EstadoId", "Nome")
+                        .IsUnique();
+
+                    b.ToTable("Cidade", (string)null);
+                });
+
+            modelBuilder.Entity("DoseEmDia.Models.Localizacao.Estado", b =>
+                {
+                    b.Property<int>("IdEstado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdEstado"));
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<int>("PaisId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Uf")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)");
+
+                    b.HasKey("IdEstado");
+
+                    b.HasIndex("PaisId", "Nome")
+                        .IsUnique();
+
+                    b.ToTable("Estado", (string)null);
                 });
 
             modelBuilder.Entity("DoseEmDia.Models.Notificacao", b =>
@@ -123,22 +180,25 @@ namespace DoseEmDia.Migrations
                 {
                     b.Property<int>("IdPais")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("IdPais");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdPais"));
 
                     b.Property<string>("Nome")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
 
                     b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.HasKey("IdPais");
 
-                    b.ToTable("Paises", (string)null);
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
+                    b.ToTable("Pais", (string)null);
                 });
 
             modelBuilder.Entity("DoseEmDia.Models.Vacina", b =>
@@ -244,6 +304,50 @@ namespace DoseEmDia.Migrations
                     b.ToTable("Usuario", (string)null);
                 });
 
+            modelBuilder.Entity("DoseEmDia.Models.Endereco", b =>
+                {
+                    b.HasOne("DoseEmDia.Models.Localizacao.Cep", "Cep")
+                        .WithMany("Enderecos")
+                        .HasForeignKey("CepId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cep");
+                });
+
+            modelBuilder.Entity("DoseEmDia.Models.Localizacao.Cep", b =>
+                {
+                    b.HasOne("DoseEmDia.Models.Localizacao.Cidade", "Cidade")
+                        .WithMany("Ceps")
+                        .HasForeignKey("CidadeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cidade");
+                });
+
+            modelBuilder.Entity("DoseEmDia.Models.Localizacao.Cidade", b =>
+                {
+                    b.HasOne("DoseEmDia.Models.Localizacao.Estado", "Estado")
+                        .WithMany("Cidades")
+                        .HasForeignKey("EstadoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Estado");
+                });
+
+            modelBuilder.Entity("DoseEmDia.Models.Localizacao.Estado", b =>
+                {
+                    b.HasOne("DoseEmDia.Models.Pais", "Pais")
+                        .WithMany("Estados")
+                        .HasForeignKey("PaisId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Pais");
+                });
+
             modelBuilder.Entity("DoseEmDia.Models.Notificacao", b =>
                 {
                     b.HasOne("Usuario", "Usuario")
@@ -275,6 +379,26 @@ namespace DoseEmDia.Migrations
                         .IsRequired();
 
                     b.Navigation("Endereco");
+                });
+
+            modelBuilder.Entity("DoseEmDia.Models.Localizacao.Cep", b =>
+                {
+                    b.Navigation("Enderecos");
+                });
+
+            modelBuilder.Entity("DoseEmDia.Models.Localizacao.Cidade", b =>
+                {
+                    b.Navigation("Ceps");
+                });
+
+            modelBuilder.Entity("DoseEmDia.Models.Localizacao.Estado", b =>
+                {
+                    b.Navigation("Cidades");
+                });
+
+            modelBuilder.Entity("DoseEmDia.Models.Pais", b =>
+                {
+                    b.Navigation("Estados");
                 });
 
             modelBuilder.Entity("Usuario", b =>

@@ -6,21 +6,84 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DoseEmDia.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class NovaMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ContadorRequisicoes",
+                name: "Pais",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    IdPais = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Requisicoes = table.Column<int>(type: "integer", nullable: false)
+                    Nome = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
+                    Url = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ContadorRequisicoes", x => x.Id);
+                    table.PrimaryKey("PK_Pais", x => x.IdPais);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Estado",
+                columns: table => new
+                {
+                    IdEstado = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nome = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
+                    Uf = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: false),
+                    PaisId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Estado", x => x.IdEstado);
+                    table.ForeignKey(
+                        name: "FK_Estado_Pais_PaisId",
+                        column: x => x.PaisId,
+                        principalTable: "Pais",
+                        principalColumn: "IdPais",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Cidade",
+                columns: table => new
+                {
+                    IdCidade = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nome = table.Column<string>(type: "character varying(160)", maxLength: 160, nullable: false),
+                    EstadoId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cidade", x => x.IdCidade);
+                    table.ForeignKey(
+                        name: "FK_Cidade_Estado_EstadoId",
+                        column: x => x.EstadoId,
+                        principalTable: "Estado",
+                        principalColumn: "IdEstado",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Cep",
+                columns: table => new
+                {
+                    IdCep = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Codigo = table.Column<string>(type: "character varying(9)", maxLength: 9, nullable: false),
+                    CidadeId = table.Column<long>(type: "bigint", nullable: false),
+                    Bairro = table.Column<string>(type: "character varying(160)", maxLength: 160, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cep", x => x.IdCep);
+                    table.ForeignKey(
+                        name: "FK_Cep_Cidade_CidadeId",
+                        column: x => x.CidadeId,
+                        principalTable: "Cidade",
+                        principalColumn: "IdCidade",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -29,30 +92,19 @@ namespace DoseEmDia.Migrations
                 {
                     IdEndereco = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Logradouro = table.Column<string>(type: "text", nullable: false),
-                    Bairro = table.Column<string>(type: "text", nullable: false),
-                    Cidade = table.Column<string>(type: "text", nullable: false),
-                    Estado = table.Column<string>(type: "text", nullable: false),
-                    CEP = table.Column<string>(type: "text", nullable: false),
-                    Pais = table.Column<string>(type: "text", nullable: false)
+                    CepId = table.Column<long>(type: "bigint", nullable: false),
+                    Logradouro = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    Numero = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Endereco", x => x.IdEndereco);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Paises",
-                columns: table => new
-                {
-                    IdPais = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Nome = table.Column<string>(type: "text", nullable: false),
-                    Url = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Paises", x => x.IdPais);
+                    table.ForeignKey(
+                        name: "FK_Endereco_Cep_CepId",
+                        column: x => x.CepId,
+                        principalTable: "Cep",
+                        principalColumn: "IdCep",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -138,9 +190,43 @@ namespace DoseEmDia.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Cep_CidadeId",
+                table: "Cep",
+                column: "CidadeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cep_Codigo",
+                table: "Cep",
+                column: "Codigo",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cidade_EstadoId_Nome",
+                table: "Cidade",
+                columns: new[] { "EstadoId", "Nome" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Endereco_CepId",
+                table: "Endereco",
+                column: "CepId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Estado_PaisId_Nome",
+                table: "Estado",
+                columns: new[] { "PaisId", "Nome" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notificacoes_UsuarioId",
                 table: "Notificacoes",
                 column: "UsuarioId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pais_Nome",
+                table: "Pais",
+                column: "Nome",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Usuario_EnderecoId",
@@ -156,13 +242,7 @@ namespace DoseEmDia.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ContadorRequisicoes");
-
-            migrationBuilder.DropTable(
                 name: "Notificacoes");
-
-            migrationBuilder.DropTable(
-                name: "Paises");
 
             migrationBuilder.DropTable(
                 name: "Vacina");
@@ -172,6 +252,18 @@ namespace DoseEmDia.Migrations
 
             migrationBuilder.DropTable(
                 name: "Endereco");
+
+            migrationBuilder.DropTable(
+                name: "Cep");
+
+            migrationBuilder.DropTable(
+                name: "Cidade");
+
+            migrationBuilder.DropTable(
+                name: "Estado");
+
+            migrationBuilder.DropTable(
+                name: "Pais");
         }
     }
 }
