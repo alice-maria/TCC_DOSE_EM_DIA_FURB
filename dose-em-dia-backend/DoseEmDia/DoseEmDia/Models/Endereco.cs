@@ -11,8 +11,6 @@ namespace DoseEmDia.Models
         [Column("IdEndereco")]
         public int IdEndereco { get; set; }
 
-        [Required]
-        [ForeignKey("Cep")]
         public long CepId { get; set; }
         public Cep Cep { get; set; } = null!;
 

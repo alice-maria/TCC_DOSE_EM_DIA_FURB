@@ -44,24 +44,6 @@ namespace DoseEmDia.Models.db
                         property.SetValueConverter(toUnspecifiedNullable);
                 }
             }
-
-            // Usuario
-            modelBuilder.Entity<Usuario>().ToTable("Usuario");
-            modelBuilder.Entity<Usuario>().HasKey(u => u.IdUser);
-            modelBuilder.Entity<Usuario>()
-                .HasOne(u => u.Endereco)
-                .WithMany()
-                .HasForeignKey(u => u.EnderecoId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Usuario>()
-                .Property(u => u.DataNascimento)
-                .HasColumnType("timestamp without time zone");
-
-            modelBuilder.Entity<Usuario>()
-                .Property(u => u.TokenExpiracao)
-                .HasColumnType("timestamp without time zone");
-
             // Vacina
             modelBuilder.Entity<Vacina>().ToTable("Vacina");
             modelBuilder.Entity<Vacina>().HasKey(v => v.IdVacina);
@@ -166,6 +148,22 @@ namespace DoseEmDia.Models.db
                 e.HasIndex(x => x.CepId);
             });
 
+            // Usuario
+            modelBuilder.Entity<Usuario>().ToTable("Usuario");
+            modelBuilder.Entity<Usuario>().HasKey(u => u.IdUser);
+            modelBuilder.Entity<Usuario>()
+                .HasOne(u => u.Endereco)
+                .WithMany()
+                .HasForeignKey(u => u.EnderecoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Usuario>()
+                .Property(u => u.DataNascimento)
+                .HasColumnType("timestamp without time zone");
+
+            modelBuilder.Entity<Usuario>()
+                .Property(u => u.TokenExpiracao)
+                .HasColumnType("timestamp without time zone");
         }
     }
 }
