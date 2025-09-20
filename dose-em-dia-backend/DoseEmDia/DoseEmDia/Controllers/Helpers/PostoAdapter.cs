@@ -4,20 +4,20 @@ namespace DoseEmDia.Services.Geo
 {
     public static class PostoAdapter
     {
-        public static IReadOnlyList<PostoVacinacaoResponse> ToPostoVacinacaoResponse(IEnumerable<PostoMaisProximo> src)
+        public static IReadOnlyList<PostoVacinacaoResponse> RespostaPostoVacinacao(IEnumerable<PostoMaisProximo> origem)
         {
-            return src.Select(x => new PostoVacinacaoResponse
+            return origem.Select(x => new PostoVacinacaoResponse
             {
-                Nome = x.Name,
-                EnderecoCompleto = x.Address,
+                Nome = x.Nome,
+                EnderecoCompleto = x.Endereco,
                 Latitude = x.Latitude,
                 Longitude = x.Longitude,
-                DistanciaMetros = x.DistanceMeters ?? int.MaxValue,
-                Distancia = x.DistanceMeters is null
+                DistanciaMetros = x.DistanciaMetros ?? int.MaxValue,
+                Distancia = x.DistanciaMetros is null
                     ? "—"
-                    : (x.DistanceMeters < 1000
-                        ? $"{x.DistanceMeters} m"
-                        : $"{(x.DistanceMeters.Value / 1000.0):0.0} km")
+                    : (x.DistanciaMetros < 1000
+                        ? $"{x.DistanciaMetros} m"
+                        : $"{(x.DistanciaMetros.Value / 1000.0):0.0} km")
             }).ToList();
         }
     }

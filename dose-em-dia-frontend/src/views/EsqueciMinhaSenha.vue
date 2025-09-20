@@ -5,12 +5,9 @@
         <v-row align="center" justify="center">
           <v-col cols="12" sm="8" md="4">
             <v-card class="pa-6" elevation="8">
-              <!-- Título -->
               <v-card-title class="text-orange text-h5 font-weight-bold">Esqueci minha senha</v-card-title>
-              <!-- Descrição -->
               <v-card-text class="text-body-2 mb-4">Informe seu e-mail para receber um link de redefinição de
                 senha.</v-card-text>
-              <!-- Formulário -->
               <v-form @submit.prevent="enviarEmail">
                 <v-text-field v-model="email" label="E-mail" type="email" variant="outlined" required class="mb-4" />
                 <!-- Botões lado a lado -->
@@ -24,8 +21,6 @@
                   </v-col>
                 </v-row>
               </v-form>
-
-              <!-- Mensagem -->
               <v-alert v-if="mensagem" type="error" color="red-darken-2" class="mt-4" border="start" elevation="2"
                 icon="mdi-alert-circle">
                 {{ mensagem }}
@@ -71,7 +66,9 @@ export default {
   data() {
     return {
       email: '',
-      mensagem: ''
+      mensagem: '',
+      dialogSucesso: false,   
+      carregando: false,     
     };
   },
   methods: {

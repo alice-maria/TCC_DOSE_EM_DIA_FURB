@@ -130,6 +130,7 @@
                 <v-text-field label="País*" v-model="form.endereco.pais" variant="outlined" required />
                 <v-text-field label="Cidade*" v-model="form.endereco.cidade" variant="outlined" required />
                 <v-text-field label="Bairro*" v-model="form.endereco.bairro" variant="outlined" required />
+                <v-text-field label="Numero*" v-model="form.endereco.numero" variant="outlined" required />
 
                 <!-- BOTÕES -->
                 <div class="d-flex justify-end mt-6">
@@ -224,6 +225,7 @@ export default {
           estado: "",
           cep: "",
           pais: "",
+          numero:"",
         },
       },
     };
@@ -243,6 +245,7 @@ export default {
         this.form.endereco.pais,
         this.form.endereco.cidade,
         this.form.endereco.bairro,
+        this.form.endereco.numero,
         this.form.senha,
         this.form.confirmarSenha
       ];
@@ -271,7 +274,8 @@ export default {
         this.form.endereco.estado,
         this.form.endereco.pais,
         this.form.endereco.cidade,
-        this.form.endereco.bairro
+        this.form.endereco.bairro,
+        this.form.endereco.numero
       ];
       return obrigatorios.every(v => v && v.toString().trim() !== '');
     },

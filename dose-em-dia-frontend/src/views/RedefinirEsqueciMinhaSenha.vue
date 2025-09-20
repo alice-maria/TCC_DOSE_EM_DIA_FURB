@@ -135,12 +135,18 @@ export default {
 
       try {
         this.carregando = true;
-        await api.post('/api/usuario/redefinir-senha', {
-          token: this.token,
-          novaSenha: this.form.senha
-        }); 
-        this.dialogSucesso = true;
 
+        const tokenCru = this.$route.query.token || this.token || '';
+        const norm = tokenCru.replace(/ /g, '+').replace(/-/g, '+').replace(/_/g, '/');
+        const padding = '='.repeat((4 - (norm.length % 4)) % 4);
+        const token = norm + padding;
+
+        await api.post('/api/usuario/redefinir-senha', {
+          token,                            
+          novaSenha: this.form.senha
+        });
+
+        this.dialogSucesso = true;
       } catch (err) {
         this.mensagem = err.response?.data?.message || err.response?.data || 'Erro ao alterar a senha.';
         this.mostrarErro = true;
@@ -159,7 +165,7 @@ export default {
       let caracterEspecial = 0;
       const caracteresEspeciais = "/([~`!@#$%^&*+=\\-\\[\\]\\\\';,/{}|\":<>?])";
 
-      //usar valores ASCII melhora a performance ;)
+      //usar valores ASCII melhora a performance 
       for (let i = 0; i < senha.length; i++) {
         const valorAscii = senha.charCodeAt(i);
 

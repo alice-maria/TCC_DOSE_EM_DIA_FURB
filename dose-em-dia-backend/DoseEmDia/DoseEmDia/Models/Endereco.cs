@@ -1,30 +1,35 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using DoseEmDia.Models.Localizacao;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DoseEmDia.Models
 {
+    [Table("Endereco")]
     public class Endereco
     {
         [Key]
         [Column("IdEndereco")]
         public int IdEndereco { get; set; }
-        public string Logradouro { get; set; }
-        public string Bairro { get; set; }
-        public string Cidade { get; set; }
-        public string Estado { get; set; }
-        public string CEP { get; set; }
-        public string Pais { get; set; }
+
+        [Required]
+        [ForeignKey("Cep")]
+        public long CepId { get; set; }
+        public Cep Cep { get; set; } = null!;
+
+        [MaxLength(255)]
+        public string? Logradouro { get; set; }   
+
+        [Required]
+        [MaxLength(20)]
+        public string Numero { get; set; } = null!; 
 
         public Endereco() { }
 
-        public Endereco(string logradouro, string bairro, string cidade, string estado, string cep, string pais)
+        public Endereco(int cepId, string numero, string? logradouro = null)
         {
+            CepId = cepId;
+            Numero = numero;
             Logradouro = logradouro;
-            Bairro = bairro;
-            Cidade = cidade;
-            Estado = estado;
-            CEP = cep;
-            Pais = pais;
         }
     }
 }

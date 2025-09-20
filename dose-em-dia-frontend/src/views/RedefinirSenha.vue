@@ -204,7 +204,7 @@ export default {
       let caracterEspecial = 0;
       const caracteresEspeciais = "/([~`!@#$%^&*+=\\-\\[\\]\\\\';,/{}|\":<>?])";
 
-      //usar valores ASCII melhora a performance ;)
+      //usar valores ASCII melhora a performance 
       for (let i = 0; i < senha.length; i++) {
         const valorAscii = senha.charCodeAt(i);
 

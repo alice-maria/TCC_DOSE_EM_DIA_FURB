@@ -2,7 +2,7 @@
   <div class="acessibilidade-container" :class="{ 'menu-aberto': menuAberto }">
     <div class="acessibilidade-wrap">
       <button class="acessibilidade-botao" @click="onAcessClick">
-        <img :src="iconeVlibra" alt="Acessibilidade" class="icone" />
+        <img :src="iconeAcess" alt="Acessibilidade" class="icone" />
       </button>
 
       <div class="acessibilidade-tooltip" role="tooltip">
@@ -46,7 +46,7 @@ export default {
       fonteNivel: 0,
       espacamentoNivel: 0,
       linhaNivel: 0,
-      iconeVlibra: require("@/assets/icons/contrasteTela.png"),
+      iconeAcess: require("@/assets/icons/contrasteTela.png"),
     };
   },
   methods: {

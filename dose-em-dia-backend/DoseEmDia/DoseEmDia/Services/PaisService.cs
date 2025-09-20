@@ -15,7 +15,7 @@ namespace DoseEmDia.Services
 
         public async Task PopularPaisesSeNecessarioAsync()
         {
-            if (_context.Paises.Any()) return;
+            if (_context.Pais.Any()) return;
 
             var paises = new List<Pais>
             {
@@ -25,7 +25,7 @@ namespace DoseEmDia.Services
                 new Pais { Nome = "Itália", Url = "https://www.epicentro.iss.it/viaggiatori/" },
                 new Pais { Nome = "Espanha", Url = "https://www.sanidad.gob.es/areas/sanidadExterior/laSaludTambienViaja/consejosSanitarios/infVacunas.htm" },
                 new Pais { Nome = "Reino Unido", Url = "https://www.nhs.uk/vaccinations/travel-vaccinations/travel-vaccination-advice/" },
-                new Pais { Nome = "Chile", Url = "https://saludresponde.minsal.cl/recomendaciones-de-salud-en-caso-de-viaje/" },
+                new Pais { Nome = "Chile", Url = "https://saludresponde.minsal.cl/vacunatorios-internacionales/" },
                 new Pais { Nome = "Alemanha", Url = "https://www.bundesgesundheitsministerium.de/themen/praevention/impfungen.html" },
                 new Pais { Nome = "Portugal", Url = "https://www.sns24.gov.pt/servico/consulta-do-viajante/" },
                 new Pais { Nome = "Paraguai", Url = "https://dgvs.mspbs.gov.py/salud-del-viajero/requisitos-para-ingresar-a-paraguay/" },
@@ -36,13 +36,13 @@ namespace DoseEmDia.Services
                 new Pais { Nome = "Japão", Url = "https://www.mofa.go.jp/ca/cp/page22e_000925.html" }
             };
 
-            _context.Paises.AddRange(paises);
+            _context.Pais.AddRange(paises);
             await _context.SaveChangesAsync();
         }
 
         public async Task<List<Pais>> ListarPaisesVacinasObrigatorias()
         {
-            return await _context.Paises
+            return await _context.Pais
                 .OrderBy(p => p.Nome)
                 .ToListAsync();
         }

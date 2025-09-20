@@ -45,19 +45,20 @@ public class UsuarioService
         {
             await using var tx = await _context.Database.BeginTransactionAsync(ct);
 
-            // use AnyAsync em vez de Any (evita deadlocks e bloqueios desnecessários)
             bool emailExiste = await _context.Usuario.AnyAsync(u => u.Email == request.Email, ct);
             if (emailExiste)
                 throw new UsuarioException.EmailJaCadastradoException(request.Email);
+            var cepCodigo = FormatacaoHelper.FormataCEP(request.Endereco.Cep.Codigo);
+            var cep = await _context.Cep.FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
+            if (cep is null)
+                throw new CepNaoEncontradoException(cepCodigo);
 
-            var endereco = new Endereco(
-                request.Endereco.Logradouro,
-                request.Endereco.Bairro,
-                request.Endereco.Cidade,
-                request.Endereco.Estado,
-                FormatacaoHelper.FormataCEP(request.Endereco.CEP),
-                request.Endereco.Pais
-            );
+            var endereco = new Endereco
+            {
+                CepId = cep.IdCep,
+                Logradouro = request.Endereco.Logradouro,  
+                Numero = request.Endereco.Numero,      
+            };
 
             var salt = CriptografiaHelper.GerarSalt();
 
@@ -267,26 +268,30 @@ public class UsuarioService
 
         if (request.Endereco != null)
         {
-            if (usuario.Endereco == null)
+            if (!string.IsNullOrWhiteSpace(request.Endereco.CEP))
+            {
+                var cepCodigo = FormatacaoHelper.FormataCEP(request.Endereco.CEP);
+
+                var cep = await _context.Cep
+                    .FirstOrDefaultAsync(c => c.Codigo == cepCodigo);
+
+                if (cep is null)
+                    throw new CepNaoEncontradoException(cepCodigo);
+
+                if (usuario.Endereco is null)
+                    usuario.Endereco = new Endereco();
+
+                usuario.Endereco.CepId = cep.IdCep;
+            }
+
+            if (usuario.Endereco is null)
                 usuario.Endereco = new Endereco();
+
+            if (!string.IsNullOrWhiteSpace(request.Endereco.Numero))
+                usuario.Endereco.Numero = request.Endereco.Numero;
 
             if (!string.IsNullOrWhiteSpace(request.Endereco.Logradouro))
                 usuario.Endereco.Logradouro = request.Endereco.Logradouro;
-
-            if (!string.IsNullOrWhiteSpace(request.Endereco.Bairro))
-                usuario.Endereco.Bairro = request.Endereco.Bairro;
-
-            if (!string.IsNullOrWhiteSpace(request.Endereco.Cidade))
-                usuario.Endereco.Cidade = request.Endereco.Cidade;
-
-            if (!string.IsNullOrWhiteSpace(request.Endereco.Estado))
-                usuario.Endereco.Estado = request.Endereco.Estado;
-
-            if (!string.IsNullOrWhiteSpace(request.Endereco.CEP))
-                usuario.Endereco.CEP = FormatacaoHelper.FormataCEP(request.Endereco.CEP);
-
-            if (!string.IsNullOrWhiteSpace(request.Endereco.Pais))
-                usuario.Endereco.Pais = request.Endereco.Pais;
         }
 
         await _context.SaveChangesAsync();

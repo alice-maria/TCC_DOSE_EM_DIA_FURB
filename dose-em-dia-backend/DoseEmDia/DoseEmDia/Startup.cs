@@ -5,7 +5,6 @@ using DoseEmDia.Helpers;
 using DoseEmDia.Services;
 using DoseEmDia.Controllers;
 using Microsoft.OpenApi.Models;
-using DoseEmDia.Controllers.Helpers;
 using SendGrid;
 
 namespace DoseEmDia
@@ -28,8 +27,6 @@ namespace DoseEmDia
             // Serviços de domínio
 
             services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
-
-            // Usa a API key do SendGrid a partir do ambiente/secret
             services.AddSingleton<ISendGridClient>(sp =>
             {
                 var apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY")
@@ -44,7 +41,7 @@ namespace DoseEmDia
             services.AddScoped<PaisService>();
             services.AddScoped<ComprovanteService>();
             services.AddHostedService<CampanhasEmailService>();
-            services.AddHostedService<VacinasEmailService>();
+            services.AddScoped<VacinasEmailService>();
             services.AddHttpClient();
             services.AddMemoryCache();
             services.AddHttpClient<DoseEmDia.Services.Geo.PostoVacinacaoLocService>();

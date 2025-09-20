@@ -4,7 +4,7 @@ using DoseEmDia.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using DoseEmDia.Helpers;
 
-namespace DoseEmDia.Controllers.Helpers
+namespace DoseEmDia.Services
 {
     public class VacinasEmailService : BackgroundService
     {

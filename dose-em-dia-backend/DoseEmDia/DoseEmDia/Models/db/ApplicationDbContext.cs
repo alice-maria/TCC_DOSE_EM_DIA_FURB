@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.EntityFrameworkCore.Metadata; 
+using Microsoft.EntityFrameworkCore.Metadata;
+using DoseEmDia.Models.Localizacao;
 
 namespace DoseEmDia.Models.db
 {
@@ -11,12 +12,14 @@ namespace DoseEmDia.Models.db
         {
         }
 
-        public DbSet<Usuario> Usuario { get; set; }
-        public DbSet<Endereco> Endereco { get; set; }
-        public DbSet<Vacina> Vacina { get; set; }
-        public DbSet<Pais> Paises { get; set; }
-        public DbSet<Notificacao> Notificacao { get; set; }
-        public DbSet<ContadorRequisicoes> ContadorRequisicoes { get; set; }
+        public DbSet<Usuario> Usuario { get; set; } = default!;
+        public DbSet<Vacina> Vacina { get; set; } = default!;
+        public DbSet<Notificacao> Notificacao { get; set; } = default!;
+        public DbSet<Pais> Pais { get; set; } = default!;
+        public DbSet<Estado> Estado { get; set; } = default!;
+        public DbSet<Cidade> Cidade { get; set; } = default!;
+        public DbSet<Cep> Cep { get; set; } = default!;
+        public DbSet<Endereco> Endereco { get; set; } = default!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -41,10 +44,6 @@ namespace DoseEmDia.Models.db
                         property.SetValueConverter(toUnspecifiedNullable);
                 }
             }
-
-            // Endereco
-            modelBuilder.Entity<Endereco>().ToTable("Endereco");
-            modelBuilder.Entity<Endereco>().HasKey(e => e.IdEndereco);
 
             // Usuario
             modelBuilder.Entity<Usuario>().ToTable("Usuario");
@@ -78,7 +77,7 @@ namespace DoseEmDia.Models.db
 
             modelBuilder.Entity<Vacina>()
                 .Property(v => v.Status)
-                .HasConversion<string>(); // isso converte enum para texto
+                .HasConversion<string>(); 
 
             // Notificacoes
             modelBuilder.Entity<Notificacao>().ToTable("Notificacoes");
@@ -97,13 +96,75 @@ namespace DoseEmDia.Models.db
                 .Property(n => n.Tipo)
                 .HasConversion<string>();
 
-            // Paises
-            modelBuilder.Entity<Pais>().ToTable("Paises");
-            modelBuilder.Entity<Pais>().HasKey(p => p.IdPais);
+            // Pais
+            modelBuilder.Entity<Pais>(e =>
+            {
+                e.ToTable("Pais");                
+                e.HasKey(x => x.IdPais);
+                e.Property(x => x.Nome).IsRequired().HasMaxLength(120);
+                e.Property(x => x.Url).HasMaxLength(300);
+                e.HasIndex(x => x.Nome).IsUnique();
+            });
 
-            // Contador de Requisições
-            modelBuilder.Entity<ContadorRequisicoes>().ToTable("ContadorRequisicoes");
-            modelBuilder.Entity<ContadorRequisicoes>().HasKey(c => c.Id);
+            // Estado
+            modelBuilder.Entity<Estado>(e =>
+            {
+                e.ToTable("Estado");
+                e.HasKey(x => x.IdEstado);
+                e.Property(x => x.Nome).IsRequired().HasMaxLength(120);
+                e.Property(x => x.Uf).IsRequired().HasMaxLength(2);
+                e.HasOne(x => x.Pais)
+                    .WithMany(p => p.Estados)
+                    .HasForeignKey(x => x.PaisId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                e.HasIndex(x => new { x.PaisId, x.Nome }).IsUnique();
+            });
+
+            // Cidade
+            modelBuilder.Entity<Cidade>(e =>
+            {
+                e.ToTable("Cidade");
+                e.HasKey(x => x.IdCidade);
+                e.Property(x => x.Nome).IsRequired().HasMaxLength(160);
+                e.HasOne(x => x.Estado)
+                    .WithMany(s => s.Cidades)
+                    .HasForeignKey(x => x.EstadoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                e.HasIndex(x => new { x.EstadoId, x.Nome }).IsUnique();
+            });
+
+            //CEP
+            modelBuilder.Entity<Cep>(e =>
+            {
+                e.ToTable("Cep");
+                e.HasKey(x => x.IdCep);
+                e.Property(x => x.Codigo).IsRequired().HasMaxLength(9);
+                e.Property(x => x.Bairro).HasMaxLength(160);
+
+                e.HasOne(x => x.Cidade)
+                    .WithMany(c => c.Ceps)
+                    .HasForeignKey(x => x.CidadeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                e.HasIndex(x => x.Codigo).IsUnique();
+                e.HasIndex(x => x.CidadeId);
+            });
+
+            // Endereço
+            modelBuilder.Entity<Endereco>(e =>
+            {
+                e.ToTable("Endereco");
+                e.HasKey(x => x.IdEndereco);
+
+                e.Property(x => x.Logradouro).HasMaxLength(255);
+                e.Property(x => x.Numero).IsRequired().HasMaxLength(20);  
+
+                e.HasOne(x => x.Cep)
+                    .WithMany(c => c.Enderecos)
+                    .HasForeignKey(x => x.CepId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasIndex(x => x.CepId);
+            });
 
         }
     }

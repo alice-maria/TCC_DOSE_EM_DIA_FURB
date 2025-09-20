@@ -2,25 +2,25 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DoseEmDia.Services.Geo;
-using DoseEmDia.Models.db; 
+using DoseEmDia.Models.db;
 
 namespace DoseEmDia.Api.Controllers
 {
     [ApiController]
     [Route("api/localizacao")]
-    public class PostoVacinacaoLocController : ControllerBase
+    public class ControladorPostoVacinacao : ControllerBase
     {
-        private readonly PostoVacinacaoLocService _svc;
+        private readonly PostoVacinacaoLocService _servico;
         private readonly ApplicationDbContext _db;
 
-        public PostoVacinacaoLocController(PostoVacinacaoLocService svc, ApplicationDbContext db)
+        public ControladorPostoVacinacao(PostoVacinacaoLocService servico, ApplicationDbContext db)
         {
-            _svc = svc ?? throw new ArgumentNullException(nameof(svc));
+            _servico = servico ?? throw new ArgumentNullException(nameof(servico));
             _db = db ?? throw new ArgumentNullException(nameof(db));
         }
 
         [HttpGet("proximos")]
-        public async Task<IActionResult> Proximos([FromQuery] string? endereco, [FromQuery] int? usuarioId, [FromQuery] int raioMetros = 10_000, [FromQuery] int limite = 3, CancellationToken ct = default)
+        public async Task<IActionResult> ObterProximos([FromQuery] string? endereco, [FromQuery] int? usuarioId, [FromQuery] int raioMetros = 10_000, [FromQuery] int limite = 3, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(endereco))
             {
@@ -28,32 +28,79 @@ namespace DoseEmDia.Api.Controllers
                     return BadRequest("Informe 'endereco' ou 'usuarioId'.");
 
                 var usuario = await _db.Usuario
-                    .Include(x => x.Endereco)
-                    .FirstOrDefaultAsync(x => x.IdUser == usuarioId.Value, ct);
+                    .Include(u => u.Endereco)
+                        .ThenInclude(e => e.Cep)
+                            .ThenInclude(c => c.Cidade)
+                                .ThenInclude(ci => ci.Estado)
+                    .FirstOrDefaultAsync(u => u.IdUser == usuarioId.Value, ct);
 
                 if (usuario is null)
                     return NotFound("Usuário não encontrado.");
 
-                if (usuario.Endereco is null)
+                var e = usuario.Endereco;
+                if (e is null)
                     return BadRequest("Usuário não possui endereço cadastrado.");
 
-                var e = usuario.Endereco;
+                string logradouro = e.Logradouro?.Trim() ?? string.Empty;
+                string numero = e.Numero?.Trim() ?? string.Empty;
 
-                string cep = Regex.Replace(e.CEP ?? string.Empty, "[^0-9]", "");
-                string rua = (e.Logradouro ?? string.Empty).Trim();
-                string bairro = (e.Bairro ?? string.Empty).Trim();
-                string cidade = (e.Cidade ?? string.Empty).Trim();
-                string uf = (e.Estado ?? string.Empty).Trim();
+                string bairro = e.Cep?.Bairro?.Trim() ?? string.Empty;
+                string cidade = e.Cep?.Cidade?.Nome?.Trim() ?? string.Empty;
+                string uf = e.Cep?.Cidade?.Estado?.Uf?.Trim() ?? string.Empty; 
+                string cep = e.Cep?.Codigo?.Trim() ?? string.Empty;
 
-                endereco =
-                    $"{rua}{(string.IsNullOrWhiteSpace(bairro) ? "" : $" - {bairro}")}, {cidade}/{uf}" +
-                    $"{(string.IsNullOrWhiteSpace(cep) ? "" : $", {cep}")}";
+                if (!string.IsNullOrEmpty(cep))
+                {
+                    cep = Regex.Replace(cep, @"\D", "");
+                    if (cep.Length == 8)
+                        cep = $"{cep[..5]}-{cep[5..]}";
+                }
+
+                var partes = new List<string>();
+
+                var primeiraLinha = string.Join(", ",
+                    new[]
+                    {
+                        string.IsNullOrWhiteSpace(logradouro) ? null : logradouro,
+                        string.IsNullOrWhiteSpace(numero)     ? null : numero
+                    }.Where(x => x is not null));
+
+                if (!string.IsNullOrWhiteSpace(primeiraLinha))
+                {
+                    if (!string.IsNullOrWhiteSpace(bairro))
+                        primeiraLinha += $" - {bairro}";
+
+                    partes.Add(primeiraLinha);
+                }
+
+                var cidadeUf = string.Join("/",
+                    new[]
+                    {
+                        string.IsNullOrWhiteSpace(cidade) ? null : cidade,
+                        string.IsNullOrWhiteSpace(uf)     ? null : uf
+                    }.Where(x => x is not null));
+
+                if (!string.IsNullOrWhiteSpace(cidadeUf))
+                    partes.Add(cidadeUf);
+
+                if (!string.IsNullOrWhiteSpace(cep))
+                    partes.Add(cep);
+
+                endereco = string.Join(", ", partes);
+
+                if (string.IsNullOrWhiteSpace(endereco))
+                {
+                    if (string.IsNullOrWhiteSpace(cep))
+                        return BadRequest("Não foi possível montar o endereço do usuário. Informe 'endereco' manualmente.");
+
+                    endereco = cep;
+                }
             }
 
-            var near = await _svc.PostosMaisProximos(endereco!, raioMetros, limite, ct);
+            var proximos = await _servico.ObterPostosMaisProximos(endereco!, raioMetros, limite, ct);
+            var resposta = PostoAdapter.RespostaPostoVacinacao(proximos);
 
-            var dto = PostoAdapter.ToPostoVacinacaoResponse(near);
-            return Ok(dto);
+            return Ok(resposta);
         }
     }
 }

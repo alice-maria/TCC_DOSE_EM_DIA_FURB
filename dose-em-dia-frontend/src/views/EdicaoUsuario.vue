@@ -107,6 +107,16 @@
       <v-divider />
 
       <div class="linha-dado">
+        <label>Número:</label>
+        <div>
+          <span v-if="!editando">{{ usuario.endereco?.numero || 'Não informado' }}</span>
+          <input v-else v-model="form.endereco.numero" type="text" class="form-control">
+        </div>
+      </div>
+      <v-divider />
+
+
+      <div class="linha-dado">
         <label>Bairro:</label>
         <div>
           <span v-if="!editando">{{ usuario.endereco?.bairro || 'Não informado' }}</span>
@@ -170,7 +180,7 @@ import UsuarioMenu from "@/views/UsuarioMenu.vue";
 const baseURL = process.env.VUE_APP_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
 
 export const api = axios.create({
-  baseURL: baseURL.replace(/\/+$/, ""), 
+  baseURL: baseURL.replace(/\/+$/, ""),
   timeout: 20000,
 });
 
@@ -189,7 +199,7 @@ export default {
         dataNascimento: "",
         sexo: "",
         cep: "",
-        endereco: { logradouro: "", bairro: "", cidade: "", estado: "" },
+        endereco: { logradouro: "", numero: "", bairro: "", cidade: "", estado: "" },
       },
       editando: false,
       erro: "",
@@ -224,7 +234,7 @@ export default {
         this.form = {
           ...data,
           dataNascimento: dataFormatada,
-          endereco: data.endereco || { logradouro: "", bairro: "", cidade: "", estado: "" },
+          endereco: data.endereco || { logradouro: "", numero: "", bairro: "", cidade: "", estado: "" },
         };
       } catch (error) {
         this.erro = "Erro ao carregar dados do usuário.";

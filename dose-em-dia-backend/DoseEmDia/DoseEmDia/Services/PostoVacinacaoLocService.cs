@@ -15,41 +15,41 @@ namespace DoseEmDia.Services.Geo
             _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
-        public async Task<IReadOnlyList<PostoMaisProximo>> PostosMaisProximos(string enderecoTexto, int raioMetros = 10_000, int limite = 3, CancellationToken ct = default)         
+        public async Task<IReadOnlyList<PostoMaisProximo>> ObterPostosMaisProximos(string enderecoTexto, int raioMetros = 10_000, int limite = 3, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(enderecoTexto))
                 throw new ArgumentException("Endereço não pode ser vazio.", nameof(enderecoTexto));
 
-            var (lat, lng) = await GeocodeAsync(enderecoTexto, ct)
+            var (lat, lng) = await GeocodificarAsync(enderecoTexto, ct)
                 ?? throw new InvalidOperationException("Não foi possível geocodificar o endereço.");
 
-            var candidatos = await PesquisarResultadosAsync(lat, lng, raioMetros, ct);
+            var candidatos = await PesquisarPostosAsync(lat, lng, raioMetros, ct);
 
-            foreach (var c in candidatos.Where(c => c.DistanceMeters is null))
+            foreach (var c in candidatos.Where(c => c.DistanciaMetros is null))
             {
-                c.DistanceMeters = (int)Math.Round(HaversineMeters(lat, lng, c.Latitude, c.Longitude));
-                c.DistanceText = FormatDistance(c.DistanceMeters.Value);
+                c.DistanciaMetros = (int)Math.Round(CalcularHaversineMetros(lat, lng, c.Latitude, c.Longitude));
+                c.TextoDistancia = FormatarDistancia(c.DistanciaMetros.Value);
             }
 
             return candidatos
-                .Where(c => c.DistanceMeters.HasValue)
-                .OrderBy(c => c.DistanceMeters!.Value)
+                .Where(c => c.DistanciaMetros.HasValue)
+                .OrderBy(c => c.DistanciaMetros!.Value)
                 .Take(Math.Max(1, limite))
                 .ToList();
         }
 
-        private async Task<(double lat, double lng)?> GeocodeAsync(string endereco, CancellationToken ct)
+        private async Task<(double lat, double lng)?> GeocodificarAsync(string endereco, CancellationToken ct)
         {
-            var apiKey = ObterApiKey();
+            var chaveApi = ObterChaveApi();
 
             var url =
                 "https://geocode.search.hereapi.com/v1/geocode" +
-                $"?q={Uri.EscapeDataString(endereco)}&in=countryCode:BRA&lang=pt-BR&limit=3&apiKey={apiKey}";
+                $"?q={Uri.EscapeDataString(endereco)}&in=countryCode:BRA&lang=pt-BR&limit=3&apiKey={chaveApi}";
 
-            using var resp = await GetComRetryAsync(url, ct);
+            using var resp = await RequisicaoComRetryAsync(url, ct);
             if (!resp.IsSuccessStatusCode) return null;
 
-            var json = await resp.Content.ReadAsStringAsync(); 
+            var json = await resp.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(json);
 
             if (!doc.RootElement.TryGetProperty("items", out var items) ||
@@ -82,10 +82,10 @@ namespace DoseEmDia.Services.Geo
             return null;
         }
 
-        private async Task<List<PostoMaisProximo>> PesquisarResultadosAsync(double lat, double lng, int raioMetros, CancellationToken ct)
+        private async Task<List<PostoMaisProximo>> PesquisarPostosAsync(double lat, double lng, int raioMetros, CancellationToken ct)
         {
-            var apiKey = ObterApiKey();
-            var baseCoord = $"{lat.ToString(CultureInfo.InvariantCulture)},{lng.ToString(CultureInfo.InvariantCulture)}";
+            var chaveApi = ObterChaveApi();
+            var coordenadaBase = $"{lat.ToString(CultureInfo.InvariantCulture)},{lng.ToString(CultureInfo.InvariantCulture)}";
 
             var termos = new[] { "Unidade Básica de Saúde", "UBS", "Posto de Saúde", "Unidade de Saúde", "Clínica" };
             var resultados = new List<PostoMaisProximo>();
@@ -95,31 +95,31 @@ namespace DoseEmDia.Services.Geo
                 var url =
                     "https://discover.search.hereapi.com/v1/discover" +
                     $"?q={Uri.EscapeDataString(termo)}" +
-                    $"&at={baseCoord}" +
-                    $"&limit=20&lang=pt-BR&apiKey={apiKey}";
-                resultados.AddRange(await FetchBrowsePageAsync(url, ct));
+                    $"&at={coordenadaBase}" +
+                    $"&limit=20&lang=pt-BR&apiKey={chaveApi}";
+                resultados.AddRange(await BuscarPaginaAsync(url, ct));
             }
 
-            var categories = "health-care.clinic,health-care.hospital";
+            var categorias = "health-care.clinic,health-care.hospital";
             {
                 var url =
                     "https://discover.search.hereapi.com/v1/browse" +
-                    $"?categories={categories}" +
-                    $"&in=circle:{baseCoord};r={raioMetros}" +
-                    $"&at={baseCoord}" +
-                    $"&limit=20&lang=pt-BR&apiKey={apiKey}";
-                resultados.AddRange(await FetchBrowsePageAsync(url, ct));
+                    $"?categories={categorias}" +
+                    $"&in=circle:{coordenadaBase};r={raioMetros}" +
+                    $"&at={coordenadaBase}" +
+                    $"&limit=20&lang=pt-BR&apiKey={chaveApi}";
+                resultados.AddRange(await BuscarPaginaAsync(url, ct));
             }
 
             return resultados
-                .GroupBy(x => $"{(x.Name ?? "").Trim().ToLowerInvariant()}|{x.Latitude:0.000000}|{x.Longitude:0.000000}")
-                .Select(g => g.OrderBy(r => r.DistanceMeters ?? int.MaxValue).First())
+                .GroupBy(x => $"{(x.Nome ?? "").Trim().ToLowerInvariant()}|{x.Latitude:0.000000}|{x.Longitude:0.000000}")
+                .Select(g => g.OrderBy(r => r.DistanciaMetros ?? int.MaxValue).First())
                 .ToList();
         }
 
-        private async Task<List<PostoMaisProximo>> FetchBrowsePageAsync(string url, CancellationToken ct)
+        private async Task<List<PostoMaisProximo>> BuscarPaginaAsync(string url, CancellationToken ct)
         {
-            using var resp = await GetComRetryAsync(url, ct);
+            using var resp = await RequisicaoComRetryAsync(url, ct);
             if (!resp.IsSuccessStatusCode) return new List<PostoMaisProximo>();
 
             var json = await resp.Content.ReadAsStringAsync();
@@ -137,72 +137,72 @@ namespace DoseEmDia.Services.Geo
                 if (!pos.TryGetProperty("lng", out var lngEl)) continue;
                 if (!latEl.TryGetDouble(out var plat) || !lngEl.TryGetDouble(out var plng)) continue;
 
-                var name = item.TryGetProperty("title", out var tEl) ? (tEl.GetString() ?? "") : "";
-                var address = ParseAddress(item);
+                var nome = item.TryGetProperty("title", out var tEl) ? (tEl.GetString() ?? "") : "";
+                var endereco = ExtrairEndereco(item);
 
-                int? distance = null;
+                int? distancia = null;
                 if (item.TryGetProperty("distance", out var dEl) && dEl.TryGetInt32(out var d))
-                    distance = d;
+                    distancia = d;
 
                 lista.Add(new PostoMaisProximo
                 {
-                    Name = string.IsNullOrWhiteSpace(name) ? "Unidade de Saúde" : name.Trim(),
-                    Address = address,
+                    Nome = string.IsNullOrWhiteSpace(nome) ? "Unidade de Saúde" : nome.Trim(),
+                    Endereco = endereco,
                     Latitude = plat,
                     Longitude = plng,
-                    DistanceMeters = distance,
-                    DistanceText = distance is null ? null : FormatDistance(distance.Value)
+                    DistanciaMetros = distancia,
+                    TextoDistancia = distancia is null ? null : FormatarDistancia(distancia.Value)
                 });
             }
 
             return lista;
         }
 
-        private static string ParseAddress(JsonElement item)
+        private static string ExtrairEndereco(JsonElement item)
         {
             if (!item.TryGetProperty("address", out var address)) return "";
-            string Get(string key) => address.TryGetProperty(key, out var el) ? el.GetString() ?? "" : "";
+            string Obter(string chave) => address.TryGetProperty(chave, out var el) ? el.GetString() ?? "" : "";
 
-            var street = Get("street");
-            var district = Get("district");
-            var city = Get("city");
-            var state = Get("state");
+            var rua = Obter("street");
+            var bairro = Obter("district");
+            var cidade = Obter("city");
+            var estado = Obter("state");
 
-            var texto = $"{street}, {district} - {city}/{state}".Trim();
+            var texto = $"{rua}, {bairro} - {cidade}/{estado}".Trim();
             return texto.TrimStart(',').Replace(" ,", ",").Replace("  ", " ");
         }
 
-        private static string FormatDistance(int meters)
+        private static string FormatarDistancia(int metros)
         {
-            var km = meters / 1000.0;
-            return meters < 1000
-                ? $"{meters} m"
+            var km = metros / 1000.0;
+            return metros < 1000
+                ? $"{metros} m"
                 : string.Format(new CultureInfo("pt-BR"), "{0:0.0} km", km);
         }
 
-        private static double HaversineMeters(double lat1, double lon1, double lat2, double lon2)
+        private static double CalcularHaversineMetros(double lat1, double lon1, double lat2, double lon2)
         {
-            static double ToRad(double deg) => Math.PI * deg / 180.0;
+            static double ParaRad(double deg) => Math.PI * deg / 180.0;
             const double R = 6_371_000.0; // metros
-            var dLat = ToRad(lat2 - lat1);
-            var dLon = ToRad(lon2 - lon1);
+            var dLat = ParaRad(lat2 - lat1);
+            var dLon = ParaRad(lon2 - lon1);
             var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                    Math.Cos(ToRad(lat1)) * Math.Cos(ToRad(lat2)) *
+                    Math.Cos(ParaRad(lat1)) * Math.Cos(ParaRad(lat2)) *
                     Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
             var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
             return R * c;
         }
 
-        private string ObterApiKey()
+        private string ObterChaveApi()
         {
-            var key = _config["Here:ApiKey"];
-            if (string.IsNullOrWhiteSpace(key)) key = _config["HERE:ApiKey"];
-            if (string.IsNullOrWhiteSpace(key))
+            var chave = _config["Here:ApiKey"];
+            if (string.IsNullOrWhiteSpace(chave)) chave = _config["HERE:ApiKey"];
+            if (string.IsNullOrWhiteSpace(chave))
                 throw new InvalidOperationException("Chave da HERE API não configurada (Here:ApiKey ou HERE:ApiKey).");
-            return key;
+            return chave;
         }
 
-        private async Task<HttpResponseMessage> GetComRetryAsync(string url, CancellationToken ct)
+        private async Task<HttpResponseMessage> RequisicaoComRetryAsync(string url, CancellationToken ct)
         {
             const int maxTentativas = 3;
 
@@ -215,9 +215,9 @@ namespace DoseEmDia.Services.Geo
                     if ((int)resp.StatusCode == 429)
                     {
                         if (i == maxTentativas) return resp;
-                        var wait = resp.Headers.RetryAfter?.Delta ?? TimeSpan.FromMilliseconds(200 * i);
+                        var espera = resp.Headers.RetryAfter?.Delta ?? TimeSpan.FromMilliseconds(200 * i);
                         resp.Dispose();
-                        await Task.Delay(wait, ct);
+                        await Task.Delay(espera, ct);
                         continue;
                     }
 
@@ -249,11 +249,11 @@ namespace DoseEmDia.Services.Geo
 
     public sealed class PostoMaisProximo
     {
-        public string Name { get; set; } = "";
-        public string Address { get; set; } = "";
+        public string Nome { get; set; } = "";
+        public string Endereco { get; set; } = "";
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public int? DistanceMeters { get; set; }
-        public string? DistanceText { get; set; }
+        public int? DistanciaMetros { get; set; }
+        public string? TextoDistancia { get; set; }
     }
 }
