@@ -31,7 +31,7 @@ namespace DoseEmDia.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdEndereco"));
 
-                    b.Property<long>("CepId")
+                    b.Property<long?>("CepId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Logradouro")
@@ -178,8 +178,7 @@ namespace DoseEmDia.Migrations
                 {
                     b.Property<int>("IdPais")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("IdPais");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdPais"));
 
@@ -308,8 +307,7 @@ namespace DoseEmDia.Migrations
                     b.HasOne("DoseEmDia.Models.Localizacao.Cep", "Cep")
                         .WithMany("Enderecos")
                         .HasForeignKey("CepId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Cep");
                 });

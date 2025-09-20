@@ -11,8 +11,8 @@ namespace DoseEmDia.Models
         [Column("IdEndereco")]
         public int IdEndereco { get; set; }
 
-        public long CepId { get; set; }
-        public Cep Cep { get; set; } = null!;
+        public long? CepId { get; set; }
+        public Cep? Cep { get; set; } = null!;
 
         [MaxLength(255)]
         public string? Logradouro { get; set; }   
