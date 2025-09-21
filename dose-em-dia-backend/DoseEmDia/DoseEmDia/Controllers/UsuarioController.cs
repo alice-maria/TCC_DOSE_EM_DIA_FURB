@@ -20,18 +20,20 @@ public class UsuarioController : ControllerBase
     }
 
     [HttpPost("criar-conta")]
-    public async Task<IActionResult> CriarUsuario([FromBody] Usuario request, [FromQuery] string pais, [FromQuery] string uf, [FromQuery] string cidade, [FromQuery] string cep, [FromQuery] string logradouro, [FromQuery] string numero, [FromQuery] string? bairro, CancellationToken ct = default)
+    public async Task<IActionResult> CriarUsuario(
+    [FromBody] CriarUsuarioRequest request,
+    CancellationToken ct = default)
     {
         try
         {
-            var usuario = await _usuarioService.CriarUsuario(request, pais, uf, cidade, cep, logradouro, numero, bairro, ct);
+            var usuario = await _usuarioService.CriarUsuario(request, ct);
             return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.IdUser }, usuario);
         }
         catch (UsuarioException.EmailJaCadastradoException ex)
         {
             return Conflict(ex.Message);
         }
-        catch
+        catch (Exception)
         {
             return StatusCode(500, "Erro interno ao criar o usuário.");
         }

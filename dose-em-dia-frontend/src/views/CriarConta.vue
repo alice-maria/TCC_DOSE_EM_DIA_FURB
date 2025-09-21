@@ -126,7 +126,7 @@
                 <v-text-field label="CEP*" v-model="form.cep" variant="outlined" v-mask="'#####-###'" @blur="buscarCep"
                   required />
                 <v-text-field label="Endereço*" v-model="form.endereco.logradouro" variant="outlined" required />
-                <v-text-field label="Estado*" v-model="form.endereco.estado" variant="outlined" required />
+                <v-text-field label="UF*" v-model="form.endereco.estado" variant="outlined" required />
                 <v-text-field label="País*" v-model="form.endereco.pais" variant="outlined" required />
                 <v-text-field label="Cidade*" v-model="form.endereco.cidade" variant="outlined" required />
                 <v-text-field label="Bairro*" v-model="form.endereco.bairro" variant="outlined" required />
@@ -364,22 +364,28 @@ export default {
       const cpfLimpo = (this.form.cpf || "").replace(/\D/g, "").padStart(11, "0");
       const cep8 = (this.form.cep || "").replace(/\D/g, "");
 
+      const uf = (this.form.endereco.uf || this.form.endereco.estado || "").toString().trim().toUpperCase();
+
       const payload = {
+        // --- Dados do usuário ---
         nome: this.form.nome,
         email: this.form.email,
+        senha: this.form.senha,
+        dataNascimento: this.form.dataNascimento,   // "YYYY-MM-DD"
         telefone: this.form.telefone,
         cpf: cpfLimpo,
-        dataNascimento: this.form.dataNascimento,
         sexo: this.form.sexo,
-        senha: this.form.senha,
-        endereco: {
-          logradouro: this.form.endereco.logradouro,
-          numero: this.form.endereco.numero,
-          cep: {
-            codigo: cep8,
-            bairro: this.form.endereco.bairro || null
-          }
-        }
+        receberNotificacoes: true, // ou this.form.receberNotificacoes se existir
+
+        // --- Dados do endereço (flat, conforme CriarUsuarioRequest) ---
+        pais: this.form.endereco.pais || "Brasil",
+        uf: uf,                                // "SC"
+        cidade: this.form.endereco.cidade,     // "Blumenau"
+        cep: cep8,                             // "89031020"
+        logradouro: this.form.endereco.logradouro,
+        numero: this.form.endereco.numero,
+        complemento: this.form.endereco.complemento || null, // se quiser capturar
+        bairro: this.form.endereco.bairro || null            // (armazenado em CEP no backend)
       };
 
       try {
