@@ -20,11 +20,11 @@ public class UsuarioController : ControllerBase
     }
 
     [HttpPost("criar-conta")]
-    public async Task<IActionResult> CriarUsuario([FromBody] Usuario request)
+    public async Task<IActionResult> CriarUsuario([FromBody] Usuario request, [FromQuery] string pais, [FromQuery] string uf, [FromQuery] string cidade, [FromQuery] string cep, [FromQuery] string logradouro, [FromQuery] string numero, [FromQuery] string? bairro, CancellationToken ct = default)
     {
         try
         {
-            var usuario = await _usuarioService.CriarUsuario(request);
+            var usuario = await _usuarioService.CriarUsuario(request, pais, uf, cidade, cep, logradouro, numero, bairro, ct);
             return CreatedAtAction(nameof(ObterUsuarioPorId), new { id = usuario.IdUser }, usuario);
         }
         catch (UsuarioException.EmailJaCadastradoException ex)

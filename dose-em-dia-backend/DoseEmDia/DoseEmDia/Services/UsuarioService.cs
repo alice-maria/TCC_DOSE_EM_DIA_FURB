@@ -35,16 +35,7 @@ public class UsuarioService
         return usuario;
     }
 
-    public async Task<Usuario> CriarUsuario(
-    Usuario request,
-    string paisNome,
-    string estadoUf,
-    string cidadeNome,
-    string cepCodigo,
-    string logradouro,
-    string numero,
-    string? bairro,
-    CancellationToken ct = default)
+    public async Task<Usuario> CriarUsuario(Usuario request, string paisNome, string estadoUf, string cidadeNome, string cepCodigo, string logradouro, string numero, string? bairro, CancellationToken ct = default)
     {
         if (request is null) throw new ArgumentNullException(nameof(request));
         if (string.IsNullOrWhiteSpace(request.Email)) throw new ArgumentException("E-mail é obrigatório.");
