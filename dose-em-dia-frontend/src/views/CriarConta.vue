@@ -224,7 +224,6 @@ export default {
           cidade: "",
           estado: "",
           uf: "",
-          cidadeId: null,
           cep: "",
           pais: "",
           numero: "",
@@ -378,7 +377,6 @@ export default {
           numero: this.form.endereco.numero,
           cep: {
             codigo: cep8,
-            cidadeId: this.form.endereco.cidadeId,
             bairro: this.form.endereco.bairro || null
           }
         }

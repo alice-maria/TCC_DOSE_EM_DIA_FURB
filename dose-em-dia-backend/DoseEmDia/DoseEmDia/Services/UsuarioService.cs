@@ -58,7 +58,6 @@ public class UsuarioService
                 if (emailExiste)
                     throw new UsuarioException.EmailJaCadastradoException(request.Email);
 
-                // 👉 Cria toda a cadeia + Endereco (sem depender de Endereco ter país/estado/cidade)
                 var endereco = await CriarEnderecoAsync(
                     paisNome, estadoUf, cidadeNome, cepCodigo,
                     logradouro, numero, bairro, ct);
@@ -404,7 +403,6 @@ public class UsuarioService
             if (mudou) { _context.Cep.Update(cep); await _context.SaveChangesAsync(ct); }
         }
 
-        // Endereco (a sua entidade NÃO tem país/estado/cidade; só aponta para CepId)
         var end = new Endereco
         {
             CepId = cep.IdCep,
