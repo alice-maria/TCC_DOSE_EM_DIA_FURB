@@ -223,9 +223,11 @@ export default {
           bairro: "",
           cidade: "",
           estado: "",
+          uf: "",
+          cidadeId: null,
           cep: "",
           pais: "",
-          numero:"",
+          numero: "",
         },
       },
     };
@@ -275,7 +277,8 @@ export default {
         this.form.endereco.pais,
         this.form.endereco.cidade,
         this.form.endereco.bairro,
-        this.form.endereco.numero
+        this.form.endereco.numero,
+        this.form.endereco.cidadeId
       ];
       return obrigatorios.every(v => v && v.toString().trim() !== '');
     },
@@ -336,22 +339,34 @@ export default {
         (caracterEspecial >= 1);
     },
     async buscarCep() {
-      const cepLimpo = this.form.cep.replace(/\D/g, "");
+      const cepLimpo = (this.form.cep || "").replace(/\D/g, "");
       if (cepLimpo.length !== 8) return;
 
       try {
-        const response = await axios.get(
-          `https://viacep.com.br/ws/${cepLimpo}/json/`
-        );
-        const data = response.data;
+        const { data } = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
         if (data.erro) throw new Error("CEP inválido");
 
-        this.form.endereco.logradouro = data.logradouro;
-        this.form.endereco.bairro = data.bairro;
-        this.form.endereco.cidade = data.localidade;
-        this.form.endereco.estado = data.uf;
+        this.form.endereco.logradouro = data.logradouro || "";
+        this.form.endereco.bairro = data.bairro || "";
+        this.form.endereco.cidade = data.localidade || "";
+        this.form.endereco.estado = data.uf || "";
+        this.form.endereco.uf = data.uf || "";
+
+        await this.resolverCidadeId(this.form.endereco.uf, this.form.endereco.cidade);
       } catch (error) {
         alert("CEP inválido ou erro ao buscar endereço.");
+      }
+    },
+    async resolverCidadeId(uf, nome) {
+      if (!uf || !nome) return;
+      try {
+        const { data } = await api.get(`/api/localizacao/cidade-id`, {
+          params: { uf, nome }
+        });
+        this.form.endereco.cidadeId = data.idCidade || data.id || null;
+      } catch (e) {
+        console.error("Não foi possível resolver o ID da cidade", e);
+        this.form.endereco.cidadeId = null;
       }
     },
     async criarConta() {
@@ -360,7 +375,8 @@ export default {
         return;
       }
 
-      const cpfLimpo = this.form.cpf.replace(/\D/g, "").padStart(11, "0");
+      const cpfLimpo = (this.form.cpf || "").replace(/\D/g, "").padStart(11, "0");
+      const cep8 = (this.form.cep || "").replace(/\D/g, "");
 
       const payload = {
         nome: this.form.nome,
@@ -372,12 +388,13 @@ export default {
         senha: this.form.senha,
         endereco: {
           logradouro: this.form.endereco.logradouro,
-          bairro: this.form.endereco.bairro,
-          cidade: this.form.endereco.cidade,
-          estado: this.form.endereco.estado,
-          cep: this.form.cep,
-          pais: this.form.endereco.pais
-        },
+          numero: this.form.endereco.numero,
+          cep: {
+            codigo: cep8,
+            cidadeId: this.form.endereco.cidadeId,
+            bairro: this.form.endereco.bairro || null
+          }
+        }
       };
 
       try {
@@ -731,6 +748,6 @@ export default {
 }
 
 .v-tab[disabled] {
-  pointer-events: auto;      
+  pointer-events: auto;
 }
 </style>

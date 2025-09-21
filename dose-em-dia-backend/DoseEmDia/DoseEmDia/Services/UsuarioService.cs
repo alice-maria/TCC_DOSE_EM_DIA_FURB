@@ -36,9 +36,29 @@ public class UsuarioService
 
     public async Task<Usuario> CriarUsuario(Usuario request, CancellationToken ct = default)
     {
+        if (request is null)
+            throw new ArgumentNullException(nameof(request));
+
+        if (request.Endereco is null)
+            throw new ArgumentException("Endereço é obrigatório.", nameof(request));
+
+        if (request.Endereco.Cep is null)
+            throw new ArgumentException("CEP é obrigatório.", nameof(request));
+
+        if (string.IsNullOrWhiteSpace(request.Endereco.Cep.Codigo))
+            throw new ArgumentException("CEP.Codigo é obrigatório.", nameof(request));
+
+        if (request.Endereco.Cep.CidadeId <= 0)
+            throw new ArgumentException("CEP.CidadeId inválido.", nameof(request));
+
         request.CPF = FormatacaoHelper.FormataCPF(request.CPF);
         request.Telefone = FormatacaoHelper.FormataTelefone(request.Telefone);
 
+        var cepCodigo = FormatacaoHelper.FormataCEP(request.Endereco.Cep.Codigo);
+        if (cepCodigo?.Length != 8)
+            throw new ArgumentException("CEP inválido: envie 8 dígitos (ex.: 89010000).", nameof(request));
+
+        var cidadeId = request.Endereco.Cep.CidadeId;
         var strategy = _context.Database.CreateExecutionStrategy();
 
         return await strategy.ExecuteAsync(async () =>
@@ -48,20 +68,47 @@ public class UsuarioService
             bool emailExiste = await _context.Usuario.AnyAsync(u => u.Email == request.Email, ct);
             if (emailExiste)
                 throw new UsuarioException.EmailJaCadastradoException(request.Email);
-            var cepCodigo = FormatacaoHelper.FormataCEP(request.Endereco.Cep.Codigo);
-            var cep = await _context.Cep.FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
+
+            bool cidadeExiste = await _context.Cidade.AnyAsync(c => c.IdCidade == cidadeId, ct);
+            if (!cidadeExiste)
+                throw new ArgumentException($"CidadeId {cidadeId} não encontrada.", nameof(request));
+
+            var cep = await _context.Cep
+                .FirstOrDefaultAsync(c => c.Codigo == cepCodigo && c.CidadeId == cidadeId, ct);
+
             if (cep is null)
-                throw new CepNaoEncontradoException(cepCodigo);
+            {
+                cep = new DoseEmDia.Models.Localizacao.Cep
+                {
+                    Codigo = cepCodigo,
+                    CidadeId = cidadeId,
+                    Bairro = request.Endereco.Cep.Bairro
+                };
+
+                _context.Cep.Add(cep);
+
+                try
+                {
+                    await _context.SaveChangesAsync(ct);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException pg && pg.SqlState == "23505")
+                {
+                    cep = await _context.Cep
+                        .FirstOrDefaultAsync(c => c.Codigo == cepCodigo && c.CidadeId == cidadeId, ct);
+
+                    if (cep is null)
+                        throw; 
+                }
+            }
 
             var endereco = new Endereco
             {
                 CepId = cep.IdCep,
-                Logradouro = request.Endereco.Logradouro,  
-                Numero = request.Endereco.Numero,      
+                Logradouro = request.Endereco.Logradouro?.Trim(),
+                Numero = request.Endereco.Numero?.Trim() ?? throw new ArgumentException("Número do endereço é obrigatório.", nameof(request))
             };
 
             var salt = CriptografiaHelper.GerarSalt();
-
             var usuario = new Usuario
             {
                 Nome = request.Nome?.Trim(),
@@ -160,7 +207,7 @@ public class UsuarioService
 
             if (completed)
             {
-                await envioTask; 
+                await envioTask;
                 emailEnviado = true;
             }
             else
