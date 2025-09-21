@@ -280,7 +280,9 @@ export default {
         this.form.endereco.numero,
         this.form.endereco.cidadeId
       ];
-      return obrigatorios.every(v => v && v.toString().trim() !== '');
+      const obrigatoriosOk = obrigatorios.every(v => String(v ?? '').trim() !== '');
+      const cidadeOk = Number.isInteger(this.form.endereco.cidadeId) && this.form.endereco.cidadeId > 0;
+      return obrigatoriosOk && cidadeOk;
     },
 
     formValido() {
