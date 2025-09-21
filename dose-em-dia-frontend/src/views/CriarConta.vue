@@ -277,12 +277,9 @@ export default {
         this.form.endereco.pais,
         this.form.endereco.cidade,
         this.form.endereco.bairro,
-        this.form.endereco.numero,
-        this.form.endereco.cidadeId
+        this.form.endereco.numero
       ];
-      const obrigatoriosOk = obrigatorios.every(v => String(v ?? '').trim() !== '');
-      const cidadeOk = Number.isInteger(this.form.endereco.cidadeId) && this.form.endereco.cidadeId > 0;
-      return obrigatoriosOk && cidadeOk;
+      return obrigatorios.every(v => v && v.toString().trim() !== '');
     },
 
     formValido() {
@@ -353,22 +350,10 @@ export default {
         this.form.endereco.cidade = data.localidade || "";
         this.form.endereco.estado = data.uf || "";
         this.form.endereco.uf = data.uf || "";
+        this.form.endereco.pais = this.form.endereco.pais || "Brasil";
 
-        await this.resolverCidadeId(this.form.endereco.uf, this.form.endereco.cidade);
       } catch (error) {
         alert("CEP inválido ou erro ao buscar endereço.");
-      }
-    },
-    async resolverCidadeId(uf, nome) {
-      if (!uf || !nome) return;
-      try {
-        const { data } = await api.get(`/api/localizacao/cidade-id`, {
-          params: { uf, nome }
-        });
-        this.form.endereco.cidadeId = data.idCidade || data.id || null;
-      } catch (e) {
-        console.error("Não foi possível resolver o ID da cidade", e);
-        this.form.endereco.cidadeId = null;
       }
     },
     async criarConta() {
