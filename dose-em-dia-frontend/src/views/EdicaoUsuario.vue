@@ -243,18 +243,29 @@ export default {
 
     async salvar() {
       try {
-        await api.patch(`/api/usuario/alterarDados/${this.usuario.idUser}`, this.form);
+        const cep8 = (this.form.endereco.cep || "").replace(/\D/g, "");
+
+        const payload = {
+          nome: this.form.nome,
+          email: this.form.email,
+          telefone: this.form.telefone,
+          sexo: this.form.sexo,
+          endereco: {
+            CEP: cep8, 
+            Logradouro: this.form.endereco.logradouro,
+            Numero: this.form.endereco.numero,
+            Complemento: this.form.endereco.complemento || null,
+            Bairro: this.form.endereco.bairro || null 
+            
+          }
+        };
+
+        await api.patch(`/api/usuario/alterarDados/${this.usuario.idUser}`, payload);
         this.editando = false;
         await this.carregarUsuario();
       } catch (error) {
         console.error(error);
-        if (error?.response?.data?.message) {
-          this.erro = error.response.data.message;
-        } else if (typeof error === "string") {
-          this.erro = error;
-        } else {
-          this.erro = "Erro ao salvar os dados. Tente novamente.";
-        }
+        this.erro = error?.response?.data?.message ?? "Erro ao salvar os dados. Tente novamente.";
         this.mostrarErro = true;
       }
     },

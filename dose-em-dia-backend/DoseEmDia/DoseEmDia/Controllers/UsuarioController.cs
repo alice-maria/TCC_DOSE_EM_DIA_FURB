@@ -20,9 +20,7 @@ public class UsuarioController : ControllerBase
     }
 
     [HttpPost("criar-conta")]
-    public async Task<IActionResult> CriarUsuario(
-    [FromBody] CriarUsuarioRequest request,
-    CancellationToken ct = default)
+    public async Task<IActionResult> CriarUsuario([FromBody] CriarUsuarioRequest request, CancellationToken ct = default)
     {
         try
         {
