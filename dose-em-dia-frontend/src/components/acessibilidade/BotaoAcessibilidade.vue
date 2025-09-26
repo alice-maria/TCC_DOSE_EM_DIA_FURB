@@ -186,7 +186,7 @@ export default {
   background: #FFDBBB;
   border: none;             
   border-radius: 0;          
-  border-bottom: 1px solid black; /
+  border-bottom: 1px solid black; 
   cursor: pointer;
   transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
   text-align: left;
