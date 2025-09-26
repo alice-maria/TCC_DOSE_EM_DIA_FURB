@@ -164,15 +164,15 @@ export default {
   top: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px; 
-  padding: 24px; 
-  min-width: 560px; 
-  min-height: 420px; 
+  padding: 24px;
+  min-width: 560px;
+  min-height: 420px;
   background: #FFDBBB;
   border: 1px solid var(--acc-border);
   border-radius: 18px;
   box-shadow: var(--acc-shadow);
   z-index: 10000;
+  gap: 0; /* zera o gap para a linha encostar nos botões */
 }
 
 .acessibilidade-menu button {
@@ -181,21 +181,19 @@ export default {
   gap: 16px;
   width: 100%;
   padding: 22px 18px;
-  font-size: 22px; 
+  font-size: 22px;
   color: var(--acc-text);
   background: #FFDBBB;
-  border: 1px solid var(--acc-border);
-  border-radius: 14px;
+  border: none;              /* remove a borda “caixa” */
+  border-radius: 0;          /* fica quadrado */
+  border-bottom: 1px solid black; /* a linha divisória */
   cursor: pointer;
-  box-shadow: var(--acc-shadow-sm);
   transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
   text-align: left;
 }
 
-.acessibilidade-menu button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(17, 24, 39, .12);
-  background: #ffd9b3; /* hover mais forte */
+.acessibilidade-menu button:last-child {
+  border-bottom: none; /* evita linha sobrando no último */
 }
 
 .icone-menu {
@@ -243,17 +241,6 @@ export default {
   font-size: 13px;
   line-height: 1.2;
   color: #fff;
-}
-
-.acessibilidade-menu {
-  background: #f5f6f8;
-  gap: 0;             
-  padding: 8px 0;     
-  overflow: hidden;   
-}
-
-.acessibilidade-menu button + button {
-  border-top: 1px solid var(--acc-border); 
 }
 
 @media (max-width: 600px) {
