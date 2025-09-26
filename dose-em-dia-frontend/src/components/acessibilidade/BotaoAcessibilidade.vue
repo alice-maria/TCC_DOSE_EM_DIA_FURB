@@ -172,7 +172,7 @@ export default {
   border-radius: 18px;
   box-shadow: var(--acc-shadow);
   z-index: 10000;
-  gap: 0; /* zera o gap para a linha encostar nos botões */
+  gap: 0; 
 }
 
 .acessibilidade-menu button {
@@ -184,17 +184,22 @@ export default {
   font-size: 22px;
   color: var(--acc-text);
   background: #FFDBBB;
-  border: none;              /* remove a borda “caixa” */
-  border-radius: 0;          /* fica quadrado */
-  border-bottom: 1px solid black; /* a linha divisória */
+  border: none;             
+  border-radius: 0;          
+  border-bottom: 1px solid black; /
   cursor: pointer;
   transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
   text-align: left;
 }
 
 .acessibilidade-menu button:last-child {
-  border-bottom: none; /* evita linha sobrando no último */
+  border-bottom: none; 
 }
+
+.acessibilidade-menu button:hover {
+  background: #ffe0b3;      
+}
+
 
 .icone-menu {
   width: 28px;
