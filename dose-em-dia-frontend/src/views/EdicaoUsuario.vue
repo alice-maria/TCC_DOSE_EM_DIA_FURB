@@ -90,7 +90,7 @@
       <div class="linha-dado">
         <label>CEP:</label>
         <div>
-          <span v-if="!editando">{{ form.endereco.cep || 'Não informado' }}</span>
+          <span v-if="!editando">{{ cepView || 'Não informado' }}</span>
           <input v-else v-mask="'#####-###'" v-model="form.endereco.cep" type="text" class="form-control"
             @blur="buscarCep">
         </div>
@@ -100,7 +100,7 @@
       <div class="linha-dado">
         <label>Endereço:</label>
         <div>
-          <span v-if="!editando">{{ usuario.endereco?.logradouro || 'Não informado' }}</span>
+          <span v-if="!editando">{{ enderecoView || 'Não informado' }}</span>
           <input v-else v-model="form.endereco.logradouro" type="text" class="form-control">
         </div>
       </div>
@@ -109,7 +109,7 @@
       <div class="linha-dado">
         <label>Número:</label>
         <div>
-          <span v-if="!editando">{{ usuario.endereco?.numero || 'Não informado' }}</span>
+          <span v-if="!editando">{{ usuario.endereco.numero || 'Não informado' }}</span>
           <input v-else v-model="form.endereco.numero" type="text" class="form-control">
         </div>
       </div>
@@ -119,7 +119,7 @@
       <div class="linha-dado">
         <label>Bairro:</label>
         <div>
-          <span v-if="!editando">{{ usuario.endereco?.bairro || 'Não informado' }}</span>
+          <span v-if="!editando">{{ bairroView || 'Não informado' }}</span>
           <input v-else v-model="form.endereco.bairro" type="text" class="form-control">
         </div>
       </div>
@@ -128,7 +128,7 @@
       <div class="linha-dado">
         <label>Cidade:</label>
         <div>
-          <span v-if="!editando">{{ usuario.endereco?.cidade || 'Não informado' }}</span>
+          <span v-if="!editando">{{ cidadeView || 'Não informado' }}</span>
           <input v-else v-model="form.endereco.cidade" type="text" class="form-control">
         </div>
       </div>
@@ -137,7 +137,7 @@
       <div class="linha-dado">
         <label>Estado:</label>
         <div>
-          <span v-if="!editando">{{ usuario.endereco?.estado || 'Não informado' }}</span>
+          <span v-if="!editando">{{ estadoView || 'Não informado' }}</span>
           <input v-else v-model="form.endereco.estado" type="text" class="form-control">
         </div>
       </div>
@@ -219,7 +219,10 @@ export default {
     },
 
     formatarData(data) {
-      return new Date(data).toLocaleDateString("pt-BR");
+      if (!data) return "";
+      const d = new Date(data);
+      if (Number.isNaN(d.getTime())) return "";
+      return d.toLocaleDateString("pt-BR");
     },
 
     async carregarUsuario() {
@@ -229,15 +232,31 @@ export default {
       try {
         const { data } = await api.get(`/api/usuario/buscarPorCpf/${cpf}`);
         this.usuario = data;
-        const dataFormatada = data.dataNascimento?.split("T")[0];
+
+        const dataFormatada =
+          data?.dataNascimento
+            ? (String(data.dataNascimento).includes("T") ? data.dataNascimento.split("T")[0] : data.dataNascimento)
+            : "";
 
         this.form = {
-          ...data,
-          dataNascimento: dataFormatada,
-          endereco: data.endereco || { logradouro: "", numero: "", bairro: "", cidade: "", estado: "" },
+          nome: data?.nome || "",
+          email: data?.email || "",
+          telefone: data?.telefone || "",
+          cpf: data?.cpf || "",
+          dataNascimento: dataFormatada || "",
+          sexo: data?.sexo || "",
+          endereco: {
+            cep: data?.endereco?.cep?.codigo || "",
+            logradouro: data?.endereco?.logradouro || "",
+            numero: data?.endereco?.numero || "",
+            complemento: data?.endereco?.complemento || "",
+            bairro: data?.endereco?.cep?.bairro || data?.endereco?.bairro || ""
+          }
         };
       } catch (error) {
+        console.error(error);
         this.erro = "Erro ao carregar dados do usuário.";
+        this.mostrarErro = true;
       }
     },
 
@@ -251,12 +270,12 @@ export default {
           telefone: this.form.telefone,
           sexo: this.form.sexo,
           endereco: {
-            CEP: cep8, 
+            CEP: cep8,
             Logradouro: this.form.endereco.logradouro,
             Numero: this.form.endereco.numero,
             Complemento: this.form.endereco.complemento || null,
-            Bairro: this.form.endereco.bairro || null 
-            
+            Bairro: this.form.endereco.bairro || null
+
           }
         };
 
@@ -290,26 +309,65 @@ export default {
     },
 
     async buscarCep() {
-      const cepLimpo = this.form.endereco.cep?.replace(/\D/g, "");
-      if (cepLimpo?.length !== 8) return;
+      const cep8 = (this.form.endereco.cep || "").replace(/\D/g, "");
 
-      try {
-        const { data } = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-        if (data.erro) throw new Error("CEP inválido");
+      // limpa erro anterior
+      this.cepErro = "";
 
-        this.form.endereco.logradouro = data.logradouro;
-        this.form.endereco.bairro = data.bairro;
-        this.form.endereco.cidade = data.localidade;
-        this.form.endereco.estado = data.uf;
-      } catch {
-        alert("CEP inválido ou erro ao buscar endereço.");
+      // validação simples
+      if (!cep8 || cep8.length !== 8) {
+        this.cepErro = "CEP inválido. Use 8 dígitos.";
+        return;
       }
-    },
+
+      this.buscandoCep = true;
+      try {
+        const { data } = await axios.get(`https://viacep.com.br/ws/${cep8}/json/`);
+        if (data?.erro) throw new Error("CEP não encontrado");
+
+        if (!this.form.endereco.logradouro) {
+          this.form.endereco.logradouro = data.logradouro || "";
+        }
+        if (!this.form.endereco.bairro) {
+          this.form.endereco.bairro = data.bairro || "";
+        }
+      } catch (e) {
+        this.cepErro = "CEP inválido ou serviço indisponível.";
+      } finally {
+        this.buscandoCep = false;
+      }
+    }
   },
 
   mounted() {
     this.carregarUsuario();
     this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
+  },
+
+  computed: {
+    cepView() {
+      return this.form.endereco.cep
+        || this.usuario?.endereco?.cep?.codigo
+        || "";
+    },
+    enderecoView() {
+      const log = this.form.endereco.logradouro || this.usuario?.endereco?.logradouro;
+      return log || "";
+    },
+    bairroView() {
+      return this.form.endereco.bairro
+        || this.usuario?.endereco?.cep?.bairro
+        || this.usuario?.endereco?.bairro
+    },
+    cidadeView() {
+      return this.usuario?.endereco?.cep?.cidade?.nome || "";
+    },
+    estadoView() {
+      return this.usuario?.endereco?.cep?.cidade?.estado?.uf || "";
+    },
+    paisView() {
+      return this.usuario?.endereco?.cep?.cidade?.estado?.pais?.nome || "";
+    }
   },
 };
 </script>

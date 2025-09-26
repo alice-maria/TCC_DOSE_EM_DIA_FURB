@@ -26,34 +26,38 @@ public class UsuarioService
         _logger = logger;
     }
 
-    public async Task<Usuario> BuscarPorCpf(string cpf)
+    public async Task<Usuario?> BuscarPorCpf(string cpf)
     {
-        var usuario = await _context.Usuario
+        return await _context.Usuario
             .Include(u => u.Endereco)
+                .ThenInclude(e => e.Cep)
+                    .ThenInclude(cep => cep.Cidade)
+                        .ThenInclude(c => c.Estado)
+                            .ThenInclude(uf => uf.Pais)
+            .AsSplitQuery()
+            .AsNoTracking()
             .FirstOrDefaultAsync(u => u.CPF == cpf);
-
-        return usuario;
     }
 
     public async Task<Usuario> CriarUsuario(CriarUsuarioRequest dto, CancellationToken ct = default)
     {
-        if (dto is null) 
+        if (dto is null)
             throw new ArgumentNullException(nameof(dto));
-        if (string.IsNullOrWhiteSpace(dto.Email)) 
+        if (string.IsNullOrWhiteSpace(dto.Email))
             throw new ArgumentException("E-mail é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Senha)) 
+        if (string.IsNullOrWhiteSpace(dto.Senha))
             throw new ArgumentException("Senha é obrigatória.");
-        if (string.IsNullOrWhiteSpace(dto.Pais)) 
+        if (string.IsNullOrWhiteSpace(dto.Pais))
             throw new ArgumentException("País é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Uf)) 
+        if (string.IsNullOrWhiteSpace(dto.Uf))
             throw new ArgumentException("UF é obrigatória.");
-        if (string.IsNullOrWhiteSpace(dto.Cidade)) 
+        if (string.IsNullOrWhiteSpace(dto.Cidade))
             throw new ArgumentException("Cidade é obrigatória.");
-        if (string.IsNullOrWhiteSpace(dto.Cep)) 
+        if (string.IsNullOrWhiteSpace(dto.Cep))
             throw new ArgumentException("CEP é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Logradouro)) 
+        if (string.IsNullOrWhiteSpace(dto.Logradouro))
             throw new ArgumentException("Logradouro é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Numero)) 
+        if (string.IsNullOrWhiteSpace(dto.Numero))
             throw new ArgumentException("Número é obrigatório.");
 
         var nome = dto.Nome?.Trim();
@@ -66,7 +70,7 @@ public class UsuarioService
         var cepCodigo = FormatacaoHelper.FormataCEP(dto.Cep);
         var logradouro = dto.Logradouro.Trim();
         var numero = dto.Numero.Trim();
-        var bairro = dto.Bairro?.Trim();         
+        var bairro = dto.Bairro?.Trim();
         var sexo = dto.Sexo?.Trim();
         var dataNasc = dto.DataNascimento;
         var receberNotif = dto.ReceberNotificacoes;
@@ -228,7 +232,7 @@ public class UsuarioService
             );
         }
 
-        return true; 
+        return true;
     }
 
     public async Task RedefinirSenha(RedefinirSenhaRequest request)
@@ -433,13 +437,13 @@ public class UsuarioService
 
     private async Task<Endereco> CriarEnderecoAsync(string pais, string uf, string cidade, string cepCodigoRaw, string logradouro, string numero, string? bairro, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(pais)) 
+        if (string.IsNullOrWhiteSpace(pais))
             throw new ArgumentException("País é obrigatório.", nameof(pais));
-        if (string.IsNullOrWhiteSpace(cidade)) 
+        if (string.IsNullOrWhiteSpace(cidade))
             throw new ArgumentException("Cidade é obrigatória.", nameof(cidade));
-        if (string.IsNullOrWhiteSpace(cepCodigoRaw)) 
+        if (string.IsNullOrWhiteSpace(cepCodigoRaw))
             throw new ArgumentException("CEP é obrigatório.", nameof(cepCodigoRaw));
-        if (string.IsNullOrWhiteSpace(numero)) 
+        if (string.IsNullOrWhiteSpace(numero))
             throw new ArgumentException("Número é obrigatório.", nameof(numero));
 
         var (ufEstado, estadoNomeExtenso) = ResolverEstado(uf);

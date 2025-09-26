@@ -197,7 +197,7 @@ export default {
 }
 
 .acessibilidade-menu button:hover {
-  background: #ffe0b3;      
+  background: #FF9C4A;      
 }
 
 
