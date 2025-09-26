@@ -164,13 +164,13 @@ export default {
   top: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px; 
-  padding: 20px; 
-  min-width: 580px; 
-  min-height: 460px; 
-  background: #ffe5cc;
+  gap: 16px; 
+  padding: 24px; 
+  min-width: 560px; 
+  min-height: 420px; 
+  background: #FFDBBB;
   border: 1px solid var(--acc-border);
-  border-radius: 16px;
+  border-radius: 18px;
   box-shadow: var(--acc-shadow);
   z-index: 10000;
 }
@@ -178,12 +178,12 @@ export default {
 .acessibilidade-menu button {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   width: 100%;
-  padding: 18px 16px; 
-  font-size: 20px; 
+  padding: 22px 18px;
+  font-size: 22px; 
   color: var(--acc-text);
-  background: #FFDBBB; 
+  background: #FFDBBB;
   border: 1px solid var(--acc-border);
   border-radius: 14px;
   cursor: pointer;
@@ -192,9 +192,10 @@ export default {
   text-align: left;
 }
 
-.acessibilidade-menu button:active {
-  transform: translateY(0);
-  box-shadow: var(--acc-shadow-sm);
+.acessibilidade-menu button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(17, 24, 39, .12);
+  background: #ffd9b3; /* hover mais forte */
 }
 
 .icone-menu {
