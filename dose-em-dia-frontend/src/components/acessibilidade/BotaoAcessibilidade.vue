@@ -164,12 +164,12 @@ export default {
   top: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px;
-  min-width: 420px;
-  background: #fff;
+  gap: 14px; 
+  padding: 20px; 
+  min-width: 500px; 
+  background: #ffe5cc;
   border: 1px solid var(--acc-border);
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: var(--acc-shadow);
   z-index: 10000;
 }
@@ -177,14 +177,14 @@ export default {
 .acessibilidade-menu button {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   width: 100%;
-  padding: 14px 12px;
-  font-size: 18px;
+  padding: 18px 16px; 
+  font-size: 20px; 
   color: var(--acc-text);
-  background: var(--acc-surface);
+  background: #FFDBBB; 
   border: 1px solid var(--acc-border);
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   box-shadow: var(--acc-shadow-sm);
   transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
@@ -194,7 +194,7 @@ export default {
 .acessibilidade-menu button:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(17, 24, 39, .12);
-  background: #eef2f7;
+  background: #ffe0b3;
 }
 
 .acessibilidade-menu button:active {
