@@ -166,7 +166,8 @@ export default {
   flex-direction: column;
   gap: 14px; 
   padding: 20px; 
-  min-width: 500px; 
+  min-width: 580px; 
+  min-height: 460px; 
   background: #ffe5cc;
   border: 1px solid var(--acc-border);
   border-radius: 16px;
@@ -189,12 +190,6 @@ export default {
   box-shadow: var(--acc-shadow-sm);
   transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
   text-align: left;
-}
-
-.acessibilidade-menu button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(17, 24, 39, .12);
-  background: #ffe0b3;
 }
 
 .acessibilidade-menu button:active {
