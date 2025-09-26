@@ -199,12 +199,16 @@ export default {
         dataNascimento: "",
         sexo: "",
         cep: "",
-        endereco: { logradouro: "", numero: "", bairro: "", cidade: "", estado: "" },
+        endereco: { cep: "", logradouro: "", numero: "", complemento: "", bairro: "", cidade: "", estado: "" },
       },
       editando: false,
       erro: "",
       mostrarErro: false,
       confirmarSalvar: false,
+      cidadePreview: "",
+      estadoPreview: "",
+      cepAplicado: false,
+      buscandoCep: false,
       breadcrumbs: [
         { text: "Início", to: "/home", icon: "mdi-home" },
         { text: "Configurações", to: "/configuracoes" },
@@ -216,6 +220,16 @@ export default {
   methods: {
     navegar(rota) {
       if (rota) this.$router.push(rota);
+    },
+
+    editar() {
+      this.editando = true;
+      if (!this.form.endereco.cep) {
+        this.form.endereco.cep = this.usuario?.endereco?.cep?.codigo || "";
+      }
+      this.cidadePreview = "";
+      this.estadoPreview = "";
+      this.cepAplicado = false;
     },
 
     formatarData(data) {
@@ -250,9 +264,17 @@ export default {
             logradouro: data?.endereco?.logradouro || "",
             numero: data?.endereco?.numero || "",
             complemento: data?.endereco?.complemento || "",
-            bairro: data?.endereco?.cep?.bairro || data?.endereco?.bairro || ""
+            bairro: data?.endereco?.cep?.bairro || data?.endereco?.bairro || "",
+            cidade: data?.endereco?.cep?.cidade?.nome || "",
+            estado: data?.endereco?.cep?.cidade?.estado?.uf || ""
           }
         };
+
+        this.cidadePreview = "";
+        this.estadoPreview = "";
+        this.cepAplicado = false;
+        this.cepErro = "";
+
       } catch (error) {
         console.error(error);
         this.erro = "Erro ao carregar dados do usuário.";
@@ -275,7 +297,6 @@ export default {
             Numero: this.form.endereco.numero,
             Complemento: this.form.endereco.complemento || null,
             Bairro: this.form.endereco.bairro || null
-
           }
         };
 
@@ -291,6 +312,10 @@ export default {
 
     cancelar() {
       this.editando = false;
+      this.carregarUsuario();
+      this.cidadePreview = "";
+      this.estadoPreview = "";
+      this.cepAplicado = false;
       this.carregarUsuario();
     },
 
@@ -310,11 +335,10 @@ export default {
 
     async buscarCep() {
       const cep8 = (this.form.endereco.cep || "").replace(/\D/g, "");
+      this.cepAplicado = false;
+      this.cidadePreview = "";
+      this.estadoPreview = "";
 
-      // limpa erro anterior
-      this.cepErro = "";
-
-      // validação simples
       if (!cep8 || cep8.length !== 8) {
         this.cepErro = "CEP inválido. Use 8 dígitos.";
         return;
@@ -325,18 +349,23 @@ export default {
         const { data } = await axios.get(`https://viacep.com.br/ws/${cep8}/json/`);
         if (data?.erro) throw new Error("CEP não encontrado");
 
-        if (!this.form.endereco.logradouro) {
-          this.form.endereco.logradouro = data.logradouro || "";
-        }
-        if (!this.form.endereco.bairro) {
-          this.form.endereco.bairro = data.bairro || "";
-        }
+        this.form.endereco.logradouro = data.logradouro || this.form.endereco.logradouro || "";
+        this.form.endereco.bairro = data.bairro || this.form.endereco.bairro || "";
+        this.form.endereco.cidade = data.localidade || "";
+        this.form.endereco.estado = data.uf || "";
+
+        this.cidadePreview = data.localidade || "";
+        this.estadoPreview = data.uf || "";
+        this.cepAplicado = true;
       } catch (e) {
         this.cepErro = "CEP inválido ou serviço indisponível.";
+        this.cidadePreview = "";
+        this.estadoPreview = "";
+        this.cepAplicado = false;
       } finally {
         this.buscandoCep = false;
       }
-    }
+    },
   },
 
   mounted() {
