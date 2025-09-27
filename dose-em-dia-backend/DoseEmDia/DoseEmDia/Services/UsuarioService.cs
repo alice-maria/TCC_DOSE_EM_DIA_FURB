@@ -367,7 +367,6 @@ public class UsuarioService
                 {
                     if (!string.IsNullOrWhiteSpace(reqLogradouro) ||
                         !string.IsNullOrWhiteSpace(reqNumero) ||
-                        !string.IsNullOrWhiteSpace(reqComplemento) ||
                         !string.IsNullOrWhiteSpace(reqBairro))
                     {
                         throw new ArgumentException("Para criar endereço é obrigatório informar o CEP.");
