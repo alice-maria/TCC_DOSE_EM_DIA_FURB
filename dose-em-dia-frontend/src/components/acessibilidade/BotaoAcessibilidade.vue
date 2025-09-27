@@ -55,13 +55,13 @@ export default {
     },
     onAcessClick(e) {
       this.toggleMenu();
-      e.currentTarget.blur(); 
+      e.currentTarget.blur();
     },
     fecharMenu() {
       this.menuAberto = false;
     },
     handleClickFora(e) {
-      const container = this.$el; 
+      const container = this.$el;
       if (container && !container.contains(e.target)) {
         this.fecharMenu();
       }
@@ -172,7 +172,7 @@ export default {
   border-radius: 18px;
   box-shadow: var(--acc-shadow);
   z-index: 10000;
-  gap: 0; 
+  gap: 0;
 }
 
 .acessibilidade-menu button {
@@ -184,22 +184,21 @@ export default {
   font-size: 22px;
   color: var(--acc-text);
   background: #FFDBBB;
-  border: none;             
-  border-radius: 0;          
-  border-bottom: 1px solid black; 
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid black;
   cursor: pointer;
   transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
   text-align: left;
 }
 
 .acessibilidade-menu button:last-child {
-  border-bottom: none; 
+  border-bottom: none;
 }
 
 .acessibilidade-menu button:hover {
-  background: #FF9C4A;      
+  background: #FF9C4A;
 }
-
 
 .icone-menu {
   width: 28px;
@@ -222,7 +221,7 @@ export default {
   padding: 10px 16px;
   background: linear-gradient(180deg, #3b8df0, #2a79e0);
   border-radius: 10px;
-  box-shadow: 0 6px 16px rgba(17,24,39,.14), 0 2px 6px rgba(0,0,0,.06);
+  box-shadow: 0 6px 16px rgba(17, 24, 39, .14), 0 2px 6px rgba(0, 0, 0, .06);
   opacity: 0;
   transform: translateY(6px) scale(0.98);
   pointer-events: none;
@@ -250,37 +249,41 @@ export default {
 
 @media (max-width: 600px) {
   .acessibilidade-container {
-    right: 12px;
-    bottom: 520px; 
+    right: var(--safe-right);
+    bottom: calc(var(--safe-bottom) + 16px);
   }
 
-  .acessibilidade-wrap .acessibilidade-tooltip {
+  .acessibilidade-botao {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  .acessibilidade-tooltip {
     display: none;
   }
 
   .acessibilidade-menu {
-    top: auto;
-    bottom: 56px;
     right: 0;
-    min-width: 0;
+    left: auto;
+    top: calc(100% + 12px);
     width: min(92vw, 380px);
+    max-height: 62vh;
     padding: 10px;
-    gap: 8px;
     border-radius: 12px;
     box-shadow: var(--acc-shadow-sm);
   }
 
   .acessibilidade-menu button {
     padding: 12px 10px;
-    font-size: 16px;      
+    font-size: 16px;
     border-radius: 10px;
   }
 
   .icone-menu {
-    width: 24px;
-    height: 24px;
-    flex: 0 0 24px;
-    margin-right: 2px;
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
   }
 }
 

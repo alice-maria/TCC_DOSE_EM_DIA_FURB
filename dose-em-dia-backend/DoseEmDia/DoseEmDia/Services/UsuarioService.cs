@@ -39,25 +39,111 @@ public class UsuarioService
             .FirstOrDefaultAsync(u => u.CPF == cpf);
     }
 
+    private static string SomenteDigitos(string? s)
+        => new string((s ?? string.Empty).Where(char.IsDigit).ToArray());
+
+    private static string NormalizaCep(string? cep)
+    {
+        var cod = SomenteDigitos(cep);
+        if (cod.Length != 8) throw new ArgumentException("CEP inválido (esperado 8 dígitos).");
+        return cod;
+    }
+
+    private async Task<Cep> EnsureCepAsync(string cepCodigo, Cidade cidade, string? bairro, CancellationToken ct) // <<<
+    {
+        var tracked = _context.ChangeTracker.Entries<Cep>()
+            .FirstOrDefault(e => e.Entity.Codigo == cepCodigo)?.Entity;
+        if (tracked is not null)
+        {
+            if (cidade is not null && tracked.CidadeId != cidade.IdCidade && cidade.IdCidade != 0)
+                tracked.CidadeId = cidade.IdCidade;
+            if (!string.IsNullOrWhiteSpace(bairro) && !string.Equals(tracked.Bairro, bairro, StringComparison.Ordinal))
+                tracked.Bairro = bairro;
+            return tracked;
+        }
+
+        var existente = await _context.Cep.FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
+        if (existente is not null)
+        {
+            if (cidade is not null && existente.CidadeId != cidade.IdCidade && cidade.IdCidade != 0)
+                existente.CidadeId = cidade.IdCidade;
+            if (!string.IsNullOrWhiteSpace(bairro) && !string.Equals(existente.Bairro, bairro, StringComparison.Ordinal))
+                existente.Bairro = bairro;
+            return existente;
+        }
+
+        var novo = new Cep
+        {
+            Codigo = cepCodigo,
+            Bairro = string.IsNullOrWhiteSpace(bairro) ? null : bairro,
+            Cidade = cidade
+        };
+        _context.Cep.Add(novo);
+        return novo;
+    }
+
+    private static readonly Dictionary<string, string> _ufParaNome = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["AC"] = "Acre",
+        ["AL"] = "Alagoas",
+        ["AP"] = "Amapá",
+        ["AM"] = "Amazonas",
+        ["BA"] = "Bahia",
+        ["CE"] = "Ceará",
+        ["DF"] = "Distrito Federal",
+        ["ES"] = "Espírito Santo",
+        ["GO"] = "Goiás",
+        ["MA"] = "Maranhão",
+        ["MT"] = "Mato Grosso",
+        ["MS"] = "Mato Grosso do Sul",
+        ["MG"] = "Minas Gerais",
+        ["PA"] = "Pará",
+        ["PB"] = "Paraíba",
+        ["PR"] = "Paraná",
+        ["PE"] = "Pernambuco",
+        ["PI"] = "Piauí",
+        ["RJ"] = "Rio de Janeiro",
+        ["RN"] = "Rio Grande do Norte",
+        ["RS"] = "Rio Grande do Sul",
+        ["RO"] = "Rondônia",
+        ["RR"] = "Roraima",
+        ["SC"] = "Santa Catarina",
+        ["SP"] = "São Paulo",
+        ["SE"] = "Sergipe",
+        ["TO"] = "Tocantins"
+    };
+
+    private static (string Uf, string NomeExtenso) ResolverEstado(string estadoUf)
+    {
+        if (string.IsNullOrWhiteSpace(estadoUf))
+            throw new ArgumentException("UF é obrigatória.", nameof(estadoUf));
+
+        var uf = estadoUf.Trim().ToUpperInvariant();
+        if (!_ufParaNome.TryGetValue(uf, out var nomeExtenso))
+            throw new ArgumentException($"UF inválida: \"{estadoUf}\".", nameof(estadoUf));
+
+        return (uf, nomeExtenso);
+    }
+
     public async Task<Usuario> CriarUsuario(CriarUsuarioRequest dto, CancellationToken ct = default)
     {
-        if (dto is null)
+        if (dto is null) 
             throw new ArgumentNullException(nameof(dto));
-        if (string.IsNullOrWhiteSpace(dto.Email))
+        if (string.IsNullOrWhiteSpace(dto.Email)) 
             throw new ArgumentException("E-mail é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Senha))
+        if (string.IsNullOrWhiteSpace(dto.Senha)) 
             throw new ArgumentException("Senha é obrigatória.");
-        if (string.IsNullOrWhiteSpace(dto.Pais))
+        if (string.IsNullOrWhiteSpace(dto.Pais)) 
             throw new ArgumentException("País é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Uf))
+        if (string.IsNullOrWhiteSpace(dto.Uf)) 
             throw new ArgumentException("UF é obrigatória.");
-        if (string.IsNullOrWhiteSpace(dto.Cidade))
+        if (string.IsNullOrWhiteSpace(dto.Cidade)) 
             throw new ArgumentException("Cidade é obrigatória.");
-        if (string.IsNullOrWhiteSpace(dto.Cep))
+        if (string.IsNullOrWhiteSpace(dto.Cep)) 
             throw new ArgumentException("CEP é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Logradouro))
+        if (string.IsNullOrWhiteSpace(dto.Logradouro)) 
             throw new ArgumentException("Logradouro é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Numero))
+        if (string.IsNullOrWhiteSpace(dto.Numero)) 
             throw new ArgumentException("Número é obrigatório.");
 
         var nome = dto.Nome?.Trim();
@@ -65,9 +151,9 @@ public class UsuarioService
         var cpf = FormatacaoHelper.FormataCPF(dto.CPF);
         var telefone = FormatacaoHelper.FormataTelefone(dto.Telefone);
         var paisNome = dto.Pais.Trim();
-        var estadoUf = dto.Uf.Trim().ToUpperInvariant();
+        var (ufEstado, estadoNomeExtenso) = ResolverEstado(dto.Uf);
         var cidadeNome = dto.Cidade.Trim();
-        var cepCodigo = FormatacaoHelper.FormataCEP(dto.Cep);
+        var cepCodigo = NormalizaCep(dto.Cep);
         var logradouro = dto.Logradouro.Trim();
         var numero = dto.Numero.Trim();
         var bairro = dto.Bairro?.Trim();
@@ -88,8 +174,8 @@ public class UsuarioService
                     throw new UsuarioException.EmailJaCadastradoException(email);
 
                 var endereco = await CriarEnderecoAsync(
-                    paisNome, estadoUf, cidadeNome, cepCodigo,
-                    logradouro, numero, bairro, ct);
+                    paisNome, ufEstado, estadoNomeExtenso, cidadeNome,
+                    cepCodigo, logradouro, numero, bairro, ct);
 
                 var salt = CriptografiaHelper.GerarSalt();
                 var hash = CriptografiaHelper.GerarHash(dto.Senha, salt);
@@ -104,7 +190,7 @@ public class UsuarioService
                     Sexo = sexo,
                     Senha = hash,
                     Salt = salt,
-                    EnderecoId = endereco.IdEndereco,
+                    Endereco = endereco,
                     ReceberNotificacoes = receberNotif
                 };
 
@@ -282,9 +368,9 @@ public class UsuarioService
     public async Task AtualizarUsuario(int id, AtualizarUsuario request, CancellationToken ct = default)
     {
         var usuario = await _context.Usuario
-        .Include(u => u.Endereco)
-            .ThenInclude(e => e.Cep)
-        .FirstOrDefaultAsync(u => u.IdUser == id, ct);
+            .Include(u => u.Endereco)
+                .ThenInclude(e => e.Cep)
+            .FirstOrDefaultAsync(u => u.IdUser == id, ct);
 
         if (usuario is null)
             throw new UsuarioException.UsuarioNaoEncontradoException(id);
@@ -324,12 +410,9 @@ public class UsuarioService
 
             if (!string.IsNullOrWhiteSpace(reqCep))
             {
-                var cepCodigo = FormatacaoHelper.FormataCEP(reqCep);
-                var cep = await _context.Cep.AsNoTracking()
-                    .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
-
-                if (cep is null)
-                    throw new CepNaoEncontradoException(cepCodigo);
+                var cepCodigo = NormalizaCep(reqCep);
+                Cep cepAlvo = await _context.Cep.FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct)
+                              ?? new Cep { Codigo = cepCodigo };
 
                 if (usuario.Endereco is null)
                 {
@@ -338,14 +421,14 @@ public class UsuarioService
 
                     usuario.Endereco = new Endereco
                     {
-                        CepId = cep.IdCep,
+                        Cep = cepAlvo,
                         Logradouro = reqLogradouro?.Trim(),
-                        Numero = reqNumero.Trim(),
+                        Numero = reqNumero.Trim()
                     };
                 }
                 else
                 {
-                    usuario.Endereco.CepId = cep.IdCep;
+                    usuario.Endereco.Cep = cepAlvo;
 
                     if (!string.IsNullOrWhiteSpace(reqLogradouro))
                         usuario.Endereco.Logradouro = reqLogradouro.Trim();
@@ -356,9 +439,7 @@ public class UsuarioService
 
                 if (!string.IsNullOrWhiteSpace(reqBairro))
                 {
-                    var cepToUpdate = new Cep { IdCep = cep.IdCep, Bairro = reqBairro.Trim(), CidadeId = cep.CidadeId };
-                    _context.Cep.Attach(cepToUpdate);
-                    _context.Entry(cepToUpdate).Property(x => x.Bairro).IsModified = true;
+                    usuario.Endereco.Cep.Bairro = reqBairro.Trim();
                 }
             }
             else
@@ -380,12 +461,11 @@ public class UsuarioService
                     if (!string.IsNullOrWhiteSpace(reqNumero))
                         usuario.Endereco.Numero = reqNumero.Trim();
 
-                    if (!string.IsNullOrWhiteSpace(reqBairro) && usuario.Endereco.CepId != 0)
+                    if (!string.IsNullOrWhiteSpace(reqBairro))
                     {
-                        var cepAtualId = usuario.Endereco.CepId;
-                        var cepToUpdate = new Cep { IdCep = cepAtualId, Bairro = reqBairro.Trim() };
-                        _context.Cep.Attach(cepToUpdate);
-                        _context.Entry(cepToUpdate).Property(x => x.Bairro).IsModified = true;
+                        if (usuario.Endereco.Cep is null)
+                            throw new InvalidOperationException("Endereço sem CEP associado.");
+                        usuario.Endereco.Cep.Bairro = reqBairro.Trim();
                     }
                 }
             }
@@ -428,133 +508,60 @@ public class UsuarioService
         await _context.SaveChangesAsync();
     }
 
-    private static readonly Dictionary<string, string> _ufParaNome = new(StringComparer.OrdinalIgnoreCase)
+    private async Task<Endereco> CriarEnderecoAsync(string paisNome, string ufEstado, string estadoNomeExtenso, string cidadeNome, string cepCodigo, string logradouro, string numero, string? bairro, CancellationToken ct = default)
     {
-        ["AC"] = "Acre",
-        ["AL"] = "Alagoas",
-        ["AP"] = "Amapá",
-        ["AM"] = "Amazonas",
-        ["BA"] = "Bahia",
-        ["CE"] = "Ceará",
-        ["DF"] = "Distrito Federal",
-        ["ES"] = "Espírito Santo",
-        ["GO"] = "Goiás",
-        ["MA"] = "Maranhão",
-        ["MT"] = "Mato Grosso",
-        ["MS"] = "Mato Grosso do Sul",
-        ["MG"] = "Minas Gerais",
-        ["PA"] = "Pará",
-        ["PB"] = "Paraíba",
-        ["PR"] = "Paraná",
-        ["PE"] = "Pernambuco",
-        ["PI"] = "Piauí",
-        ["RJ"] = "Rio de Janeiro",
-        ["RN"] = "Rio Grande do Norte",
-        ["RS"] = "Rio Grande do Sul",
-        ["RO"] = "Rondônia",
-        ["RR"] = "Roraima",
-        ["SC"] = "Santa Catarina",
-        ["SP"] = "São Paulo",
-        ["SE"] = "Sergipe",
-        ["TO"] = "Tocantins"
-    };
-
-    private static (string Uf, string NomeExtenso) ResolverEstado(string estadoUf)
-    {
-        if (string.IsNullOrWhiteSpace(estadoUf))
-            throw new ArgumentException("UF é obrigatória.", nameof(estadoUf));
-
-        var uf = estadoUf.Trim().ToUpperInvariant();
-        if (!_ufParaNome.TryGetValue(uf, out var nomeExtenso))
-            throw new ArgumentException($"UF inválida: \"{estadoUf}\".", nameof(estadoUf));
-
-        return (uf, nomeExtenso);
-    }
-
-    private async Task<Endereco> CriarEnderecoAsync(string pais, string uf, string cidade, string cepCodigoRaw, string logradouro, string numero, string? bairro, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(pais))
-            throw new ArgumentException("País é obrigatório.", nameof(pais));
-        if (string.IsNullOrWhiteSpace(cidade))
-            throw new ArgumentException("Cidade é obrigatória.", nameof(cidade));
-        if (string.IsNullOrWhiteSpace(cepCodigoRaw))
-            throw new ArgumentException("CEP é obrigatório.", nameof(cepCodigoRaw));
-        if (string.IsNullOrWhiteSpace(numero))
+        if (string.IsNullOrWhiteSpace(paisNome)) 
+            throw new ArgumentException("País é obrigatório.", nameof(paisNome));
+        if (string.IsNullOrWhiteSpace(cidadeNome)) 
+            throw new ArgumentException("Cidade é obrigatória.", nameof(cidadeNome));
+        if (string.IsNullOrWhiteSpace(cepCodigo)) 
+            throw new ArgumentException("CEP é obrigatório.", nameof(cepCodigo));
+        if (string.IsNullOrWhiteSpace(numero)) 
             throw new ArgumentException("Número é obrigatório.", nameof(numero));
 
-        var (ufEstado, estadoNomeExtenso) = ResolverEstado(uf);
-        var cepCodigo = FormatacaoHelper.FormataCEP(cepCodigoRaw);
-        var paisNomeOk = pais.Trim();
-        var cidadeOk = cidade.Trim();
-        var logOk = logradouro?.Trim();
-        var numOk = (numero?.Trim() ?? string.Empty);
-        if (numOk.Length > 20) numOk = numOk[..20];
-        var bairroOk = bairro?.Trim();
-
-        var nomePais = await _context.Pais
-            .FirstOrDefaultAsync(p => EF.Functions.ILike(p.Nome, paisNomeOk), ct)
-            ?? (await _context.Pais.AddAsync(new Pais { Nome = paisNomeOk }, ct)).Entity;
-        await _context.SaveChangesAsync(ct);
-
-        var nomeEstado = await _context.Estado.FirstOrDefaultAsync(
-            e => e.PaisId == nomePais.IdPais &&
-                 (EF.Functions.ILike(e.Nome, estadoNomeExtenso) || e.Uf == ufEstado || EF.Functions.ILike(e.Nome, ufEstado)),
-            ct);
-
-        if (nomeEstado is null)
+        var pais = await _context.Pais.FirstOrDefaultAsync(p => EF.Functions.ILike(p.Nome, paisNome), ct);
+        if (pais is null)
         {
-            nomeEstado = new Estado { PaisId = nomePais.IdPais, Nome = estadoNomeExtenso, Uf = ufEstado };
-            _context.Estado.Add(nomeEstado);
-            await _context.SaveChangesAsync(ct);
+            pais = new Pais { Nome = paisNome };
+            _context.Pais.Add(pais);
+        }
+
+        var estado = await _context.Estado.FirstOrDefaultAsync(
+            e => e.PaisId == pais.IdPais &&
+                 (EF.Functions.ILike(e.Nome, estadoNomeExtenso) || e.Uf == ufEstado || EF.Functions.ILike(e.Nome, ufEstado)), ct);
+
+        if (estado is null)
+        {
+            estado = new Estado { Pais = pais, Nome = estadoNomeExtenso, Uf = ufEstado };
+            _context.Estado.Add(estado);
         }
         else
         {
-            bool mudou = false;
-            if (!string.Equals(nomeEstado.Nome, estadoNomeExtenso, StringComparison.Ordinal))
-            { nomeEstado.Nome = estadoNomeExtenso; mudou = true; }
-            if (!string.Equals(nomeEstado.Uf, ufEstado, StringComparison.OrdinalIgnoreCase))
-            { nomeEstado.Uf = ufEstado; mudou = true; }
-            if (mudou)
-            {
-                _context.Estado.Update(nomeEstado);
-                await _context.SaveChangesAsync(ct);
-            }
+            if (!string.Equals(estado.Nome, estadoNomeExtenso, StringComparison.Ordinal))
+                estado.Nome = estadoNomeExtenso;
+            if (!string.Equals(estado.Uf, ufEstado, StringComparison.OrdinalIgnoreCase))
+                estado.Uf = ufEstado;
         }
 
-        var NomeCidade = await _context.Cidade
-            .FirstOrDefaultAsync(c => c.EstadoId == nomeEstado.IdEstado && EF.Functions.ILike(c.Nome, cidadeOk), ct)
-            ?? (await _context.Cidade.AddAsync(new Cidade { EstadoId = nomeEstado.IdEstado, Nome = cidadeOk }, ct)).Entity;
-        await _context.SaveChangesAsync(ct);
+        var cidade = await _context.Cidade
+            .FirstOrDefaultAsync(c => c.EstadoId == estado.IdEstado && EF.Functions.ILike(c.Nome, cidadeNome), ct);
 
-        var cep = await _context.Cep.FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
-        if (cep is null)
+        if (cidade is null)
         {
-            cep = new Cep { Codigo = cepCodigo, CidadeId = NomeCidade.IdCidade, Bairro = bairroOk };
-            _context.Cep.Add(cep);
-            await _context.SaveChangesAsync(ct);
+            cidade = new Cidade { Estado = estado, Nome = cidadeNome };
+            _context.Cidade.Add(cidade);
         }
-        else
-        {
-            bool cepMudou = false;
-            if (cep.CidadeId != NomeCidade.IdCidade) { cep.CidadeId = NomeCidade.IdCidade; cepMudou = true; }
-            if (!string.IsNullOrWhiteSpace(bairroOk) && !string.Equals(cep.Bairro, bairroOk, StringComparison.Ordinal))
-            { cep.Bairro = bairroOk; cepMudou = true; }
-            if (cepMudou)
-            {
-                _context.Cep.Update(cep);
-                await _context.SaveChangesAsync(ct);
-            }
-        }
+
+        var cep = await EnsureCepAsync(cepCodigo, cidade, bairro, ct);
 
         var end = new Endereco
         {
-            CepId = cep.IdCep,
-            Logradouro = logOk,
-            Numero = numOk
+            Cep = cep,
+            Logradouro = logradouro?.Trim(),
+            Numero = (numero?.Trim() ?? string.Empty) is var n && n.Length > 20 ? n[..20] : n
         };
-        _context.Endereco.Add(end);
-        await _context.SaveChangesAsync(ct);
 
+        _context.Endereco.Add(end);
         return end;
     }
 }
