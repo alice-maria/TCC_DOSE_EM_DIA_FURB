@@ -143,17 +143,33 @@ public class UsuarioController : ControllerBase
         }
     }
 
-    [HttpPatch("alterarDados/{id}")]
-    public async Task<IActionResult> AtualizarUsuario(int id, [FromBody] AtualizarUsuario request)
+    [HttpPatch("alterarDados/{id:int}")]
+    public async Task<IActionResult> AtualizarUsuario(int id, [FromBody] AtualizarUsuario request, CancellationToken ct = default)
     {
         try
         {
-            await _usuarioService.AtualizarUsuario(id, request);
-            return Ok("Dados atualizados.");
+            await _usuarioService.AtualizarUsuario(id, request, ct);
+            return NoContent(); 
         }
-        catch
+        catch (UsuarioException.UsuarioNaoEncontradoException)
         {
-            return NotFound("Usuário não encontrado.");
+            return NotFound($"Usuário {id} não encontrado.");
+        }
+        catch (CepNaoEncontradoException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UsuarioException.EmailJaCadastradoException ex)
+        {
+            return Conflict(new { message = ex.Message }); 
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message }); 
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Erro inesperado." });
         }
     }
 
