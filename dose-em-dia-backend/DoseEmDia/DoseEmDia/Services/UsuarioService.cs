@@ -320,13 +320,11 @@ public class UsuarioService
             var reqCep = request.Endereco.CEP;
             var reqLogradouro = request.Endereco.Logradouro;
             var reqNumero = request.Endereco.Numero;
-            var reqComplemento = request.Endereco.Complemento;
             var reqBairro = request.Endereco.Bairro;
 
-            // 1) Alteração de CEP?
             if (!string.IsNullOrWhiteSpace(reqCep))
             {
-                var cepCodigo = FormatacaoHelper.FormataCEP(reqCep); // 00000-000 (supondo)
+                var cepCodigo = FormatacaoHelper.FormataCEP(reqCep);
                 var cep = await _context.Cep.AsNoTracking()
                     .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
 
@@ -335,7 +333,6 @@ public class UsuarioService
 
                 if (usuario.Endereco is null)
                 {
-                    // Criando endereço: Numero é obrigatório pelo mapeamento
                     if (string.IsNullOrWhiteSpace(reqNumero))
                         throw new ArgumentException("Para criar endereço é obrigatório informar o Número.");
 
@@ -344,7 +341,6 @@ public class UsuarioService
                         CepId = cep.IdCep,
                         Logradouro = reqLogradouro?.Trim(),
                         Numero = reqNumero.Trim(),
-                        Complemento = string.IsNullOrWhiteSpace(reqComplemento) ? null : reqComplemento.Trim()
                     };
                 }
                 else
@@ -356,12 +352,8 @@ public class UsuarioService
 
                     if (!string.IsNullOrWhiteSpace(reqNumero))
                         usuario.Endereco.Numero = reqNumero.Trim();
-
-                    if (reqComplemento is not null) // permitir limpar complemento (null)
-                        usuario.Endereco.Complemento = string.IsNullOrWhiteSpace(reqComplemento) ? null : reqComplemento.Trim();
                 }
 
-                // Atualizar Bairro do CEP alvo, se veio
                 if (!string.IsNullOrWhiteSpace(reqBairro))
                 {
                     var cepToUpdate = new Cep { IdCep = cep.IdCep, Bairro = reqBairro.Trim(), CidadeId = cep.CidadeId };
@@ -371,10 +363,8 @@ public class UsuarioService
             }
             else
             {
-                // 2) Sem alteração de CEP
                 if (usuario.Endereco is null)
                 {
-                    // Quer criar endereço sem CEP? Bloqueia (coerente com sua regra)
                     if (!string.IsNullOrWhiteSpace(reqLogradouro) ||
                         !string.IsNullOrWhiteSpace(reqNumero) ||
                         !string.IsNullOrWhiteSpace(reqComplemento) ||
@@ -385,17 +375,12 @@ public class UsuarioService
                 }
                 else
                 {
-                    // Atualizações parciais do endereço existente
                     if (!string.IsNullOrWhiteSpace(reqLogradouro))
                         usuario.Endereco.Logradouro = reqLogradouro.Trim();
 
                     if (!string.IsNullOrWhiteSpace(reqNumero))
                         usuario.Endereco.Numero = reqNumero.Trim();
 
-                    if (reqComplemento is not null) // aceita limpar
-                        usuario.Endereco.Complemento = string.IsNullOrWhiteSpace(reqComplemento) ? null : reqComplemento.Trim();
-
-                    // Se veio Bairro e não trocou CEP, atualiza o CEP atual
                     if (!string.IsNullOrWhiteSpace(reqBairro) && usuario.Endereco.CepId != 0)
                     {
                         var cepAtualId = usuario.Endereco.CepId;

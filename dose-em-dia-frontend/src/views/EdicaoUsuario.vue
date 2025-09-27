@@ -221,7 +221,7 @@ export default {
         dataNascimento: "",
         sexo: "",
         cep: "",
-        endereco: { cep: "", logradouro: "", numero: "", complemento: "", bairro: "", cidade: "", estado: "" },
+        endereco: { cep: "", logradouro: "", numero: "", bairro: "", cidade: "", estado: "" },
       },
       editando: false,
       erro: "",
@@ -286,7 +286,6 @@ export default {
             cep: data?.endereco?.cep?.codigo || "",
             logradouro: data?.endereco?.logradouro || "",
             numero: data?.endereco?.numero || "",
-            complemento: data?.endereco?.complemento || "",
             bairro: data?.endereco?.cep?.bairro || data?.endereco?.bairro || "",
             cidade: data?.endereco?.cep?.cidade?.nome || "",
             estado: data?.endereco?.cep?.cidade?.estado?.uf || ""
@@ -324,7 +323,6 @@ export default {
           cep: this.usuario?.endereco?.cep?.codigo || "",
           logradouro: this.usuario?.endereco?.logradouro || "",
           numero: this.usuario?.endereco?.numero || "",
-          complemento: this.usuario?.endereco?.complemento || "",
           bairro: this.usuario?.endereco?.cep?.bairro || this.usuario?.endereco?.bairro || "",
           existe: !!this.usuario?.endereco
         };
@@ -333,7 +331,6 @@ export default {
           cep: this.form.endereco.cep || "",
           logradouro: this.form.endereco.logradouro || "",
           numero: this.form.endereco.numero || "",
-          complemento: this.form.endereco.complemento || "",
           bairro: this.form.endereco.bairro || ""
         };
 
@@ -345,11 +342,10 @@ export default {
         if (cepMudou) endPayload.CEP = cep8;
         if (trim(formEnd.logradouro) && trim(formEnd.logradouro) !== trim(origEnd.logradouro)) endPayload.Logradouro = trim(formEnd.logradouro);
         if (trim(formEnd.numero) && trim(formEnd.numero) !== trim(origEnd.numero)) endPayload.Numero = trim(formEnd.numero);
-        if (trim(formEnd.complemento) && trim(formEnd.complemento) !== trim(origEnd.complemento)) endPayload.Complemento = trim(formEnd.complemento);
         if (trim(formEnd.bairro) && trim(formEnd.bairro) !== trim(origEnd.bairro)) endPayload.Bairro = trim(formEnd.bairro);
 
         const querCriarEndereco = !origEnd.existe &&
-          (trim(formEnd.logradouro) || trim(formEnd.numero) || trim(formEnd.complemento) || trim(formEnd.bairro));
+          (trim(formEnd.logradouro) || trim(formEnd.numero) || trim(formEnd.bairro));
 
         if (querCriarEndereco && !cep8) {
           this.erro = "Para criar endereço, informe um CEP válido (8 dígitos).";
