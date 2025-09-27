@@ -109,7 +109,7 @@
       <div class="linha-dado">
         <label>Número:</label>
         <div>
-          <span v-if="!editando">{{ usuario.endereco.numero || 'Não informado' }}</span>
+          <span v-if="!editando">{{ usuario.endereco?.numero || 'Não informado' }}</span>
           <input v-else v-model="form.endereco.numero" type="text" class="form-control">
         </div>
       </div>
@@ -309,42 +309,87 @@ export default {
       try {
         const id = Number(this.usuario?.idUser);
         if (!Number.isInteger(id)) {
-          this.erro = "ID do usuário inválido.";
+          this.erro = "ID do usuário inválido."; this.mostrarErro = true; return;
+        }
+
+        const payload = {};
+
+        const trim = (v) => (v ?? "").toString().trim();
+        if (trim(this.form.nome) !== trim(this.usuario?.nome)) payload.nome = trim(this.form.nome);
+        if (trim(this.form.email).toLowerCase() !== trim(this.usuario?.email).toLowerCase()) payload.email = trim(this.form.email);
+        if (trim(this.form.telefone) !== trim(this.usuario?.telefone)) payload.telefone = trim(this.form.telefone);
+        if (trim(this.form.sexo) !== trim(this.usuario?.sexo)) payload.sexo = trim(this.form.sexo);
+
+        const origEnd = {
+          cep: this.usuario?.endereco?.cep?.codigo || "",
+          logradouro: this.usuario?.endereco?.logradouro || "",
+          numero: this.usuario?.endereco?.numero || "",
+          complemento: this.usuario?.endereco?.complemento || "",
+          bairro: this.usuario?.endereco?.cep?.bairro || this.usuario?.endereco?.bairro || "",
+          existe: !!this.usuario?.endereco
+        };
+
+        const formEnd = {
+          cep: this.form.endereco.cep || "",
+          logradouro: this.form.endereco.logradouro || "",
+          numero: this.form.endereco.numero || "",
+          complemento: this.form.endereco.complemento || "",
+          bairro: this.form.endereco.bairro || ""
+        };
+
+        const endPayload = {};
+
+        const cep8 = (formEnd.cep || "").replace(/\D/g, "");
+        const cepMudou = formEnd.cep && formEnd.cep !== origEnd.cep;
+
+        if (cepMudou) endPayload.CEP = cep8;
+        if (trim(formEnd.logradouro) && trim(formEnd.logradouro) !== trim(origEnd.logradouro)) endPayload.Logradouro = trim(formEnd.logradouro);
+        if (trim(formEnd.numero) && trim(formEnd.numero) !== trim(origEnd.numero)) endPayload.Numero = trim(formEnd.numero);
+        if (trim(formEnd.complemento) && trim(formEnd.complemento) !== trim(origEnd.complemento)) endPayload.Complemento = trim(formEnd.complemento);
+        if (trim(formEnd.bairro) && trim(formEnd.bairro) !== trim(origEnd.bairro)) endPayload.Bairro = trim(formEnd.bairro);
+
+        const querCriarEndereco = !origEnd.existe &&
+          (trim(formEnd.logradouro) || trim(formEnd.numero) || trim(formEnd.complemento) || trim(formEnd.bairro));
+
+        if (querCriarEndereco && !cep8) {
+          this.erro = "Para criar endereço, informe um CEP válido (8 dígitos).";
           this.mostrarErro = true;
           return;
         }
-        const cep8 = (this.form.endereco.cep || "").replace(/\D/g, "");
-        if (!cep8 || cep8.length !== 8) {
+
+        if (endPayload.CEP && cep8.length !== 8) {
           this.erro = "CEP inválido. Use 8 dígitos.";
           this.mostrarErro = true;
           return;
         }
-        const resp = await api.patch(`/api/usuario/alterarDados/${this.usuario.idUser}`, {
-          nome: this.form.nome,
-          email: this.form.email,
-          telefone: this.form.telefone,
-          sexo: this.form.sexo,
-          endereco: {
-            CEP: cep8,
-            Logradouro: this.form.endereco.logradouro,
-            Numero: this.form.endereco.numero,
-            Complemento: this.form.endereco.complemento || null,
-            Bairro: this.form.endereco.bairro || null
-          }
-        });
+
+        if (Object.keys(endPayload).length > 0) {
+          payload.endereco = endPayload;
+        }
+
+        if (Object.keys(payload).length === 0) {
+          this.erro = "Nenhuma alteração para salvar.";
+          this.mostrarErro = true;
+          return;
+        }
+
+        const resp = await api.patch(`/api/usuario/alterarDados/${id}`, payload);
 
         if (resp.status === 200 || resp.status === 204) {
           this.editando = false;
           await this.carregarUsuario();
           this.dialogSucesso = true;
+          setTimeout(() => (this.dialogSucesso = false), 1500);
         }
       } catch (error) {
         console.error(error);
-        this.erro = error?.response?.data?.message ?? "Erro ao salvar os dados. Tente novamente.";
+        this.erro =
+          error?.response?.data?.message ??
+          error?.response?.data ??
+          "Erro ao salvar os dados. Tente novamente.";
         this.mostrarErro = true;
       }
     },
-
     cancelar() {
       this.editando = false;
       this.carregarUsuario();
@@ -630,7 +675,7 @@ export default {
 }
 
 .btn-popupok button {
-  background-color: #fff  !important;
+  background-color: #fff !important;
   color: #ff6600;
   border: none;
   padding: 10px 30px;

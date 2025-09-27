@@ -282,8 +282,9 @@ public class UsuarioService
     public async Task AtualizarUsuario(int id, AtualizarUsuario request, CancellationToken ct = default)
     {
         var usuario = await _context.Usuario
-            .Include(u => u.Endereco)
-            .FirstOrDefaultAsync(u => u.IdUser == id, ct);
+        .Include(u => u.Endereco)
+            .ThenInclude(e => e.Cep)
+        .FirstOrDefaultAsync(u => u.IdUser == id, ct);
 
         if (usuario is null)
             throw new UsuarioException.UsuarioNaoEncontradoException(id);
@@ -316,9 +317,16 @@ public class UsuarioService
 
         if (request.Endereco is not null)
         {
-            if (!string.IsNullOrWhiteSpace(request.Endereco.CEP))
+            var reqCep = request.Endereco.CEP;
+            var reqLogradouro = request.Endereco.Logradouro;
+            var reqNumero = request.Endereco.Numero;
+            var reqComplemento = request.Endereco.Complemento;
+            var reqBairro = request.Endereco.Bairro;
+
+            // 1) Alteração de CEP?
+            if (!string.IsNullOrWhiteSpace(reqCep))
             {
-                var cepCodigo = FormatacaoHelper.FormataCEP(request.Endereco.CEP);
+                var cepCodigo = FormatacaoHelper.FormataCEP(reqCep); // 00000-000 (supondo)
                 var cep = await _context.Cep.AsNoTracking()
                     .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
 
@@ -326,32 +334,76 @@ public class UsuarioService
                     throw new CepNaoEncontradoException(cepCodigo);
 
                 if (usuario.Endereco is null)
-                    usuario.Endereco = new Endereco { CepId = cep.IdCep };
+                {
+                    // Criando endereço: Numero é obrigatório pelo mapeamento
+                    if (string.IsNullOrWhiteSpace(reqNumero))
+                        throw new ArgumentException("Para criar endereço é obrigatório informar o Número.");
+
+                    usuario.Endereco = new Endereco
+                    {
+                        CepId = cep.IdCep,
+                        Logradouro = reqLogradouro?.Trim(),
+                        Numero = reqNumero.Trim(),
+                        Complemento = string.IsNullOrWhiteSpace(reqComplemento) ? null : reqComplemento.Trim()
+                    };
+                }
                 else
+                {
                     usuario.Endereco.CepId = cep.IdCep;
 
-                if (!string.IsNullOrWhiteSpace(request.Endereco.Bairro))
+                    if (!string.IsNullOrWhiteSpace(reqLogradouro))
+                        usuario.Endereco.Logradouro = reqLogradouro.Trim();
+
+                    if (!string.IsNullOrWhiteSpace(reqNumero))
+                        usuario.Endereco.Numero = reqNumero.Trim();
+
+                    if (reqComplemento is not null) // permitir limpar complemento (null)
+                        usuario.Endereco.Complemento = string.IsNullOrWhiteSpace(reqComplemento) ? null : reqComplemento.Trim();
+                }
+
+                // Atualizar Bairro do CEP alvo, se veio
+                if (!string.IsNullOrWhiteSpace(reqBairro))
                 {
-                    var cepToUpdate = new Cep { IdCep = cep.IdCep, Bairro = request.Endereco.Bairro.Trim(), CidadeId = cep.CidadeId };
+                    var cepToUpdate = new Cep { IdCep = cep.IdCep, Bairro = reqBairro.Trim(), CidadeId = cep.CidadeId };
                     _context.Cep.Attach(cepToUpdate);
                     _context.Entry(cepToUpdate).Property(x => x.Bairro).IsModified = true;
                 }
             }
-            else if (usuario.Endereco is null &&
-                     (!string.IsNullOrWhiteSpace(request.Endereco.Logradouro) ||
-                      !string.IsNullOrWhiteSpace(request.Endereco.Numero) ||
-                      !string.IsNullOrWhiteSpace(request.Endereco.Complemento)))
+            else
             {
-                throw new ArgumentException("Para criar endereço é obrigatório informar o CEP.");
-            }
+                // 2) Sem alteração de CEP
+                if (usuario.Endereco is null)
+                {
+                    // Quer criar endereço sem CEP? Bloqueia (coerente com sua regra)
+                    if (!string.IsNullOrWhiteSpace(reqLogradouro) ||
+                        !string.IsNullOrWhiteSpace(reqNumero) ||
+                        !string.IsNullOrWhiteSpace(reqComplemento) ||
+                        !string.IsNullOrWhiteSpace(reqBairro))
+                    {
+                        throw new ArgumentException("Para criar endereço é obrigatório informar o CEP.");
+                    }
+                }
+                else
+                {
+                    // Atualizações parciais do endereço existente
+                    if (!string.IsNullOrWhiteSpace(reqLogradouro))
+                        usuario.Endereco.Logradouro = reqLogradouro.Trim();
 
-            if (usuario.Endereco is not null)
-            {
-                if (!string.IsNullOrWhiteSpace(request.Endereco.Logradouro))
-                    usuario.Endereco.Logradouro = request.Endereco.Logradouro.Trim();
+                    if (!string.IsNullOrWhiteSpace(reqNumero))
+                        usuario.Endereco.Numero = reqNumero.Trim();
 
-                if (!string.IsNullOrWhiteSpace(request.Endereco.Numero))
-                    usuario.Endereco.Numero = request.Endereco.Numero.Trim();
+                    if (reqComplemento is not null) // aceita limpar
+                        usuario.Endereco.Complemento = string.IsNullOrWhiteSpace(reqComplemento) ? null : reqComplemento.Trim();
+
+                    // Se veio Bairro e não trocou CEP, atualiza o CEP atual
+                    if (!string.IsNullOrWhiteSpace(reqBairro) && usuario.Endereco.CepId != 0)
+                    {
+                        var cepAtualId = usuario.Endereco.CepId;
+                        var cepToUpdate = new Cep { IdCep = cepAtualId, Bairro = reqBairro.Trim() };
+                        _context.Cep.Attach(cepToUpdate);
+                        _context.Entry(cepToUpdate).Property(x => x.Bairro).IsModified = true;
+                    }
+                }
             }
         }
 
