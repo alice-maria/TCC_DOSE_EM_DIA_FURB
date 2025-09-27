@@ -174,10 +174,10 @@
   <v-dialog v-model="dialogSucesso" max-width="400" persistent>
     <v-card class="popup-sucesso">
       <v-card-text class="texto-sucesso">
-        Senha alterada com sucesso!
+        Informações alteradas com sucesso!
       </v-card-text>
       <v-card-actions class="botoes-popup">
-        <v-btn class="btn-popupok">Ok</v-btn>
+        <v-btn class="btn-popupok" @click="$router.push('/informacoes-cadastrais')">Ok</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -630,7 +630,7 @@ export default {
 }
 
 .btn-popupok button {
-  background-color: #fff;
+  background-color: #fff  !important;
   color: #ff6600;
   border: none;
   padding: 10px 30px;
