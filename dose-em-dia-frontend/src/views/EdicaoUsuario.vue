@@ -170,7 +170,29 @@
       </div>
     </v-card>
   </v-dialog>
-
+  <!-- POPUP DE SUCESSO -->
+  <v-dialog v-model="dialogSucesso" max-width="400" persistent>
+    <v-card class="popup-sucesso">
+      <v-card-text class="texto-sucesso">
+        Senha alterada com sucesso!
+      </v-card-text>
+      <v-card-actions class="botoes-popup">
+        <v-btn class="btn-popupok">Ok</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <!-- POPUP DE ERRO -->
+  <v-dialog v-model="mostrarErro" max-width="400">
+    <v-card>
+      <v-alert type="error" color="red-darken-2" icon="mdi-alert-circle" class="pa-5" border="start" elevation="2"
+        title="Erro ao salvar">
+        {{ mensagem }}
+      </v-alert>
+      <v-card-actions class="justify-end">
+        <v-btn color="red-darken-2" variant="flat" @click="mostrarErro = false">OK</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -205,6 +227,7 @@ export default {
       erro: "",
       mostrarErro: false,
       confirmarSalvar: false,
+      dialogSucesso: false,
       cidadePreview: "",
       estadoPreview: "",
       cepAplicado: false,
@@ -284,9 +307,19 @@ export default {
 
     async salvar() {
       try {
+        const id = Number(this.usuario?.idUser);
+        if (!Number.isInteger(id)) {
+          this.erro = "ID do usuário inválido.";
+          this.mostrarErro = true;
+          return;
+        }
         const cep8 = (this.form.endereco.cep || "").replace(/\D/g, "");
-
-        const payload = {
+        if (!cep8 || cep8.length !== 8) {
+          this.erro = "CEP inválido. Use 8 dígitos.";
+          this.mostrarErro = true;
+          return;
+        }
+        const resp = await api.patch(`/api/usuario/alterarDados/${this.usuario.idUser}`, {
           nome: this.form.nome,
           email: this.form.email,
           telefone: this.form.telefone,
@@ -298,11 +331,13 @@ export default {
             Complemento: this.form.endereco.complemento || null,
             Bairro: this.form.endereco.bairro || null
           }
-        };
+        });
 
-        await api.patch(`/api/usuario/alterarDados/${this.usuario.idUser}`, payload);
-        this.editando = false;
-        await this.carregarUsuario();
+        if (resp.status === 200 || resp.status === 204) {
+          this.editando = false;
+          await this.carregarUsuario();
+          this.dialogSucesso = true;
+        }
       } catch (error) {
         console.error(error);
         this.erro = error?.response?.data?.message ?? "Erro ao salvar os dados. Tente novamente.";
@@ -562,5 +597,46 @@ export default {
   font-weight: bold;
   border-radius: 999px;
   text-transform: none;
+}
+
+.popup-sucesso {
+  background-color: #f46c20;
+  border-radius: 24px !important;
+  padding: 40px 20px;
+  width: 300px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.texto-sucesso {
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.botoes-popup {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.btn-popupok {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.btn-popupok button {
+  background-color: #fff;
+  color: #ff6600;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
 }
 </style>
