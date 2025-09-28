@@ -74,10 +74,21 @@
             </div>
           </div>
         </v-overlay>
-
       </div>
     </div>
   </v-container>
+  <!-- POPUP DE ERRO -->
+  <v-dialog v-model="mostrarErro" max-width="400">
+    <v-card>
+      <v-alert type="error" color="red-darken-2" icon="mdi-alert-circle" class="pa-5" border="start" elevation="2"
+        title="Erro ao salvar">
+        {{ mensagem }}
+      </v-alert>
+      <v-card-actions class="justify-end">
+        <v-btn color="red-darken-2" variant="flat" @click="mostrarErro = false">OK</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -100,6 +111,7 @@ export default {
     return {
       nomeUsuario: '',
       mostrarDialogo: false,
+      mostrarErro: false,
       carregando: false,
       progresso: 0,
       breadcrumbs: [
@@ -114,7 +126,7 @@ export default {
   methods: {
     async baixarComprovante() {
       const usuarioId = localStorage.getItem("usuarioId");
-      const usuarioCPF = localStorage.getItem("usuarioCpf"); 
+      const usuarioCPF = localStorage.getItem("usuarioCpf");
       if (!usuarioId || !usuarioCPF) {
         alert("Usuário não identificado. Faça login novamente.");
         return;
@@ -155,7 +167,7 @@ export default {
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error("Erro ao gerar comprovante:", error);
-        alert("Erro ao gerar comprovante. Tente novamente mais tarde.");
+        this.mostrarErro = true;
       } finally {
         this.carregando = false;
         this.progresso = 0;
@@ -231,7 +243,7 @@ export default {
 }
 
 .breadcrumb-home-img {
-    margin-top: -5px;
+  margin-top: -5px;
 }
 
 .botao-material {
@@ -322,6 +334,7 @@ export default {
     gap: 0.5rem;
     padding: 0.75rem 1rem;
   }
+
   .titulo {
     font-size: 1.35rem;
     text-align: center;
@@ -332,7 +345,12 @@ export default {
     overflow-x: auto;
     white-space: nowrap;
   }
-  .breadcrumb-home-img { width: 18px; height: 18px; margin-top: -2px; }
+
+  .breadcrumb-home-img {
+    width: 18px;
+    height: 18px;
+    margin-top: -2px;
+  }
 
   .aviso-comprovante {
     margin: 0.75rem 1rem 1.25rem;
@@ -365,7 +383,9 @@ export default {
     font-size: 1rem;
   }
 
-  .tooltip-legal { font-size: 0.75rem; }
+  .tooltip-legal {
+    font-size: 0.75rem;
+  }
 
   .loading-card {
     min-width: 180px;

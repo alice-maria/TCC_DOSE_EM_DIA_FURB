@@ -81,7 +81,7 @@ namespace DoseEmDia.Controllers
             var lista = new List<Vacina>();
 
             var esquemaBCG = elegiveis.FirstOrDefault(e => e.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase))
-                          ?? _tabelaVacinas.FirstOrDefault(e => e.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase));
+                  ?? _tabelaVacinas.FirstOrDefault(e => e.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase));
 
             if (esquemaBCG != null)
             {
@@ -90,9 +90,10 @@ namespace DoseEmDia.Controllers
                 if (!countPorNome.ContainsKey(esquemaBCG.Nome))
                     countPorNome[esquemaBCG.Nome] = 0;
 
-                if (countPorNome[esquemaBCG.Nome] < maxPorNome[esquemaBCG.Nome] && lista.Count < alvoTotal)
+                if (!lista.Any(v => v.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase)))
                 {
-                    var dataAplicacaoBCG = nascimento;
+                    var anoNascimento = hoje.Year - idadeAtual;
+                    var dataAplicacaoBCG = new DateTime(anoNascimento, 1, 15);
 
                     var bcg = new Vacina
                     {
@@ -107,7 +108,7 @@ namespace DoseEmDia.Controllers
                     };
 
                     lista.Add(bcg);
-                    countPorNome[esquemaBCG.Nome]++;
+                    countPorNome[esquemaBCG.Nome] = Math.Min(countPorNome[esquemaBCG.Nome] + 1, maxPorNome[esquemaBCG.Nome]);
                 }
             }
 

@@ -24,7 +24,7 @@ namespace DoseEmDia.Controllers.DTO
         [StringLength(14)]
         public string CPF { get; set; } = string.Empty;
 
-        [StringLength(1)] 
+        [StringLength(20)] 
         public string Sexo { get; set; } = string.Empty;
 
         public bool ReceberNotificacoes { get; set; }

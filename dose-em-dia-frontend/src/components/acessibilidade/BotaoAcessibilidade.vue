@@ -249,27 +249,22 @@ export default {
 
 @media (max-width: 600px) {
   .acessibilidade-container {
-    right: var(--safe-right);
-    bottom: calc(var(--safe-bottom) + 16px);
+    right: 12px;
+    bottom: 520px;
   }
 
-  .acessibilidade-botao {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-  }
-
-  .acessibilidade-tooltip {
+  .acessibilidade-wrap .acessibilidade-tooltip {
     display: none;
   }
 
   .acessibilidade-menu {
+    top: auto;
+    bottom: 56px;
     right: 0;
-    left: auto;
-    top: calc(100% + 12px);
+    min-width: 0;
     width: min(92vw, 380px);
-    max-height: 62vh;
     padding: 10px;
+    gap: 8px;
     border-radius: 12px;
     box-shadow: var(--acc-shadow-sm);
   }
@@ -281,9 +276,10 @@ export default {
   }
 
   .icone-menu {
-    width: 22px;
-    height: 22px;
-    flex: 0 0 22px;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    margin-right: 2px;
   }
 }
 

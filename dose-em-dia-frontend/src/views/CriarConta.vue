@@ -367,7 +367,6 @@ export default {
       const uf = (this.form.endereco.uf || this.form.endereco.estado || "").toString().trim().toUpperCase();
 
       const payload = {
-        // --- Dados do usuário ---
         nome: this.form.nome,
         email: this.form.email,
         senha: this.form.senha,
@@ -375,17 +374,14 @@ export default {
         telefone: this.form.telefone,
         cpf: cpfLimpo,
         sexo: this.form.sexo,
-        receberNotificacoes: true, // ou this.form.receberNotificacoes se existir
-
-        // --- Dados do endereço (flat, conforme CriarUsuarioRequest) ---
+        receberNotificacoes: true, 
         pais: this.form.endereco.pais || "Brasil",
-        uf: uf,                                // "SC"
-        cidade: this.form.endereco.cidade,     // "Blumenau"
-        cep: cep8,                             // "89031020"
+        uf: uf,                                
+        cidade: this.form.endereco.cidade,    
+        cep: cep8,                            
         logradouro: this.form.endereco.logradouro,
         numero: this.form.endereco.numero,
-        complemento: this.form.endereco.complemento || null, // se quiser capturar
-        bairro: this.form.endereco.bairro || null            // (armazenado em CEP no backend)
+        bairro: this.form.endereco.bairro || null            
       };
 
       try {
@@ -613,7 +609,6 @@ export default {
 }
 
 .botao-japossuiconta {
-
   background-color: transparent !important;
 }
 
