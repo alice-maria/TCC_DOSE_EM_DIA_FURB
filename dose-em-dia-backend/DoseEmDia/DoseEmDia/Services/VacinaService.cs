@@ -50,10 +50,10 @@ namespace DoseEmDia.Controllers
 
         private List<Vacina> GerarHistoricoVacinalPorIdade(int idadeAtual, string? sexo)
         {
-            const int TOTAL = 15;
-            const int QT_APLICADAS = 10;
-            const int QT_ATRASO = 3;
-            const int QT_AVENCER = 2;
+            const int TOTAL = 11;
+            const int QT_APLICADAS = 8;
+            const int QT_ATRASO = 2;
+            const int QT_AVENCER = 1;
 
             var hoje = DateTime.Today;
             var nascimento = hoje.AddYears(-idadeAtual).Date;
@@ -80,37 +80,35 @@ namespace DoseEmDia.Controllers
 
             var lista = new List<Vacina>();
 
+            // ====== BCG sempre, no ano de nascimento ======
+            bool bcgAdicionada = false;
             var esquemaBCG = elegiveis.FirstOrDefault(e => e.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase))
-                  ?? _tabelaVacinas.FirstOrDefault(e => e.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase));
+                          ?? _tabelaVacinas.FirstOrDefault(e => e.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase));
 
-            if (esquemaBCG != null)
+            if (esquemaBCG != null && !lista.Any(v => v.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase)))
             {
-                if (!maxPorNome.ContainsKey(esquemaBCG.Nome))
-                    maxPorNome[esquemaBCG.Nome] = 1;
-                if (!countPorNome.ContainsKey(esquemaBCG.Nome))
-                    countPorNome[esquemaBCG.Nome] = 0;
+                if (!maxPorNome.ContainsKey(esquemaBCG.Nome)) maxPorNome[esquemaBCG.Nome] = 1;
+                if (!countPorNome.ContainsKey(esquemaBCG.Nome)) countPorNome[esquemaBCG.Nome] = 0;
 
-                if (!lista.Any(v => v.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase)))
+                var anoNascimento = hoje.Year - idadeAtual;
+                var dataAplicacaoBCG = new DateTime(anoNascimento, 1, 15);
+
+                lista.Add(new Vacina
                 {
-                    var anoNascimento = hoje.Year - idadeAtual;
-                    var dataAplicacaoBCG = new DateTime(anoNascimento, 1, 15);
+                    Nome = esquemaBCG.Nome,
+                    IntervaloEntreDoses = esquemaBCG.Intervalo,
+                    NumeroDoses = 1,
+                    NumeroLote = rand.Next(100000, 999999),
+                    DataAplicacao = dataAplicacaoBCG,
+                    ValidadeMeses = esquemaBCG.ValidadeMeses,
+                    Fabricante = esquemaBCG.Fabricante,
+                    Status = StatusVacina.Aplicada
+                });
 
-                    var bcg = new Vacina
-                    {
-                        Nome = esquemaBCG.Nome,
-                        IntervaloEntreDoses = esquemaBCG.Intervalo,
-                        NumeroDoses = 1,
-                        NumeroLote = rand.Next(100000, 999999),
-                        DataAplicacao = dataAplicacaoBCG,
-                        ValidadeMeses = esquemaBCG.ValidadeMeses,
-                        Fabricante = esquemaBCG.Fabricante,
-                        Status = StatusVacina.Aplicada
-                    };
-
-                    lista.Add(bcg);
-                    countPorNome[esquemaBCG.Nome] = Math.Min(countPorNome[esquemaBCG.Nome] + 1, maxPorNome[esquemaBCG.Nome]);
-                }
+                countPorNome[esquemaBCG.Nome] = Math.Min(countPorNome[esquemaBCG.Nome] + 1, maxPorNome[esquemaBCG.Nome]);
+                bcgAdicionada = true;
             }
+            // ====== FIM BCG ======
 
             void tentarAdicionar(StatusVacina status, int quantidade)
             {
@@ -125,9 +123,7 @@ namespace DoseEmDia.Controllers
                     tentativas++;
 
                     var candidatos = elegiveis
-                        .Where(e => countPorNome.TryGetValue(e.Nome, out var cnt)
-                                    ? cnt < maxPorNome[e.Nome]
-                                    : true) 
+                        .Where(e => countPorNome.TryGetValue(e.Nome, out var cnt) ? cnt < maxPorNome[e.Nome] : true)
                         .ToList();
                     if (candidatos.Count == 0) break;
 
@@ -135,10 +131,15 @@ namespace DoseEmDia.Controllers
                     var vacina = CriarVacinaParaStatus(esquema, status, hoje, nascimento, rand);
                     if (vacina == null) continue;
 
-                    if (!countPorNome.ContainsKey(vacina.Nome))
-                        countPorNome[vacina.Nome] = 0;
-                    if (!maxPorNome.ContainsKey(vacina.Nome))
-                        maxPorNome[vacina.Nome] = 1;
+                    if (!countPorNome.ContainsKey(vacina.Nome)) countPorNome[vacina.Nome] = 0;
+                    if (!maxPorNome.ContainsKey(vacina.Nome)) maxPorNome[vacina.Nome] = 1;
+
+                    // Evitar duplicar BCG por segurança
+                    if (vacina.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase) &&
+                        lista.Any(v => v.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        continue;
+                    }
 
                     if (countPorNome[vacina.Nome] < maxPorNome[vacina.Nome])
                     {
@@ -149,11 +150,13 @@ namespace DoseEmDia.Controllers
                 }
             }
 
-            tentarAdicionar(StatusVacina.Aplicada, QT_APLICADAS);
             tentarAdicionar(StatusVacina.EmAtraso, QT_ATRASO);
             tentarAdicionar(StatusVacina.AVencer, QT_AVENCER);
 
-            int faltantes = alvoTotal - lista.Count;
+            int aplicadasRestantes = Math.Max(0, QT_APLICADAS - (bcgAdicionada ? 1 : 0));
+            tentarAdicionar(StatusVacina.Aplicada, aplicadasRestantes);
+
+            int faltantes = Math.Max(0, alvoTotal - lista.Count);
             tentarAdicionar(StatusVacina.Aplicada, faltantes);
 
             AplicarStatusComBaseNaValidade(lista);
