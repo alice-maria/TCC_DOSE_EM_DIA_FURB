@@ -367,111 +367,104 @@ public class UsuarioService
 
     public async Task AtualizarUsuario(int id, AtualizarUsuario request, CancellationToken ct = default)
     {
-        var usuario = await _context.Usuario
-            .Include(u => u.Endereco)
-                .ThenInclude(e => e.Cep)
-            .FirstOrDefaultAsync(u => u.IdUser == id, ct);
-
-        if (usuario is null)
-            throw new UsuarioException.UsuarioNaoEncontradoException(id);
-
-        if (!string.IsNullOrWhiteSpace(request.Nome))
-            usuario.Nome = request.Nome.Trim();
-
-        if (request.DataNascimento.HasValue)
-            usuario.DataNascimento = request.DataNascimento.Value;
-
-        if (!string.IsNullOrWhiteSpace(request.Telefone))
-            usuario.Telefone = FormatacaoHelper.FormataTelefone(request.Telefone);
-
-        if (!string.IsNullOrWhiteSpace(request.Sexo))
-            usuario.Sexo = request.Sexo.Trim();
-
-        if (!string.IsNullOrWhiteSpace(request.Email))
+        var strategy = _context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
-            var emailNovo = request.Email.Trim().ToLowerInvariant();
-            if (!string.Equals(usuario.Email, emailNovo, StringComparison.OrdinalIgnoreCase))
+            await using var tx = await _context.Database.BeginTransactionAsync(ct);
+
+            var usuario = await _context.Usuario
+                .Include(u => u.Endereco)
+                    .ThenInclude(e => e.Cep)
+                .FirstOrDefaultAsync(u => u.IdUser == id, ct);
+
+            if (usuario is null)
+                throw new UsuarioException.UsuarioNaoEncontradoException(id);
+
+            if (!string.IsNullOrWhiteSpace(request.Nome))
+                usuario.Nome = request.Nome.Trim();
+
+            if (request.DataNascimento.HasValue)
+                usuario.DataNascimento = request.DataNascimento.Value;
+
+            if (!string.IsNullOrWhiteSpace(request.Telefone))
+                usuario.Telefone = FormatacaoHelper.FormataTelefone(request.Telefone);
+
+            if (!string.IsNullOrWhiteSpace(request.Sexo))
+                usuario.Sexo = request.Sexo.Trim();
+
+            if (!string.IsNullOrWhiteSpace(request.Email))
             {
-                var existe = await _context.Usuario
-                    .AnyAsync(u => u.IdUser != id && EF.Functions.ILike(u.Email, emailNovo), ct);
-                if (existe)
-                    throw new UsuarioException.EmailJaCadastradoException(emailNovo);
-
-                usuario.Email = emailNovo;
-            }
-        }
-
-        if (request.Endereco is not null)
-        {
-            var reqCep = request.Endereco.CEP;
-            var reqLogradouro = request.Endereco.Logradouro;
-            var reqNumero = request.Endereco.Numero;
-            var reqBairro = request.Endereco.Bairro;
-
-            if (!string.IsNullOrWhiteSpace(reqCep))
-            {
-                var cepCodigo = NormalizaCep(reqCep);
-                Cep cepAlvo = await _context.Cep.FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct)
-                              ?? new Cep { Codigo = cepCodigo };
-
-                if (usuario.Endereco is null)
+                var emailNovo = request.Email.Trim().ToLowerInvariant();
+                if (!string.Equals(usuario.Email, emailNovo, StringComparison.OrdinalIgnoreCase))
                 {
+                    var existe = await _context.Usuario
+                        .AnyAsync(u => u.IdUser != id && EF.Functions.ILike(u.Email, emailNovo), ct);
+                    if (existe)
+                        throw new UsuarioException.EmailJaCadastradoException(emailNovo);
+
+                    usuario.Email = emailNovo;
+                }
+            }
+
+            if (request.Endereco is not null)
+            {
+                var reqCep = request.Endereco.CEP;
+                var reqLograd = request.Endereco.Logradouro;
+                var reqNumero = request.Endereco.Numero;
+                var reqBairro = request.Endereco.Bairro;
+
+                var houveAlgumCampo = !string.IsNullOrWhiteSpace(reqCep)
+                                   || !string.IsNullOrWhiteSpace(reqLograd)
+                                   || !string.IsNullOrWhiteSpace(reqNumero)
+                                   || !string.IsNullOrWhiteSpace(reqBairro);
+
+                if (houveAlgumCampo)
+                {
+                    if (string.IsNullOrWhiteSpace(reqCep))
+                        throw new ArgumentException("Para atualizar o endereço é obrigatório informar o CEP.");
                     if (string.IsNullOrWhiteSpace(reqNumero))
-                        throw new ArgumentException("Para criar endereço é obrigatório informar o Número.");
+                        throw new ArgumentException("Para atualizar o endereço é obrigatório informar o Número.");
 
-                    usuario.Endereco = new Endereco
-                    {
-                        Cep = cepAlvo,
-                        Logradouro = reqLogradouro?.Trim(),
-                        Numero = reqNumero.Trim()
-                    };
-                }
-                else
-                {
-                    usuario.Endereco.Cep = cepAlvo;
+                    var cepCodigo = NormalizaCep(reqCep);
 
-                    if (!string.IsNullOrWhiteSpace(reqLogradouro))
-                        usuario.Endereco.Logradouro = reqLogradouro.Trim();
-
-                    if (!string.IsNullOrWhiteSpace(reqNumero))
-                        usuario.Endereco.Numero = reqNumero.Trim();
-                }
-
-                if (!string.IsNullOrWhiteSpace(reqBairro))
-                {
-                    usuario.Endereco.Cep.Bairro = reqBairro.Trim();
-                }
-            }
-            else
-            {
-                if (usuario.Endereco is null)
-                {
-                    if (!string.IsNullOrWhiteSpace(reqLogradouro) ||
-                        !string.IsNullOrWhiteSpace(reqNumero) ||
-                        !string.IsNullOrWhiteSpace(reqBairro))
-                    {
-                        throw new ArgumentException("Para criar endereço é obrigatório informar o CEP.");
-                    }
-                }
-                else
-                {
-                    if (!string.IsNullOrWhiteSpace(reqLogradouro))
-                        usuario.Endereco.Logradouro = reqLogradouro.Trim();
-
-                    if (!string.IsNullOrWhiteSpace(reqNumero))
-                        usuario.Endereco.Numero = reqNumero.Trim();
+                    var cepAlvo = await _context.Cep
+                                    .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct)
+                                  ?? new Cep { Codigo = cepCodigo };
 
                     if (!string.IsNullOrWhiteSpace(reqBairro))
+                        cepAlvo.Bairro = reqBairro.Trim();
+
+                    var novoEnd = new Endereco
                     {
-                        if (usuario.Endereco.Cep is null)
-                            throw new InvalidOperationException("Endereço sem CEP associado.");
-                        usuario.Endereco.Cep.Bairro = reqBairro.Trim();
+                        Cep = cepAlvo,                             
+                        Logradouro = string.IsNullOrWhiteSpace(reqLograd) ? usuario.Endereco?.Logradouro : reqLograd.Trim(),
+                        Numero = reqNumero.Trim()
+                    };
+
+                    _context.Endereco.Add(novoEnd);
+                    await _context.SaveChangesAsync(ct); 
+
+                    var antigoEnd = usuario.Endereco;
+
+                    usuario.Endereco = novoEnd;
+                    await _context.SaveChangesAsync(ct);
+
+                    if (antigoEnd is not null)
+                    {
+                        var aindaEmUso = await _context.Usuario
+                            .AnyAsync(u => u.EnderecoId == antigoEnd.IdEndereco, ct);
+
+                        if (!aindaEmUso)
+                        {
+                            _context.Endereco.Remove(antigoEnd);
+                            await _context.SaveChangesAsync(ct);
+                        }
                     }
                 }
             }
-        }
 
-        await _context.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+        });
     }
 
     [HttpGet("{id}")]
