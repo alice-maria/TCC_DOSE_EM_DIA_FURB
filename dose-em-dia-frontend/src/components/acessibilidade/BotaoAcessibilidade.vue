@@ -159,7 +159,6 @@ export default {
 }
 
 .acessibilidade-menu {
-  position: absolute;
   right: 56px;
   top: 0;
   display: flex;
@@ -247,32 +246,40 @@ export default {
   color: #fff;
 }
 
+/* MOBILE */
 @media (max-width: 600px) {
   .acessibilidade-container {
+    position: fixed;
     right: 12px;
-    bottom: 520px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 9999;
   }
 
-  .acessibilidade-wrap .acessibilidade-tooltip {
-    display: none;
-  }
+  .acessibilidade-wrap { position: static; }
+  .acessibilidade-wrap .acessibilidade-tooltip { display: none; }
 
   .acessibilidade-menu {
-    top: auto;
-    bottom: 56px;
-    right: 0;
-    min-width: 0;
+    position: fixed !important;
+    right: 12px;
+    bottom: calc(72px + env(safe-area-inset-bottom)); /* 56px do botão + margem */
     width: min(92vw, 380px);
+    min-width: 0;
     padding: 10px;
     gap: 8px;
     border-radius: 12px;
     box-shadow: var(--acc-shadow-sm);
+    z-index: 10000;
+
+    max-height: calc(100dvh - 120px);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .acessibilidade-menu button {
     padding: 12px 10px;
     font-size: 16px;
     border-radius: 10px;
+    min-height: 44px; 
   }
 
   .icone-menu {
@@ -283,9 +290,43 @@ export default {
   }
 }
 
-@media (max-width: 360px) {
-  .acessibilidade-menu {
-    width: 94vw;
+@media (max-width: 380px) {
+  .acessibilidade-container {
+    right: 8px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
   }
+
+  .acessibilidade-botao {
+    width: 44px;
+    height: 44px; 
+  }
+
+  .acessibilidade-menu {
+    right: 8px;
+    bottom: calc(60px + env(safe-area-inset-bottom)); 
+    width: 96vw;
+    padding: 8px;
+    gap: 6px;
+    border-radius: 10px;
+    max-height: calc(100dvh - 96px);
+  }
+
+  .acessibilidade-menu button {
+    padding: 10px 8px;
+    font-size: 15px;
+    border-radius: 8px;
+    min-height: 42px;
+  }
+
+  .icone-menu {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+  }
+}
+
+@media (max-width: 340px) {
+  .acessibilidade-menu { width: 98vw; }
+  .acessibilidade-menu button { font-size: 14.5px; }
 }
 </style>

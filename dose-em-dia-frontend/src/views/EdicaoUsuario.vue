@@ -308,16 +308,25 @@ export default {
       try {
         const id = Number(this.usuario?.idUser);
         if (!Number.isInteger(id)) {
-          this.erro = "ID do usuário inválido."; this.mostrarErro = true; return;
+          this.erro = "ID do usuário inválido.";
+          this.mostrarErro = true;
+          return;
         }
 
-        const payload = {};
-
         const trim = (v) => (v ?? "").toString().trim();
-        if (trim(this.form.nome) !== trim(this.usuario?.nome)) payload.nome = trim(this.form.nome);
-        if (trim(this.form.email).toLowerCase() !== trim(this.usuario?.email).toLowerCase()) payload.email = trim(this.form.email);
-        if (trim(this.form.telefone) !== trim(this.usuario?.telefone)) payload.telefone = trim(this.form.telefone);
-        if (trim(this.form.sexo) !== trim(this.usuario?.sexo)) payload.sexo = trim(this.form.sexo);
+
+        const payload = {};
+        if (trim(this.form.nome) && trim(this.form.nome) !== trim(this.usuario?.nome))
+          payload.nome = trim(this.form.nome);
+
+        if (trim(this.form.email).toLowerCase() !== trim(this.usuario?.email).toLowerCase())
+          payload.email = trim(this.form.email);
+
+        if (trim(this.form.telefone) !== trim(this.usuario?.telefone))
+          payload.telefone = trim(this.form.telefone);
+
+        if (trim(this.form.sexo) !== trim(this.usuario?.sexo))
+          payload.sexo = trim(this.form.sexo);
 
         const origEnd = {
           cep: this.usuario?.endereco?.cep?.codigo || "",
@@ -328,39 +337,60 @@ export default {
         };
 
         const formEnd = {
-          cep: this.form.endereco.cep || "",
-          logradouro: this.form.endereco.logradouro || "",
-          numero: this.form.endereco.numero || "",
-          bairro: this.form.endereco.bairro || ""
+          cep: trim(this.form.endereco.cep),
+          logradouro: trim(this.form.endereco.logradouro),
+          numero: trim(this.form.endereco.numero),
+          bairro: trim(this.form.endereco.bairro)
         };
 
-        const endPayload = {};
+        const endMudou =
+          (formEnd.cep && formEnd.cep !== origEnd.cep) ||
+          (formEnd.logradouro && formEnd.logradouro !== origEnd.logradouro) ||
+          (formEnd.numero && formEnd.numero !== origEnd.numero) ||
+          (formEnd.bairro && formEnd.bairro !== origEnd.bairro);
 
-        const cep8 = (formEnd.cep || "").replace(/\D/g, "");
-        const cepMudou = formEnd.cep && formEnd.cep !== origEnd.cep;
+        if (endMudou) {
+          const cep8 = (formEnd.cep || origEnd.cep || "").replace(/\D/g, "");
 
-        if (cepMudou) endPayload.CEP = cep8;
-        if (trim(formEnd.logradouro) && trim(formEnd.logradouro) !== trim(origEnd.logradouro)) endPayload.Logradouro = trim(formEnd.logradouro);
-        if (trim(formEnd.numero) && trim(formEnd.numero) !== trim(origEnd.numero)) endPayload.Numero = trim(formEnd.numero);
-        if (trim(formEnd.bairro) && trim(formEnd.bairro) !== trim(origEnd.bairro)) endPayload.Bairro = trim(formEnd.bairro);
+          if (!origEnd.existe) {
+            if (!cep8 || cep8.length !== 8) {
+              this.erro = "Para criar endereço, informe um CEP válido (8 dígitos).";
+              this.mostrarErro = true;
+              return;
+            }
+            if (!formEnd.numero) {
+              this.erro = "Para criar endereço, informe o Número.";
+              this.mostrarErro = true;
+              return;
+            }
+          } else {
+            if (formEnd.cep && cep8.length !== 8) {
+              this.erro = "CEP inválido. Use 8 dígitos.";
+              this.mostrarErro = true;
+              return;
+            }
+          }
 
-        const querCriarEndereco = !origEnd.existe &&
-          (trim(formEnd.logradouro) || trim(formEnd.numero) || trim(formEnd.bairro));
+          const endPayload = {};
 
-        if (querCriarEndereco && !cep8) {
-          this.erro = "Para criar endereço, informe um CEP válido (8 dígitos).";
-          this.mostrarErro = true;
-          return;
-        }
+          if (cep8) endPayload.CEP = cep8; 
 
-        if (endPayload.CEP && cep8.length !== 8) {
-          this.erro = "CEP inválido. Use 8 dígitos.";
-          this.mostrarErro = true;
-          return;
-        }
+          if (formEnd.logradouro && formEnd.logradouro !== origEnd.logradouro)
+            endPayload.Logradouro = formEnd.logradouro;
 
-        if (Object.keys(endPayload).length > 0) {
-          payload.endereco = endPayload;
+          if (formEnd.numero && formEnd.numero !== origEnd.numero)
+            endPayload.Numero = formEnd.numero;
+
+          if (formEnd.bairro && formEnd.bairro !== origEnd.bairro)
+            endPayload.Bairro = formEnd.bairro;
+
+          if (!origEnd.existe) {
+            if (!endPayload.Logradouro && origEnd.logradouro) endPayload.Logradouro = origEnd.logradouro;
+            if (!endPayload.Numero && origEnd.numero) endPayload.Numero = origEnd.numero;
+          }
+
+          if (Object.keys(endPayload).length > 0)
+            payload.endereco = endPayload;
         }
 
         if (Object.keys(payload).length === 0) {
@@ -369,7 +399,9 @@ export default {
           return;
         }
 
-        const resp = await api.patch(`/api/usuario/alterarDados/${id}`, payload);
+        const resp = await api.patch(`/api/usuario/alterarDados/${id}`, payload, {
+          headers: { "Content-Type": "application/json" }
+        });
 
         if (resp.status === 200 || resp.status === 204) {
           this.editando = false;
@@ -378,7 +410,7 @@ export default {
           setTimeout(() => (this.dialogSucesso = false), 1500);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Erro ao salvar:", error?.response || error);
         this.erro =
           error?.response?.data?.message ??
           error?.response?.data ??
