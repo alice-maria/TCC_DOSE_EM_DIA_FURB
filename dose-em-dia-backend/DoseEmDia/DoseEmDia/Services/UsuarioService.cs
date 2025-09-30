@@ -380,6 +380,7 @@ public class UsuarioService
             if (usuario is null)
                 throw new UsuarioException.UsuarioNaoEncontradoException(id);
 
+            // Dados básicos
             if (!string.IsNullOrWhiteSpace(request.Nome))
                 usuario.Nome = request.Nome.Trim();
 
@@ -399,6 +400,7 @@ public class UsuarioService
                 {
                     var existe = await _context.Usuario
                         .AnyAsync(u => u.IdUser != id && EF.Functions.ILike(u.Email, emailNovo), ct);
+
                     if (existe)
                         throw new UsuarioException.EmailJaCadastradoException(emailNovo);
 
@@ -406,6 +408,7 @@ public class UsuarioService
                 }
             }
 
+            // Endereço
             if (request.Endereco is not null)
             {
                 var reqCep = request.Endereco.CEP;
@@ -421,19 +424,72 @@ public class UsuarioService
 
                 if (houveAlgumCampo)
                 {
-                    if (usuario.Endereco is not null)
+                    if (usuario.Endereco is null)
                     {
+                        // Primeiro cadastro de endereço exige CEP e Número
+                        if (string.IsNullOrWhiteSpace(reqCep) || string.IsNullOrWhiteSpace(reqNumero))
+                            throw new Exception("Para cadastrar o endereço pela primeira vez, informe CEP e Número.");
+
+                        var cepCodigo = NormalizaCep(reqCep);
+
+                        // Garante que CidadeId válido seja usado (exemplo: herda da cidade padrão ou precisa resolver via ViaCEP)
+                        var cidadeDefault = await _context.Cidade.FirstOrDefaultAsync(ct)
+                            ?? throw new Exception("Nenhuma cidade padrão encontrada. Informe cidade/UF ao cadastrar CEP.");
+
+                        var cepAlvo = await _context.Cep
+                            .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
+
+                        if (cepAlvo is null)
+                        {
+                            cepAlvo = new Cep
+                            {
+                                Codigo = cepCodigo,
+                                Bairro = reqBairro?.Trim(),
+                                CidadeId = cidadeDefault.IdCidade
+                            };
+                            _context.Cep.Add(cepAlvo);
+                        }
+
+                        var novoEnd = new Endereco
+                        {
+                            Cep = cepAlvo,
+                            Logradouro = (reqLograd ?? string.Empty).Trim(),
+                            Numero = reqNumero.Trim()
+                        };
+
+                        usuario.Endereco = novoEnd;
+                        _context.Endereco.Add(novoEnd);
+                    }
+                    else
+                    {
+                        // Atualização in-place
                         var end = usuario.Endereco;
 
                         if (!string.IsNullOrWhiteSpace(reqCep))
                         {
                             var cepCodigo = NormalizaCep(reqCep);
                             var cepAlvo = await _context.Cep
-                                .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct)
-                                ?? new Cep { Codigo = cepCodigo };
+                                .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
 
-                            if (!string.IsNullOrWhiteSpace(reqBairro))
+                            if (cepAlvo is null)
+                            {
+                                // Herda cidade do CEP atual
+                                var cidadeId = end.Cep?.CidadeId;
+                                if (cidadeId is null || cidadeId == 0)
+                                    throw new Exception("Não foi possível associar o CEP a uma cidade válida.");
+
+                                cepAlvo = new Cep
+                                {
+                                    Codigo = cepCodigo,
+                                    Bairro = reqBairro?.Trim(),
+                                    CidadeId = cidadeId.Value
+                                };
+                                _context.Cep.Add(cepAlvo);
+                            }
+                            else if (!string.IsNullOrWhiteSpace(reqBairro))
+                            {
                                 cepAlvo.Bairro = reqBairro.Trim();
+                            }
 
                             end.Cep = cepAlvo;
                         }
@@ -448,38 +504,12 @@ public class UsuarioService
                         if (!string.IsNullOrWhiteSpace(reqNumero))
                             end.Numero = reqNumero.Trim();
 
-                        _context.Endereco.Update(end); 
-                        await _context.SaveChangesAsync(ct);
-                    }
-                    else
-                    {
-                        if (string.IsNullOrWhiteSpace(reqCep) || string.IsNullOrWhiteSpace(reqNumero))
-                            throw new Exception("Para cadastrar o endereço pela primeira vez, informe CEP e Número.");
-
-                        var cepCodigo = NormalizaCep(reqCep);
-                        var cepAlvo = await _context.Cep
-                            .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct)
-                            ?? new Cep { Codigo = cepCodigo };
-
-                        if (!string.IsNullOrWhiteSpace(reqBairro))
-                            cepAlvo.Bairro = reqBairro.Trim();
-
-                        var novoEnd = new Endereco
-                        {
-                            Cep = cepAlvo,                                  
-                            Logradouro = (reqLograd ?? string.Empty).Trim(),       
-                            Numero = reqNumero!.Trim()                        
-                        };
-
-                        _context.Endereco.Add(novoEnd);
-                        await _context.SaveChangesAsync(ct);
-
-                        usuario.Endereco = novoEnd;
-                        await _context.SaveChangesAsync(ct);
+                        _context.Endereco.Update(end);
                     }
                 }
             }
 
+            await _context.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
         });
     }
