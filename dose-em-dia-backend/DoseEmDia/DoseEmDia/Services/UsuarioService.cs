@@ -413,7 +413,6 @@ public class UsuarioService
                 var reqNumero = request.Endereco.Numero;
                 var reqBairro = request.Endereco.Bairro;
 
-                // só entra se houver pelo menos um campo (não força CEP/Numero)
                 var houveAlgumCampo =
                     !string.IsNullOrWhiteSpace(reqCep) ||
                     !string.IsNullOrWhiteSpace(reqLograd) ||
@@ -422,47 +421,61 @@ public class UsuarioService
 
                 if (houveAlgumCampo)
                 {
-                    Cep? cepAlvo = null;
-
-                    if (!string.IsNullOrWhiteSpace(reqCep))
+                    if (usuario.Endereco is not null)
                     {
+                        var end = usuario.Endereco;
+
+                        if (!string.IsNullOrWhiteSpace(reqCep))
+                        {
+                            var cepCodigo = NormalizaCep(reqCep);
+                            var cepAlvo = await _context.Cep
+                                .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct)
+                                ?? new Cep { Codigo = cepCodigo };
+
+                            if (!string.IsNullOrWhiteSpace(reqBairro))
+                                cepAlvo.Bairro = reqBairro.Trim();
+
+                            end.Cep = cepAlvo;
+                        }
+                        else if (!string.IsNullOrWhiteSpace(reqBairro))
+                        {
+                            end.Cep.Bairro = reqBairro.Trim();
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(reqLograd))
+                            end.Logradouro = reqLograd.Trim();
+
+                        if (!string.IsNullOrWhiteSpace(reqNumero))
+                            end.Numero = reqNumero.Trim();
+
+                        _context.Endereco.Update(end); 
+                        await _context.SaveChangesAsync(ct);
+                    }
+                    else
+                    {
+                        if (string.IsNullOrWhiteSpace(reqCep) || string.IsNullOrWhiteSpace(reqNumero))
+                            throw new Exception("Para cadastrar o endereço pela primeira vez, informe CEP e Número.");
+
                         var cepCodigo = NormalizaCep(reqCep);
-                        cepAlvo = await _context.Cep
+                        var cepAlvo = await _context.Cep
                             .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct)
                             ?? new Cep { Codigo = cepCodigo };
 
                         if (!string.IsNullOrWhiteSpace(reqBairro))
                             cepAlvo.Bairro = reqBairro.Trim();
-                    }
 
-                    var novoEnd = new Endereco
-                    {
-                        Cep = cepAlvo ?? usuario.Endereco?.Cep, 
-                        Logradouro = string.IsNullOrWhiteSpace(reqLograd)
-                            ? usuario.Endereco?.Logradouro
-                            : reqLograd.Trim(),
-                        Numero = string.IsNullOrWhiteSpace(reqNumero)
-                            ? usuario.Endereco?.Numero
-                            : reqNumero.Trim()
-                    };
-
-                    _context.Endereco.Add(novoEnd);
-                    await _context.SaveChangesAsync(ct);
-
-                    var antigoEnd = usuario.Endereco;
-                    usuario.Endereco = novoEnd;
-                    await _context.SaveChangesAsync(ct);
-
-                    if (antigoEnd is not null)
-                    {
-                        var aindaEmUso = await _context.Usuario
-                            .AnyAsync(u => u.EnderecoId == antigoEnd.IdEndereco, ct);
-
-                        if (!aindaEmUso)
+                        var novoEnd = new Endereco
                         {
-                            _context.Endereco.Remove(antigoEnd);
-                            await _context.SaveChangesAsync(ct);
-                        }
+                            Cep = cepAlvo,                                  
+                            Logradouro = (reqLograd ?? string.Empty).Trim(),       
+                            Numero = reqNumero!.Trim()                        
+                        };
+
+                        _context.Endereco.Add(novoEnd);
+                        await _context.SaveChangesAsync(ct);
+
+                        usuario.Endereco = novoEnd;
+                        await _context.SaveChangesAsync(ct);
                     }
                 }
             }
