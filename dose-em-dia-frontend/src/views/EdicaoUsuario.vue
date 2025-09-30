@@ -110,7 +110,7 @@
         <label>Número:</label>
         <div>
           <span v-if="!editando">{{ usuario.endereco?.numero || 'Não informado' }}</span>
-          <input v-else v-model="form.endereco.numero" type="number" class="form-control">
+          <input v-else v-model="form.endereco.numero" type="text" class="form-control">
         </div>
       </div>
       <v-divider />
@@ -370,19 +370,19 @@ export default {
           }
 
           const endPayload = {};
-          if (cep8) endPayload.cep = cep8;
 
+          if (cep8) endPayload.cep = cep8;
           if (formEnd.logradouro && formEnd.logradouro !== origEnd.logradouro)
             endPayload.logradouro = formEnd.logradouro;
 
           if (formEnd.numero && String(formEnd.numero) !== String(origEnd.numero)) {
-            const num = Number(formEnd.numero);
-            if (!Number.isFinite(num) || num <= 0) {
+            const numeroStr = String(formEnd.numero).trim();
+            if (!numeroStr) {
               this.erro = "Número inválido.";
               this.mostrarErro = true;
               return;
             }
-            endPayload.numero = num;
+            endPayload.numero = numeroStr;
           }
 
           if (formEnd.bairro && formEnd.bairro !== origEnd.bairro)
@@ -390,11 +390,11 @@ export default {
 
           if (!origEnd.existe) {
             if (!endPayload.logradouro && origEnd.logradouro) endPayload.logradouro = origEnd.logradouro;
-            if (endPayload.numero == null && origEnd.numero) endPayload.numero = Number(origEnd.numero);
+            if (endPayload.numero == null && origEnd.numero) endPayload.numero = String(origEnd.numero);
           }
 
           if (Object.keys(endPayload).length > 0) {
-            payload.endereco = endPayload;
+            payload.endereco = endPayload; 
           }
         }
 
