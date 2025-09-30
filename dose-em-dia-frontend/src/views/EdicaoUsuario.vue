@@ -110,7 +110,7 @@
         <label>Número:</label>
         <div>
           <span v-if="!editando">{{ usuario.endereco?.numero || 'Não informado' }}</span>
-          <input v-else v-model="form.endereco.numero" type="text" class="form-control">
+          <input v-else v-model="form.endereco.numero" type="number" class="form-control">
         </div>
       </div>
       <v-divider />
@@ -363,34 +363,39 @@ export default {
               this.mostrarErro = true;
               return;
             }
-          } else {
-            if (formEnd.cep && cep8.length !== 8) {
-              this.erro = "CEP inválido. Use 8 dígitos.";
-              this.mostrarErro = true;
-              return;
-            }
+          } else if (formEnd.cep && cep8.length !== 8) {
+            this.erro = "CEP inválido. Use 8 dígitos.";
+            this.mostrarErro = true;
+            return;
           }
 
           const endPayload = {};
-
-          if (cep8) endPayload.CEP = cep8; 
+          if (cep8) endPayload.cep = cep8;
 
           if (formEnd.logradouro && formEnd.logradouro !== origEnd.logradouro)
-            endPayload.Logradouro = formEnd.logradouro;
+            endPayload.logradouro = formEnd.logradouro;
 
-          if (formEnd.numero && formEnd.numero !== origEnd.numero)
-            endPayload.Numero = formEnd.numero;
-
-          if (formEnd.bairro && formEnd.bairro !== origEnd.bairro)
-            endPayload.Bairro = formEnd.bairro;
-
-          if (!origEnd.existe) {
-            if (!endPayload.Logradouro && origEnd.logradouro) endPayload.Logradouro = origEnd.logradouro;
-            if (!endPayload.Numero && origEnd.numero) endPayload.Numero = origEnd.numero;
+          if (formEnd.numero && String(formEnd.numero) !== String(origEnd.numero)) {
+            const num = Number(formEnd.numero);
+            if (!Number.isFinite(num) || num <= 0) {
+              this.erro = "Número inválido.";
+              this.mostrarErro = true;
+              return;
+            }
+            endPayload.numero = num;
           }
 
-          if (Object.keys(endPayload).length > 0)
+          if (formEnd.bairro && formEnd.bairro !== origEnd.bairro)
+            endPayload.bairro = formEnd.bairro;
+
+          if (!origEnd.existe) {
+            if (!endPayload.logradouro && origEnd.logradouro) endPayload.logradouro = origEnd.logradouro;
+            if (endPayload.numero == null && origEnd.numero) endPayload.numero = Number(origEnd.numero);
+          }
+
+          if (Object.keys(endPayload).length > 0) {
             payload.endereco = endPayload;
+          }
         }
 
         if (Object.keys(payload).length === 0) {

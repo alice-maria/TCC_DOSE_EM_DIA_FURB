@@ -115,218 +115,177 @@ export default {
 </script>
 
 <style scoped>
-:root {
-  --acc-bg: #ffffff;
-  --acc-surface: #f5f6f8;
-  --acc-border: #8c8c8c;
-  --acc-text: #111827;
-  --acc-primary: #3084ee;
-  --acc-shadow: 0 4px 16px rgba(17, 24, 39, 0.12), 0 1px 2px rgba(0, 0, 0, 0.05);
-  --acc-shadow-sm: 0 2px 8px rgba(17, 24, 39, 0.10);
-}
+  :root {
+    --acc-bg: #ffffff;
+    --acc-surface: #f5f6f8;
+    --acc-border: #8c8c8c;
+    --acc-text: #111827;
+    --acc-primary: #3084ee;
+    --acc-shadow: 0 4px 16px rgba(17, 24, 39, 0.12), 0 1px 2px rgba(0, 0, 0, 0.05);
+    --acc-shadow-sm: 0 2px 8px rgba(17, 24, 39, 0.10);
+  }
 
-.acessibilidade-container {
-  position: fixed;
-  right: 12px;
-  bottom: 405px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  z-index: 9999;
-}
-
-.acessibilidade-botao {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9px;
-  background: linear-gradient(180deg, #3b8df0, #2a79e0);
-  border: none;
-  cursor: pointer;
-  box-shadow: var(--acc-shadow);
-  position: relative;
-  z-index: 10002;
-}
-
-.icone {
-  width: 28px !important;
-  height: 28px !important;
-  object-fit: contain;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .2));
-  pointer-events: none;
-}
-
-.acessibilidade-menu {
-  right: 56px;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  min-width: 560px;
-  min-height: 420px;
-  background: #FFDBBB;
-  border: 1px solid var(--acc-border);
-  border-radius: 18px;
-  box-shadow: var(--acc-shadow);
-  z-index: 10000;
-  gap: 0;
-}
-
-.acessibilidade-menu button {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  padding: 22px 18px;
-  font-size: 22px;
-  color: var(--acc-text);
-  background: #FFDBBB;
-  border: none;
-  border-radius: 0;
-  border-bottom: 1px solid black;
-  cursor: pointer;
-  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
-  text-align: left;
-}
-
-.acessibilidade-menu button:last-child {
-  border-bottom: none;
-}
-
-.acessibilidade-menu button:hover {
-  background: #FF9C4A;
-}
-
-.icone-menu {
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
-  margin-right: 2px;
-}
-
-.acessibilidade-wrap {
-  position: relative;
-  display: inline-block;
-}
-
-.acessibilidade-tooltip {
-  position: absolute;
-  right: 56px;
-  top: -4px;
-  max-width: 420px;
-  min-width: 360px;
-  padding: 10px 16px;
-  background: linear-gradient(180deg, #3b8df0, #2a79e0);
-  border-radius: 10px;
-  box-shadow: 0 6px 16px rgba(17, 24, 39, .14), 0 2px 6px rgba(0, 0, 0, .06);
-  opacity: 0;
-  transform: translateY(6px) scale(0.98);
-  pointer-events: none;
-  transition: opacity .18s ease, transform .18s ease;
-  z-index: 10001;
-}
-
-.acessibilidade-wrap:hover .acessibilidade-tooltip,
-.acessibilidade-wrap:focus-within .acessibilidade-tooltip {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-.menu-aberto .acessibilidade-tooltip {
-  opacity: 0 !important;
-  transform: translateY(6px) scale(0.98) !important;
-  pointer-events: none !important;
-}
-
-.tooltip-body {
-  font-size: 13px;
-  line-height: 1.2;
-  color: #fff;
-}
-
-/* MOBILE */
-@media (max-width: 600px) {
   .acessibilidade-container {
     position: fixed;
     right: 12px;
-    bottom: calc(16px + env(safe-area-inset-bottom));
+    bottom: 405px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     z-index: 9999;
   }
 
-  .acessibilidade-wrap { position: static; }
-  .acessibilidade-wrap .acessibilidade-tooltip { display: none; }
+  .acessibilidade-botao {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: linear-gradient(180deg, #3b8df0, #2a79e0);
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--acc-shadow);
+    position: relative;
+    z-index: 10002;
+  }
+
+  .icone {
+    width: 28px !important;
+    height: 28px !important;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .2));
+    pointer-events: none;
+  }
 
   .acessibilidade-menu {
-    position: fixed !important;
-    right: 12px;
-    bottom: calc(72px + env(safe-area-inset-bottom)); /* 56px do botão + margem */
-    width: min(92vw, 380px);
-    min-width: 0;
-    padding: 10px;
-    gap: 8px;
-    border-radius: 12px;
-    box-shadow: var(--acc-shadow-sm);
+    position: absolute;
+    right: 56px;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    min-width: 560px;
+    min-height: 420px;
+    background: #FFDBBB;
+    border: 1px solid var(--acc-border);
+    border-radius: 18px;
+    box-shadow: var(--acc-shadow);
     z-index: 10000;
-
-    max-height: calc(100dvh - 120px);
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
+    gap: 0;
   }
 
   .acessibilidade-menu button {
-    padding: 12px 10px;
-    font-size: 16px;
-    border-radius: 10px;
-    min-height: 44px; 
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 22px 18px;
+    font-size: 22px;
+    color: var(--acc-text);
+    background: #FFDBBB;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid black;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+    text-align: left;
+  }
+
+  .acessibilidade-menu button:last-child {
+    border-bottom: none;
+  }
+
+  .acessibilidade-menu button:hover {
+    background: #FF9C4A;
   }
 
   .icone-menu {
-    width: 24px;
-    height: 24px;
-    flex: 0 0 24px;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
     margin-right: 2px;
   }
-}
 
-@media (max-width: 380px) {
-  .acessibilidade-container {
-    right: 8px;
-    bottom: calc(12px + env(safe-area-inset-bottom));
+  .acessibilidade-wrap {
+    position: relative;
+    display: inline-block;
   }
 
-  .acessibilidade-botao {
-    width: 44px;
-    height: 44px; 
-  }
-
-  .acessibilidade-menu {
-    right: 8px;
-    bottom: calc(60px + env(safe-area-inset-bottom)); 
-    width: 96vw;
-    padding: 8px;
-    gap: 6px;
+  .acessibilidade-tooltip {
+    position: absolute;
+    right: 56px;
+    top: -4px;
+    max-width: 420px;
+    min-width: 360px;
+    padding: 10px 16px;
+    background: linear-gradient(180deg, #3b8df0, #2a79e0);
     border-radius: 10px;
-    max-height: calc(100dvh - 96px);
+    box-shadow: 0 6px 16px rgba(17, 24, 39, .14), 0 2px 6px rgba(0, 0, 0, .06);
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+    z-index: 10001;
   }
 
-  .acessibilidade-menu button {
-    padding: 10px 8px;
-    font-size: 15px;
-    border-radius: 8px;
-    min-height: 42px;
+  .acessibilidade-wrap:hover .acessibilidade-tooltip,
+  .acessibilidade-wrap:focus-within .acessibilidade-tooltip {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 
-  .icone-menu {
-    width: 22px;
-    height: 22px;
-    flex: 0 0 22px;
+  .menu-aberto .acessibilidade-tooltip {
+    opacity: 0 !important;
+    transform: translateY(6px) scale(0.98) !important;
+    pointer-events: none !important;
   }
-}
 
-@media (max-width: 340px) {
-  .acessibilidade-menu { width: 98vw; }
-  .acessibilidade-menu button { font-size: 14.5px; }
-}
+  .tooltip-body {
+    font-size: 13px;
+    line-height: 1.2;
+    color: #fff;
+  }
+
+  @media (max-width: 600px) {
+    .acessibilidade-container {
+      right: 12px;
+      bottom: 520px;
+    }
+
+    .acessibilidade-wrap .acessibilidade-tooltip {
+      display: none;
+    }
+
+    .acessibilidade-menu {
+      top: auto;
+      bottom: 56px;
+      right: 0;
+      min-width: 0;
+      width: min(92vw, 380px);
+      padding: 10px;
+      gap: 8px;
+      border-radius: 12px;
+      box-shadow: var(--acc-shadow-sm);
+    }
+
+    .acessibilidade-menu button {
+      padding: 12px 10px;
+      font-size: 16px;
+      border-radius: 10px;
+    }
+
+    .icone-menu {
+      width: 24px;
+      height: 24px;
+      flex: 0 0 24px;
+      margin-right: 2px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .acessibilidade-menu {
+      width: 94vw;
+    }
+  }
 </style>
