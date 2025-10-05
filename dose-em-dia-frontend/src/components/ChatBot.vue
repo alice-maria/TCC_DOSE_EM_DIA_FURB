@@ -157,8 +157,6 @@
                   </button>
                   <button class="voltar" type="button" @click="subEstadoSuporte = null">Voltar</button>
                 </div>
-                <div v-if="sucesso" class="mensagem bot">{{ sucesso }}</div>
-                <div v-if="erroEnvio" class="mensagem bot">{{ erroEnvio }}</div>
               </form>
             </div>
             <div v-else-if="subEstadoSuporte === 'ajuda'">
@@ -210,8 +208,6 @@ export default {
       subEstadoSuporte: null,
       tipoMensagem: null,
       carregando: false,
-      sucesso: null,
-      erroEnvio: null,
       formEmail: {
         nome: localStorage.getItem('usuarioNome') || '',
         email: localStorage.getItem('usuarioEmail') || '',
@@ -378,7 +374,7 @@ export default {
       this.toast.timer = null;
     },
     async enviarEmailSuporte() {
-      this.carregando = true; this.sucesso = null; this.erroEnvio = null;
+      this.carregando = true; 
       try {
         const payload = {
           tipo: this.tipoMensagem,
@@ -388,12 +384,11 @@ export default {
           mensagem: this.formEmail.mensagem
         };
         await api.post(`/api/suporte/mensagem`, payload);
-        this.sucesso = 'Mensagem enviada com sucesso. Em breve entraremos em contato.';
+       
         this.formEmail.mensagem = '';
         this.abrirToast('Mensagem enviada com sucesso!', 'success');
       } catch (e) {
         console.error(e);
-        this.erroEnvio = 'Não foi possível enviar agora. Tente novamente ou use o e-mail suporte@doseemdia.com.br.';
         this.abrirToast('Falha ao enviar. Tente novamente.', 'error');
       } finally {
         this.carregando = false;

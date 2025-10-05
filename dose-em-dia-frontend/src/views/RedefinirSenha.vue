@@ -67,9 +67,16 @@
       </v-form>
     </div>
     <v-row justify="center" class="mt-4">
-      <v-btn class="btn-salvar" style="min-width: 200px;" @click="dialogConfirmacao = true" :disabled="!podeSalvar">
-        Salvar
-      </v-btn>
+      <v-tooltip :text="tooltipSalvar" location="top" :disabled="podeSalvar" open-delay="150">
+        <template #activator="{ props }">
+          <div v-bind="props">
+            <v-btn class="btn-salvar" style="min-width: 200px;" @click="dialogConfirmacao = true"
+              :disabled="!podeSalvar" aria-disabled="!podeSalvar">
+              Salvar
+            </v-btn>
+          </div>
+        </template>
+      </v-tooltip>
     </v-row>
   </v-container>
 
@@ -139,6 +146,7 @@ export default {
       dialogConfirmacao: false,
       dialogSucesso: false,
       mostrarErro: false,
+      tooltipSalvar: 'Preencha corretamente todos os campos (senha atual, nova senha com requisitos e confirmação igual) para habilitar o botão.',
       form: {
         senhaAtual: '',
         senha: '',
@@ -232,7 +240,7 @@ export default {
     },
     confirmarAlteracaoSenha() {
       this.dialogConfirmacao = false;
-      this.redefinirSenha(); 
+      this.redefinirSenha();
     }
   }
 };
@@ -374,15 +382,15 @@ export default {
 
 .btn-popupok {
   display: flex;
-  justify-content: center;  
-  align-items: center;      
+  justify-content: center;
+  align-items: center;
   margin-top: 20px;
   width: 100%;
 }
 
 .btn-popupok button {
-  background-color: #fff;   
-  color: #ff6600;           
+  background-color: #fff;
+  color: #ff6600;
   border: none;
   padding: 10px 30px;
   border-radius: 8px;

@@ -1,6 +1,5 @@
 <template>
   <div class="pagina">
-
     <header class="header" role="banner">
       <div class="logo-container" role="link" tabindex="0" aria-label="Ir para a página inicial"
         @click="$router.push('/')" @keydown.enter="$router.push('/')">
@@ -13,7 +12,6 @@
     </header>
     <div class="container-laranja">
       <div class="formulario-caixa">
-
         <v-progress-linear :model-value="percentualPreenchido" color="#b2443a" height="6" rounded class="mb-6" />
         <v-form @submit.prevent="criarConta" ref="form">
           <v-tabs v-model="abaAtiva" background-color="#fff4e1" grow @update:modelValue="onTabChange">
@@ -45,11 +43,9 @@
                 <v-text-field label="Telefone*" v-model="form.telefone" variant="outlined" v-mask="'(##) #####-####'"
                   required />
                 <v-text-field label="CPF*" v-model="form.cpf" variant="outlined" v-mask="'###.###.###-##'" required />
-
                 <v-text-field label="Data de nascimento*" v-model="dataNascimentoTexto" variant="outlined" readonly
-                  required prepend-inner-icon="mdi-calendar" @click="abrirData" @focus="abrirData"
+                  required @click="abrirData" @focus="abrirData"
                   @keydown.enter.prevent="abrirData" />
-
                 <v-dialog v-model="dateDialog" max-width="360">
                   <v-card>
                     <v-card-title class="pl-6 pt-4">Selecionar data</v-card-title>
