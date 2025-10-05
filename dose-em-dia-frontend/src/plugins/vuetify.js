@@ -4,12 +4,12 @@ import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
-import { VDatePicker } from 'vuetify/labs/VDatePicker'
+import { VDateInput } from 'vuetify/labs/VDateInput'
 
 export default createVuetify({
   components: {
     ...components, 
-    VDatePicker,   
+    VDateInput,   
   },
   directives,
   icons: {

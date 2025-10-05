@@ -45,7 +45,7 @@
                 <v-text-field label="Telefone*" v-model="form.telefone" variant="outlined" v-mask="'(##) #####-####'"
                   required />
                 <v-text-field label="CPF*" v-model="form.cpf" variant="outlined" v-mask="'###.###.###-##'" required />
-               
+
                 <v-text-field label="Data de nascimento*" v-model="dataNascimentoTexto" variant="outlined" readonly
                   required prepend-inner-icon="mdi-calendar" @click="abrirData" @focus="abrirData"
                   @keydown.enter.prevent="abrirData" />
@@ -213,7 +213,7 @@ export default {
   data() {
     return {
       dateDialog: false,
-      dateModel: null,
+      dateModel: "",
       hojeISO: new Date().toISOString().slice(0, 10),
       carregando: false,
       mostrarSenha: false,
@@ -321,23 +321,20 @@ export default {
       return `${yyyy}-${mm}-${dd}`;
     },
 
-    // Abrir/cancelar/confirmar do modal
     cancelarData() {
       this.dateDialog = false;
-      // não altera a data
     },
     confirmarData() {
       if (this.dateModel) {
-        this.form.dataNascimento = this.toISO(this.dateModel);
+        this.form.dataNascimento = this.dateModel;
       }
       this.dateDialog = false;
     },
 
-    // ⚠️ Opcional: quando abrir o modal, sincronize o valor atual
     abrirData() {
       this.dateModel = this.form.dataNascimento
-        ? new Date(this.form.dataNascimento)
-        : new Date();
+        ? this.form.dataNascimento
+        : this.toISO(new Date());
       this.dateDialog = true;
     },
     validarEmail() {
