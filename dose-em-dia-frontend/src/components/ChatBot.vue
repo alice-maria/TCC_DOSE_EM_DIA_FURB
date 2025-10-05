@@ -1,7 +1,13 @@
 <template>
   <div>
     <button class="chatbot-toggle" @click="alternarChat" ref="botao" aria-label="Abrir chatbot">
-      <img src="@/imagens/ChatBotVitta.png" alt="Abrir chatbot" />
+      <v-tooltip text="Fale com a Vitta" location="left" open-delay="150">
+        <template #activator="{ props }">
+          <button v-bind="props" class="chatbot-toggle" @click="alternarChat" ref="botao" aria-label="Abrir chatbot">
+            <img src="@/imagens/ChatBotVitta.png" alt="Abrir chatbot" />
+          </button>
+        </template>
+      </v-tooltip>
     </button>
     <div v-show="visivel" ref="chat" class="chatbot-popup chatbot" role="dialog" aria-modal="true" @click.stop>
       <transition name="chat-fade">
@@ -374,7 +380,7 @@ export default {
       this.toast.timer = null;
     },
     async enviarEmailSuporte() {
-      this.carregando = true; 
+      this.carregando = true;
       try {
         const payload = {
           tipo: this.tipoMensagem,
@@ -384,7 +390,7 @@ export default {
           mensagem: this.formEmail.mensagem
         };
         await api.post(`/api/suporte/mensagem`, payload);
-       
+
         this.formEmail.mensagem = '';
         this.abrirToast('Mensagem enviada com sucesso!', 'success');
       } catch (e) {
@@ -949,19 +955,22 @@ export default {
   border-radius: 12px;
   background: #f6f6f6;
   color: #1f1f1f;
-  box-shadow: 0 8px 22px rgba(0,0,0,.18);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .18);
   animation: toast-in .18s ease-out;
   font-family: 'Segoe UI', 'Roboto', sans-serif;
   border: 2px solid transparent;
 }
+
 .toast--success {
   background: #e9f8ef;
   border-color: #15a34a;
 }
+
 .toast--error {
   background: #fdecec;
   border-color: #dc2626;
 }
+
 .toast__dot {
   width: 10px;
   height: 10px;
@@ -970,8 +979,14 @@ export default {
   background: currentColor;
   opacity: .9;
 }
-.toast--success .toast__dot { color: #16a34a; }
-.toast--error .toast__dot { color: #dc2626; }
+
+.toast--success .toast__dot {
+  color: #16a34a;
+}
+
+.toast--error .toast__dot {
+  color: #dc2626;
+}
 
 .toast__msg {
   flex: 1 1 auto;
@@ -991,11 +1006,21 @@ export default {
   padding: 2px 6px;
   border-radius: 8px;
 }
-.toast__close:hover { background: rgba(0,0,0,.06); }
+
+.toast__close:hover {
+  background: rgba(0, 0, 0, .06);
+}
 
 @keyframes toast-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 600px) {

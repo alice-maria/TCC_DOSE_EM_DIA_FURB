@@ -146,7 +146,7 @@ export default {
       dialogConfirmacao: false,
       dialogSucesso: false,
       mostrarErro: false,
-      tooltipSalvar: 'Preencha corretamente todos os campos (senha atual, nova senha com requisitos e confirmação igual) para habilitar o botão.',
+      tooltipSalvar: 'Preencha corretamente todos os campos obrigatórios corretamente para habilitar o botão de salvar.',
       form: {
         senhaAtual: '',
         senha: '',

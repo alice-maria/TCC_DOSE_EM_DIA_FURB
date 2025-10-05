@@ -43,9 +43,8 @@
                 <v-text-field label="Telefone*" v-model="form.telefone" variant="outlined" v-mask="'(##) #####-####'"
                   required />
                 <v-text-field label="CPF*" v-model="form.cpf" variant="outlined" v-mask="'###.###.###-##'" required />
-                <v-text-field label="Data de nascimento*" v-model="dataNascimentoTexto" variant="outlined" readonly
-                  required @click="abrirData" @focus="abrirData"
-                  @keydown.enter.prevent="abrirData" />
+                <v-text-field label="Data de nascimento*" :model-value="dataNascimentoTexto" variant="outlined" readonly
+                  required @click="abrirData" @focus="abrirData" @keydown.enter.prevent="abrirData" />
                 <v-dialog v-model="dateDialog" max-width="360">
                   <v-card>
                     <v-card-title class="pl-6 pt-4">Selecionar data</v-card-title>
@@ -322,11 +321,13 @@ export default {
     },
     confirmarData() {
       if (this.dateModel) {
-        this.form.dataNascimento = this.dateModel;
+        this.form.dataNascimento =
+          this.dateModel instanceof Date
+            ? this.toISO(this.dateModel)
+            : this.dateModel;
       }
       this.dateDialog = false;
     },
-
     abrirData() {
       this.dateModel = this.form.dataNascimento
         ? this.form.dataNascimento
