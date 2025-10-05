@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using DoseEmDia.Models;
 using DoseEmDia.Models.db;
 using DoseEmDia.Controllers.Helpers;
@@ -380,7 +379,7 @@ public class UsuarioService
             if (usuario is null)
                 throw new UsuarioException.UsuarioNaoEncontradoException(id);
 
-            // Dados básicos
+            // ---------- Campos básicos ----------
             if (!string.IsNullOrWhiteSpace(request.Nome))
                 usuario.Nome = request.Nome.Trim();
 
@@ -400,7 +399,6 @@ public class UsuarioService
                 {
                     var existe = await _context.Usuario
                         .AnyAsync(u => u.IdUser != id && EF.Functions.ILike(u.Email, emailNovo), ct);
-
                     if (existe)
                         throw new UsuarioException.EmailJaCadastradoException(emailNovo);
 
@@ -408,101 +406,100 @@ public class UsuarioService
                 }
             }
 
-            // Endereço
+            // ---------- Endereço ----------
             if (request.Endereco is not null)
             {
-                var reqCep = request.Endereco.CEP;
-                var reqLograd = request.Endereco.Logradouro;
-                var reqNumero = request.Endereco.Numero;
-                var reqBairro = request.Endereco.Bairro;
+                var req = request.Endereco;
 
                 var houveAlgumCampo =
-                    !string.IsNullOrWhiteSpace(reqCep) ||
-                    !string.IsNullOrWhiteSpace(reqLograd) ||
-                    !string.IsNullOrWhiteSpace(reqNumero) ||
-                    !string.IsNullOrWhiteSpace(reqBairro);
+                    !string.IsNullOrWhiteSpace(req.CEP) ||
+                    !string.IsNullOrWhiteSpace(req.Logradouro) ||
+                    !string.IsNullOrWhiteSpace(req.Numero) ||
+                    !string.IsNullOrWhiteSpace(req.Bairro) ||
+                    req.CidadeId is not null ||
+                    !string.IsNullOrWhiteSpace(req.CidadeNome) ||
+                    !string.IsNullOrWhiteSpace(req.Uf);
 
                 if (houveAlgumCampo)
                 {
                     if (usuario.Endereco is null)
                     {
-                        // Primeiro cadastro de endereço exige CEP e Número
-                        if (string.IsNullOrWhiteSpace(reqCep) || string.IsNullOrWhiteSpace(reqNumero))
-                            throw new Exception("Para cadastrar o endereço pela primeira vez, informe CEP e Número.");
+                        // Primeiro cadastro: exige CEP e Número e uma cidade válida
+                        if (string.IsNullOrWhiteSpace(req.CEP) || string.IsNullOrWhiteSpace(req.Numero))
+                            throw new ArgumentException("Para cadastrar o endereço pela primeira vez, informe CEP e Número.");
 
-                        var cepCodigo = NormalizaCep(reqCep);
+                        var cepCodigo = NormalizaCep(req.CEP!);
 
-                        // Garante que CidadeId válido seja usado (exemplo: herda da cidade padrão ou precisa resolver via ViaCEP)
-                        var cidadeDefault = await _context.Cidade.FirstOrDefaultAsync(ct)
-                            ?? throw new Exception("Nenhuma cidade padrão encontrada. Informe cidade/UF ao cadastrar CEP.");
-
-                        var cepAlvo = await _context.Cep
+                        var cep = await _context.Cep.AsTracking()
                             .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
 
-                        if (cepAlvo is null)
+                        if (cep is null)
                         {
-                            cepAlvo = new Cep
+                            var cidadeId = await ResolverCidadeIdAsync(req, null, ct)
+                                ?? throw new ArgumentException("Informe CidadeId ou Cidade/UF para o novo CEP.");
+
+                            cep = new Cep
                             {
                                 Codigo = cepCodigo,
-                                Bairro = reqBairro?.Trim(),
-                                CidadeId = cidadeDefault.IdCidade
+                                Bairro = req.Bairro?.Trim(),
+                                CidadeId = cidadeId
                             };
-                            _context.Cep.Add(cepAlvo);
+                            _context.Cep.Add(cep);
+                        }
+                        else if (!string.IsNullOrWhiteSpace(req.Bairro))
+                        {
+                            cep.Bairro = req.Bairro!.Trim();
                         }
 
-                        var novoEnd = new Endereco
+                        usuario.Endereco = new Endereco
                         {
-                            Cep = cepAlvo,
-                            Logradouro = (reqLograd ?? string.Empty).Trim(),
-                            Numero = reqNumero.Trim()
+                            Cep = cep,
+                            Logradouro = (req.Logradouro ?? string.Empty).Trim(),
+                            Numero = req.Numero!.Trim()
                         };
-
-                        usuario.Endereco = novoEnd;
-                        _context.Endereco.Add(novoEnd);
+                        _context.Endereco.Add(usuario.Endereco);
                     }
                     else
                     {
-                        // Atualização in-place
+                        // Atualização parcial do endereço existente
                         var end = usuario.Endereco;
 
-                        if (!string.IsNullOrWhiteSpace(reqCep))
+                        if (!string.IsNullOrWhiteSpace(req.CEP))
                         {
-                            var cepCodigo = NormalizaCep(reqCep);
-                            var cepAlvo = await _context.Cep
+                            var cepCodigo = NormalizaCep(req.CEP!);
+                            var cep = await _context.Cep.AsTracking()
                                 .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
 
-                            if (cepAlvo is null)
+                            if (cep is null)
                             {
-                                // Herda cidade do CEP atual
-                                var cidadeId = end.Cep?.CidadeId;
-                                if (cidadeId is null || cidadeId == 0)
-                                    throw new Exception("Não foi possível associar o CEP a uma cidade válida.");
+                                var cidadeId = await ResolverCidadeIdAsync(req, end.Cep?.CidadeId, ct)
+                                    ?? throw new ArgumentException("Não foi possível associar o novo CEP a uma cidade. Informe CidadeId ou Cidade/UF.");
 
-                                cepAlvo = new Cep
+                                cep = new Cep
                                 {
                                     Codigo = cepCodigo,
-                                    Bairro = reqBairro?.Trim(),
-                                    CidadeId = cidadeId.Value
+                                    Bairro = req.Bairro?.Trim(),
+                                    CidadeId = cidadeId
                                 };
-                                _context.Cep.Add(cepAlvo);
+                                _context.Cep.Add(cep);
                             }
-                            else if (!string.IsNullOrWhiteSpace(reqBairro))
+                            else if (!string.IsNullOrWhiteSpace(req.Bairro))
                             {
-                                cepAlvo.Bairro = reqBairro.Trim();
+                                cep.Bairro = req.Bairro!.Trim();
                             }
 
-                            end.Cep = cepAlvo;
+                            end.Cep = cep;
                         }
-                        else if (!string.IsNullOrWhiteSpace(reqBairro))
+                        else if (!string.IsNullOrWhiteSpace(req.Bairro))
                         {
-                            end.Cep.Bairro = reqBairro.Trim();
+                            end.Cep.Bairro = req.Bairro!.Trim();
                         }
 
-                        if (!string.IsNullOrWhiteSpace(reqLograd))
-                            end.Logradouro = reqLograd.Trim();
+                        if (!string.IsNullOrWhiteSpace(req.Logradouro))
+                            end.Logradouro = req.Logradouro!.Trim();
 
-                        if (!string.IsNullOrWhiteSpace(reqNumero))
-                            end.Numero = reqNumero.Trim();
+                        if (!string.IsNullOrWhiteSpace(req.Numero))
+                            end.Numero = req.Numero!.Trim();
 
                         _context.Endereco.Update(end);
                     }
@@ -514,7 +511,6 @@ public class UsuarioService
         });
     }
 
-    [HttpGet("{id}")]
     public async Task<Usuario> ObterUsuarioPorId(int id)
     {
         var usuario = await _context.Usuario.FindAsync(id);
@@ -603,6 +599,31 @@ public class UsuarioService
 
         _context.Endereco.Add(end);
         return end;
+    }
+    private async Task<long?> ResolverCidadeIdAsync(AtualizarEndereco req, long? cidadeFallbackId, CancellationToken ct)
+    {
+        if (req.CidadeId is long cidReq && cidReq > 0)
+        {
+            var existe = await _context.Cidade.AnyAsync(c => c.IdCidade == cidReq, ct);
+            if (!existe) throw new ArgumentException("CidadeId informado não existe.");
+            return cidReq;
+        }
+
+        if (!string.IsNullOrWhiteSpace(req.CidadeNome) && !string.IsNullOrWhiteSpace(req.Uf))
+        {
+            var cid = await _context.Cidade
+                .Where(c => EF.Functions.ILike(c.Nome, req.CidadeNome!.Trim()))
+                .Where(c => c.Estado.Uf == req.Uf!.Trim().ToUpperInvariant())
+                .Select(c => c.IdCidade)               
+                .FirstOrDefaultAsync(ct);              
+
+            if (cid > 0L) return cid;
+            throw new ArgumentException("Cidade/UF informados não encontrados.");
+        }
+
+        if (cidadeFallbackId is long fb && fb > 0L) return fb;
+
+        return null;
     }
 }
 

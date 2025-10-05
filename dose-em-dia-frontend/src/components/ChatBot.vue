@@ -179,6 +179,12 @@
           </div>
         </div>
       </transition>
+      <div v-if="toast.show" class="toast" :class="toast.type === 'success' ? 'toast--success' : 'toast--error'"
+        role="alert" aria-live="assertive">
+        <span class="toast__dot" aria-hidden="true"></span>
+        <span class="toast__msg">{{ toast.message }}</span>
+        <button class="toast__close" @click="fecharToast" aria-label="Fechar aviso">×</button>
+      </div>
     </div>
   </div>
 </template>
@@ -233,19 +239,20 @@ export default {
         { label: 'Reportar erro no sistema', acao: 'reportarErro' },
         { label: 'Quero sugerir uma melhoria', acao: 'sugerirMelhoria' },
         { label: 'Outras dúvidas', acao: 'ajuda' }
-      ]
+      ],
+      toast: { show: false, message: '', type: 'success', timer: null },
     };
   },
   methods: {
     alternarChat() { this.visivel = !this.visivel; },
     handleGlobalClick(e) {
       if (!this.visivel) return;
-      const chat  = this.$refs.chat;
+      const chat = this.$refs.chat;
       const botao = this.$refs.botao;
-      const alvo  = e.target;
+      const alvo = e.target;
 
-      const clicouDentroChat  = chat  && chat.contains(alvo);
-      const clicouNoBotao     = botao && botao.contains(alvo);
+      const clicouDentroChat = chat && chat.contains(alvo);
+      const clicouNoBotao = botao && botao.contains(alvo);
 
       if (!clicouDentroChat && !clicouNoBotao) {
         this.fecharChat();
@@ -355,6 +362,21 @@ export default {
         this.subEstadoSuporte = 'ajuda';
       }
     },
+    abrirToast(mensagem, tipo = 'success', duracaoMs = 3500) {
+      if (this.toast.timer) clearTimeout(this.toast.timer);
+      this.toast.message = mensagem;
+      this.toast.type = tipo;
+      this.toast.show = true;
+      this.toast.timer = setTimeout(() => {
+        this.toast.show = false;
+        this.toast.timer = null;
+      }, duracaoMs);
+    },
+    fecharToast() {
+      if (this.toast.timer) clearTimeout(this.toast.timer);
+      this.toast.show = false;
+      this.toast.timer = null;
+    },
     async enviarEmailSuporte() {
       this.carregando = true; this.sucesso = null; this.erroEnvio = null;
       try {
@@ -368,9 +390,11 @@ export default {
         await api.post(`/api/suporte/mensagem`, payload);
         this.sucesso = 'Mensagem enviada com sucesso. Em breve entraremos em contato.';
         this.formEmail.mensagem = '';
+        this.abrirToast('Mensagem enviada com sucesso!', 'success');
       } catch (e) {
         console.error(e);
         this.erroEnvio = 'Não foi possível enviar agora. Tente novamente ou use o e-mail suporte@doseemdia.com.br.';
+        this.abrirToast('Falha ao enviar. Tente novamente.', 'error');
       } finally {
         this.carregando = false;
       }
@@ -774,19 +798,20 @@ export default {
 
 @media (max-width: 600px) {
   .chatbot-toggle {
-     z-index: 2001;
-     bottom: calc(14px + env(safe-area-inset-bottom));
-     right: calc(14px + env(safe-area-inset-right));
+    z-index: 2001;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    right: calc(14px + env(safe-area-inset-right));
   }
+
   .chatbot-toggle img {
-     width: 50px;
-     height: 50px;
+    width: 50px;
+    height: 50px;
   }
 
   .chatbot-popup {
-    --maxw: 340px;              
-    --minw: 272px;              
-    --maxh: 68vh;               
+    --maxw: 340px;
+    --minw: 272px;
+    --maxh: 68vh;
     --padx: 14px;
     --pady: 14px;
     --radius: 14px;
@@ -803,20 +828,29 @@ export default {
     padding: calc(var(--pady) + 4px) var(--padx) calc(var(--pady) + 56px) var(--padx);
     display: flex;
     flex-direction: column;
-    overflow: hidden; 
-    box-shadow: 0 10px 28px rgba(0,0,0,.22);
+    overflow: hidden;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .22);
   }
 
-  .chatbot-popup > div {
+  .chatbot-popup>div {
     display: flex;
     flex-direction: column;
     min-height: 0;
     flex: 1 1 auto;
-    overflow: auto; 
+    overflow: auto;
   }
 
-  .fechar-chat { top: 8px; right: 8px; padding: 6px; }
-  .fechar-chat img { width: 18px; height: 18px; opacity: .85; }
+  .fechar-chat {
+    top: 8px;
+    right: 8px;
+    padding: 6px;
+  }
+
+  .fechar-chat img {
+    width: 18px;
+    height: 18px;
+    opacity: .85;
+  }
 
   .mensagem.bot {
     max-width: 100%;
@@ -834,13 +868,40 @@ export default {
     font-size: .92rem;
     text-align: center;
   }
-  .grid-educacao { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 8px; }
-  .educacao-titulo { font-size: 1rem; margin-bottom: 6px; }
-  .educacao-lista { margin: 6px 0 10px 18px; }
-  .educacao-lista li { margin: 4px 0; }
-  .form-suporte { width: 100%; max-width: 100%; padding: 0 4px; gap: 10px; }
+
+  .grid-educacao {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .educacao-titulo {
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+
+  .educacao-lista {
+    margin: 6px 0 10px 18px;
+  }
+
+  .educacao-lista li {
+    margin: 4px 0;
+  }
+
+  .form-suporte {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 4px;
+    gap: 10px;
+  }
+
   .form-suporte input,
-  .form-suporte textarea { max-width: 100%; font-size: .95rem; padding: 10px 12px; }
+  .form-suporte textarea {
+    max-width: 100%;
+    font-size: .95rem;
+    padding: 10px 12px;
+  }
 
   .voltar,
   .btn-acao {
@@ -856,17 +917,98 @@ export default {
     z-index: 1;
   }
 
-  .chatbot-popup { padding-bottom: 16px; }
-  .btn-acao { margin-top: 0; }
-  .voltarEducacao { margin-top: 0 !important; }
+  .chatbot-popup {
+    padding-bottom: 16px;
+  }
+
+  .btn-acao {
+    margin-top: 0;
+  }
+
+  .voltarEducacao {
+    margin-top: 0 !important;
+  }
 }
 
 @media (max-width: 600px) {
   :global(html.sidebar-aberta) .chatbot-popup {
-    --sidebar-offset-mobile: 8vw;   
+    --sidebar-offset-mobile: 8vw;
   }
+
   :global(html.sidebar-aberta) .chatbot-toggle {
     right: calc(14px + env(safe-area-inset-right) + 8vw);
+  }
+}
+
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 260px;
+  max-width: 90vw;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f6f6f6;
+  color: #1f1f1f;
+  box-shadow: 0 8px 22px rgba(0,0,0,.18);
+  animation: toast-in .18s ease-out;
+  font-family: 'Segoe UI', 'Roboto', sans-serif;
+  border: 2px solid transparent;
+}
+.toast--success {
+  background: #e9f8ef;
+  border-color: #15a34a;
+}
+.toast--error {
+  background: #fdecec;
+  border-color: #dc2626;
+}
+.toast__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 10px;
+  background: currentColor;
+  opacity: .9;
+}
+.toast--success .toast__dot { color: #16a34a; }
+.toast--error .toast__dot { color: #dc2626; }
+
+.toast__msg {
+  flex: 1 1 auto;
+  font-weight: 600;
+  font-size: .95rem;
+  line-height: 1.3;
+}
+
+.toast__close {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+.toast__close:hover { background: rgba(0,0,0,.06); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .toast {
+    right: calc(12px + env(safe-area-inset-right));
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    left: 12px;
+    max-width: unset;
   }
 }
 </style>

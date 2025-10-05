@@ -31,18 +31,16 @@
 
         <!-- POPUP de confirmação -->
         <v-dialog v-model="dialogSucesso" max-width="420" persistent>
-          <v-card>
+          <v-card class="popup-sucesso">
             <v-card-title class="text-h6 font-weight-bold">
               Solicitação enviada
             </v-card-title>
-            <v-card-text class="text-body-2">
+            <v-card-text class="texto-sucesso">
               Se o e-mail estiver cadastrado, um link foi enviado para redefinir sua senha.
               Verifique sua caixa de entrada e o spam.
             </v-card-text>
-            <v-card-actions class="justify-end">
-              <v-btn color="orange" variant="flat" class="rounded-pill" @click="fecharDialog">
-                Ok
-              </v-btn>
+            <v-card-actions class="botoes-popup">
+              <v-btn class="btn-popupok" @click="$router.push('/')">Ok</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -67,8 +65,8 @@ export default {
     return {
       email: '',
       mensagem: '',
-      dialogSucesso: false,   
-      carregando: false,     
+      dialogSucesso: false,
+      carregando: false,
     };
   },
   methods: {
@@ -87,7 +85,7 @@ export default {
     },
     cancelar() {
       this.$router.push('/');
-    },fecharDialog() {
+    }, fecharDialog() {
       this.dialogSucesso = false;
     },
   }
@@ -97,5 +95,46 @@ export default {
 <style scoped>
 .text-orange {
   color: #f46c20;
+}
+
+.popup-sucesso {
+  background-color: #f46c20;
+  border-radius: 25px !important;
+  padding: 40px 20px;
+  width: 300px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.texto-sucesso {
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.botoes-popup {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.btn-popupok {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.btn-popupok button {
+  background-color: #fff;
+  color: #ff6600;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
 }
 </style>

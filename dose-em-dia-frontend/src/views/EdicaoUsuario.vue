@@ -708,13 +708,14 @@ export default {
 }
 
 .btn-popupok button {
-  background-color: #fff !important;
-  color: #ff6600;
+  background-color: #ff6600 !important;
+  color: #fff !important;
   border: none;
   padding: 10px 30px;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
+  text-transform: none;   
   transition: 0.3s ease;
 }
 </style>

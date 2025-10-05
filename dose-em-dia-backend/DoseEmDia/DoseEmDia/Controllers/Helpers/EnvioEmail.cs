@@ -25,12 +25,14 @@ namespace DoseEmDia.Helpers
         private readonly ISendGridClient _sendGrid;
         private readonly EmailSettings _cfg;
         private readonly ApplicationDbContext _db;
+        private readonly IWebHostEnvironment _env;
 
-        public EnvioEmail(ISendGridClient sendGrid, IOptions<EmailSettings> cfg, ApplicationDbContext db)
+        public EnvioEmail(ISendGridClient sendGrid, IOptions<EmailSettings> cfg, ApplicationDbContext db, IWebHostEnvironment env)
         {
             _sendGrid = sendGrid ?? throw new ArgumentNullException(nameof(sendGrid));
             _cfg = cfg?.Value ?? throw new ArgumentNullException(nameof(cfg));
             _db = db ?? throw new ArgumentNullException(nameof(db));
+            _env = env ?? throw new ArgumentNullException(nameof(env));
         }
 
         public async Task EnviarEmailAsync(string destinatario, string assunto, string corpoHtml, CancellationToken ct = default)
@@ -90,7 +92,25 @@ namespace DoseEmDia.Helpers
         public async Task DispararCampanhaAsync(string caminhoImagem, CancellationToken ct = default)
         {
             if (!File.Exists(caminhoImagem))
-                throw new FileNotFoundException("Imagem da campanha não encontrada.", caminhoImagem);
+            {
+                var arquivo = Path.GetFileName(caminhoImagem); 
+                var tentativa1 = Path.Combine(_env.WebRootPath ?? string.Empty, "email", "banners", arquivo);
+
+                var tentativa2 = Path.Combine(_env.ContentRootPath ?? string.Empty, "wwwroot", "email", "banners", arquivo);
+
+                if (File.Exists(tentativa1))
+                {
+                    caminhoImagem = tentativa1;
+                }
+                else if (File.Exists(tentativa2))
+                {
+                    caminhoImagem = tentativa2;
+                }
+                else
+                {
+                    throw new FileNotFoundException("Imagem da campanha não encontrada.", tentativa1);
+                }
+            }
 
             var bytes = await File.ReadAllBytesAsync(caminhoImagem, ct);
 
@@ -141,7 +161,6 @@ namespace DoseEmDia.Helpers
                     msg.AddTo(new EmailAddress(u.Email));
                     ConfigureTracking(msg);
 
-                    // Anexo inline
                     msg.AddAttachment(new Attachment
                     {
                         Content = Convert.ToBase64String(bytes),
@@ -175,7 +194,7 @@ namespace DoseEmDia.Helpers
             if (notificacoes.Count > 0)
             {
                 _db.Notificacao.AddRange(notificacoes);
-                await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync(ct);
             }
         }
 

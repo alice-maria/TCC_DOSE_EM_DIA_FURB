@@ -45,8 +45,25 @@
                 <v-text-field label="Telefone*" v-model="form.telefone" variant="outlined" v-mask="'(##) #####-####'"
                   required />
                 <v-text-field label="CPF*" v-model="form.cpf" variant="outlined" v-mask="'###.###.###-##'" required />
-                <v-text-field label="Data de nascimento*" v-model="form.dataNascimento" variant="outlined" type="date"
-                  required />
+               
+                <v-text-field label="Data de nascimento*" v-model="dataNascimentoTexto" variant="outlined" readonly
+                  required prepend-inner-icon="mdi-calendar" @click="abrirData" @focus="abrirData"
+                  @keydown.enter.prevent="abrirData" />
+
+                <v-dialog v-model="dateDialog" max-width="360">
+                  <v-card>
+                    <v-card-title class="pl-6 pt-4">Selecionar data</v-card-title>
+                    <v-card-text class="pt-2">
+                      <v-date-picker v-model="dateModel" :max="hojeISO" locale="pt-BR" show-adjacent-months
+                        hide-header />
+                    </v-card-text>
+                    <v-card-actions class="justify-end">
+                      <v-btn variant="text" @click="cancelarData">Cancelar</v-btn>
+                      <v-btn color="orange" variant="flat" @click="confirmarData">OK</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+
                 <v-select label="Sexo*" v-model="form.sexo" variant="outlined"
                   :items="['Masculino', 'Feminino', 'Não informar']" required />
 
@@ -195,6 +212,9 @@ export default {
   directives: { mask },
   data() {
     return {
+      dateDialog: false,
+      dateModel: null,
+      hojeISO: new Date().toISOString().slice(0, 10),
       carregando: false,
       mostrarSenha: false,
       mostrarConfirmarSenha: false,
@@ -232,6 +252,12 @@ export default {
     };
   },
   computed: {
+    dataNascimentoTexto() {
+      if (!this.form.dataNascimento) return "";
+      const [y, m, d] = this.form.dataNascimento.split("-").map(Number);
+      const dt = new Date(Date.UTC(y, (m - 1), d));
+      return dt.toLocaleDateString("pt-BR");
+    },
     percentualPreenchido() {
       const campos = [
         this.form.nome,
@@ -287,6 +313,33 @@ export default {
   },
 
   methods: {
+    toISO(dateLike) {
+      const d = new Date(dateLike);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    },
+
+    // Abrir/cancelar/confirmar do modal
+    cancelarData() {
+      this.dateDialog = false;
+      // não altera a data
+    },
+    confirmarData() {
+      if (this.dateModel) {
+        this.form.dataNascimento = this.toISO(this.dateModel);
+      }
+      this.dateDialog = false;
+    },
+
+    // ⚠️ Opcional: quando abrir o modal, sincronize o valor atual
+    abrirData() {
+      this.dateModel = this.form.dataNascimento
+        ? new Date(this.form.dataNascimento)
+        : new Date();
+      this.dateDialog = true;
+    },
     validarEmail() {
       const field = this.form.email;
       const usuario = field.substring(0, field.indexOf("@"));
@@ -361,6 +414,10 @@ export default {
         return;
       }
 
+      if (this.dateModel && (!this.form.dataNascimento || this.form.dataNascimento.length !== 10)) {
+        this.form.dataNascimento = this.toISO(this.dateModel);
+      }
+
       const cpfLimpo = (this.form.cpf || "").replace(/\D/g, "").padStart(11, "0");
       const cep8 = (this.form.cep || "").replace(/\D/g, "");
 
@@ -374,14 +431,14 @@ export default {
         telefone: this.form.telefone,
         cpf: cpfLimpo,
         sexo: this.form.sexo,
-        receberNotificacoes: true, 
+        receberNotificacoes: true,
         pais: this.form.endereco.pais || "Brasil",
-        uf: uf,                                
-        cidade: this.form.endereco.cidade,    
-        cep: cep8,                            
+        uf: uf,
+        cidade: this.form.endereco.cidade,
+        cep: cep8,
         logradouro: this.form.endereco.logradouro,
         numero: this.form.endereco.numero,
-        bairro: this.form.endereco.bairro || null            
+        bairro: this.form.endereco.bairro || null
       };
 
       try {
