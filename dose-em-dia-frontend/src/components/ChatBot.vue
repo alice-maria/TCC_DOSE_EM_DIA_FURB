@@ -1031,12 +1031,12 @@ export default {
 }
 
 @media (max-width: 600px) {
-  :deep(.v-overlay__content) {
-    top: unset !important;
-    bottom: auto !important;
-    transform-origin: top center !important;
-    margin-top: 10px !important;
+  .acessibilidade-menu {
+    top: auto !important;
+    bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+    transform: none !important;
   }
 }
+
 
 </style>
