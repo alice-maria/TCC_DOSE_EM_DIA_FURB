@@ -1052,13 +1052,4 @@ export default {
     margin-top: 14px !important;
   }
 }
-
-@media (max-width: 600px) {
-  .acessibilidade-toggle {
-    position: fixed !important;
-    bottom: calc(90px + env(safe-area-inset-bottom)) !important;
-    right: calc(14px + env(safe-area-inset-right)) !important;
-    z-index: 2001 !important;
-  }
-}
 </style>
