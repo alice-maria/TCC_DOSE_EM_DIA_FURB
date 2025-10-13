@@ -1038,5 +1038,13 @@ export default {
   }
 }
 
+@media (max-width: 600px) {
+  :deep(.v-overlay__content) {
+    top: auto !important;
+    bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+    transform: none !important;
+  }
+}
+
 
 </style>
