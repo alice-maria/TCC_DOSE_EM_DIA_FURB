@@ -1,14 +1,12 @@
 <template>
   <div>
-    <button class="chatbot-toggle" @click="alternarChat" ref="botao" aria-label="Abrir chatbot">
-      <v-tooltip text="Fale com a Vitta" location="left" open-delay="150">
-        <template #activator="{ props }">
-          <button v-bind="props" class="chatbot-toggle" @click="alternarChat" ref="botao" aria-label="Abrir chatbot">
-            <img src="@/imagens/ChatBotVitta.png" alt="Abrir chatbot" />
-          </button>
-        </template>
-      </v-tooltip>
-    </button>
+    <v-tooltip text="Fale com a Vitta" location="left" open-delay="150">
+      <template #activator="{ props }">
+        <button v-bind="props" class="chatbot-toggle" @click="alternarChat" ref="botao" aria-label="Abrir chatbot">
+          <img src="@/imagens/ChatBotVitta.png" alt="Abrir chatbot" />
+        </button>
+      </template>
+    </v-tooltip>
     <div v-show="visivel" ref="chat" class="chatbot-popup chatbot" role="dialog" aria-modal="true" @click.stop>
       <transition name="chat-fade">
         <div v-if="visivel">
@@ -1031,4 +1029,11 @@ export default {
     max-width: unset;
   }
 }
+
+@media (max-width: 600px) {
+  :deep(.v-overlay__content) {
+    margin-top: 20px !important;  
+  }
+}
+
 </style>
