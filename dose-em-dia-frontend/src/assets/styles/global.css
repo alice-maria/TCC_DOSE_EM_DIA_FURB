@@ -55,26 +55,43 @@ html.fonte-alta .m3-card__subtitle {
 
 html.fonte-baixa input.form-control,
 html.fonte-baixa textarea.form-control,
-html.fonte-baixa select.form-control { font-size: 1.08em !important; }
+html.fonte-baixa select.form-control {
+  font-size: 1.08em !important;
+}
 
 html.fonte-media input.form-control,
 html.fonte-media textarea.form-control,
-html.fonte-media select.form-control { font-size: 1.18em !important; }
+html.fonte-media select.form-control {
+  font-size: 1.18em !important;
+}
 
-html.fonte-alta  input.form-control,
-html.fonte-alta  textarea.form-control,
-html.fonte-alta  select.form-control { font-size: 1.28em !important; }
+html.fonte-alta input.form-control,
+html.fonte-alta textarea.form-control,
+html.fonte-alta select.form-control {
+  font-size: 1.28em !important;
+}
 
 html.fonte-media input.form-control::placeholder,
-html.fonte-media textarea.form-control::placeholder { font-size: 1.05em !important; }
+html.fonte-media textarea.form-control::placeholder {
+  font-size: 1.05em !important;
+}
 
-html.fonte-alta  input.form-control::placeholder,
-html.fonte-alta  textarea.form-control::placeholder { font-size: 1.1em !important; }
+html.fonte-alta input.form-control::placeholder,
+html.fonte-alta textarea.form-control::placeholder {
+  font-size: 1.1em !important;
+}
 
-html.fonte-media .linha-dado input.form-control { height: 3.4rem !important; }
-html.fonte-alta  .linha-dado input.form-control { height: 3.6rem !important; }
+html.fonte-media .linha-dado input.form-control {
+  height: 3.4rem !important;
+}
 
-body.fonte-baixa * { font-size: 1.03em; }
+html.fonte-alta .linha-dado input.form-control {
+  height: 3.6rem !important;
+}
+
+body.fonte-baixa * {
+  font-size: 1.03em;
+}
 
 body.fonte-media * {
   font-size: 1.05em;
@@ -244,7 +261,9 @@ body.fonte-media .lista ul {
 }
 
 body.fonte-alta .lista,
-body.fonte-alta .lista li {  font-size: 1.07em !important;}
+body.fonte-alta .lista li {
+  font-size: 1.07em !important;
+}
 
 :is(html, body).fonte-baixa .v-card-title,
 :is(html, body).fonte-baixa .v-list-item-title,
@@ -320,52 +339,117 @@ body.fonte-alta .lista li {  font-size: 1.07em !important;}
   font-size: 1.18em !important;
 }
 
-:global(:is(html,body).fonte-baixa) .pagina-edituser .linha-dado label { font-size: 1.08em !important; }
-:global(:is(html,body).fonte-media) .pagina-edituser .linha-dado label { font-size: 1.18em !important; }
-:global(:is(html,body).fonte-alta)  .pagina-edituser .linha-dado label { font-size: 1.28em !important; }
+:global(:is(html, body).fonte-baixa) .pagina-edituser .linha-dado label {
+  font-size: 1.08em !important;
+}
 
-:global(:is(html,body).fonte-baixa) .pagina-edituser .linha-dado div { font-size: 1.06em !important; }
-:global(:is(html,body).fonte-media) .pagina-edituser .linha-dado div { font-size: 1.12em !important; }
-:global(:is(html,body).fonte-alta)  .pagina-edituser .linha-dado div { font-size: 1.18em !important; }
+:global(:is(html, body).fonte-media) .pagina-edituser .linha-dado label {
+  font-size: 1.18em !important;
+}
 
-:global(:is(html,body).fonte-baixa) .pagina-edituser .linha-dado input.form-control {
+:global(:is(html, body).fonte-alta) .pagina-edituser .linha-dado label {
+  font-size: 1.28em !important;
+}
+
+:global(:is(html, body).fonte-baixa) .pagina-edituser .linha-dado div {
+  font-size: 1.06em !important;
+}
+
+:global(:is(html, body).fonte-media) .pagina-edituser .linha-dado div {
+  font-size: 1.12em !important;
+}
+
+:global(:is(html, body).fonte-alta) .pagina-edituser .linha-dado div {
+  font-size: 1.18em !important;
+}
+
+:global(:is(html, body).fonte-baixa) .pagina-edituser .linha-dado input.form-control {
   font-size: 1.06em !important;
   height: 3.25rem !important;
 }
-:global(:is(html,body).fonte-media) .pagina-edituser .linha-dado input.form-control {
+
+:global(:is(html, body).fonte-media) .pagina-edituser .linha-dado input.form-control {
   font-size: 1.12em !important;
   height: 3.4rem !important;
 }
-:global(:is(html,body).fonte-alta) .pagina-edituser .linha-dado input.form-control {
+
+:global(:is(html, body).fonte-alta) .pagina-edituser .linha-dado input.form-control {
   font-size: 1.18em !important;
   height: 3.55rem !important;
 }
 
-:global(:is(html,body).fonte-baixa) .pagina-edituser .linha-dado input.form-control::placeholder { font-size: 1.04em !important; }
-:global(:is(html,body).fonte-media) .pagina-edituser .linha-dado input.form-control::placeholder { font-size: 1.08em !important; }
-:global(:is(html,body).fonte-alta)  .pagina-edituser .linha-dado input.form-control::placeholder { font-size: 1.12em !important; }
+:global(:is(html, body).fonte-baixa) .pagina-edituser .linha-dado input.form-control::placeholder {
+  font-size: 1.04em !important;
+}
 
-:global(:is(html,body).fonte-baixa) .pagina-edituser .subtitulo { font-size: 1.06em !important; }
-:global(:is(html,body).fonte-media) .pagina-edituser .subtitulo { font-size: 1.12em !important; }
-:global(:is(html,body).fonte-alta)  .pagina-edituser .subtitulo { font-size: 1.18em !important; }
+:global(:is(html, body).fonte-media) .pagina-edituser .linha-dado input.form-control::placeholder {
+  font-size: 1.08em !important;
+}
 
-:global(:is(html,body).fonte-baixa) .pagina-edituser .breadcrumb-link { font-size: 1.12em !important; }
-:global(:is(html,body).fonte-media) .pagina-edituser .breadcrumb-link { font-size: 1.2em !important; }
-:global(:is(html,body).fonte-alta)  .pagina-edituser .breadcrumb-link { font-size: 1.28em !important; }
+:global(:is(html, body).fonte-alta) .pagina-edituser .linha-dado input.form-control::placeholder {
+  font-size: 1.12em !important;
+}
 
-:global(:is(html,body).fonte-baixa) .pagina-edituser .botao-preenchido,
-:global(:is(html,body).fonte-baixa) .pagina-edituser .botao-tonal { font-size: 1.04em !important; }
+:global(:is(html, body).fonte-baixa) .pagina-edituser .subtitulo {
+  font-size: 1.06em !important;
+}
 
-:global(:is(html,body).fonte-media) .pagina-edituser .botao-preenchido,
-:global(:is(html,body).fonte-media) .pagina-edituser .botao-tonal { font-size: 1.08em !important; }
+:global(:is(html, body).fonte-media) .pagina-edituser .subtitulo {
+  font-size: 1.12em !important;
+}
 
-:global(:is(html,body).fonte-alta) .pagina-edituser .botao-preenchido,
-:global(:is(html,body).fonte-alta) .pagina-edituser .botao-tonal { font-size: 1.12em !important; }
+:global(:is(html, body).fonte-alta) .pagina-edituser .subtitulo {
+  font-size: 1.18em !important;
+}
 
-:global(:is(html,body).fonte-media) .pagina-edituser .texto-confirmacao,
-:global(:is(html,body).fonte-media) .pagina-edituser .texto-sucesso { font-size: 1.25rem !important; }
-:global(:is(html,body).fonte-alta)  .pagina-edituser .texto-confirmacao,
-:global(:is(html,body).fonte-alta)  .pagina-edituser .texto-sucesso { font-size: 1.35rem !important; }
+:global(:is(html, body).fonte-baixa) .pagina-edituser .breadcrumb-link {
+  font-size: 1.12em !important;
+}
+
+:global(:is(html, body).fonte-media) .pagina-edituser .breadcrumb-link {
+  font-size: 1.2em !important;
+}
+
+:global(:is(html, body).fonte-alta) .pagina-edituser .breadcrumb-link {
+  font-size: 1.28em !important;
+}
+
+:global(:is(html, body).fonte-baixa) .pagina-edituser .botao-preenchido,
+:global(:is(html, body).fonte-baixa) .pagina-edituser .botao-tonal {
+  font-size: 1.04em !important;
+}
+
+:global(:is(html, body).fonte-media) .pagina-edituser .botao-preenchido,
+:global(:is(html, body).fonte-media) .pagina-edituser .botao-tonal {
+  font-size: 1.08em !important;
+}
+
+:global(:is(html, body).fonte-alta) .pagina-edituser .botao-preenchido,
+:global(:is(html, body).fonte-alta) .pagina-edituser .botao-tonal {
+  font-size: 1.12em !important;
+}
+
+:global(:is(html, body).fonte-media) .pagina-edituser .texto-confirmacao,
+:global(:is(html, body).fonte-media) .pagina-edituser .texto-sucesso {
+  font-size: 1.25rem !important;
+}
+
+:global(:is(html, body).fonte-alta) .pagina-edituser .texto-confirmacao,
+:global(:is(html, body).fonte-alta) .pagina-edituser .texto-sucesso {
+  font-size: 1.35rem !important;
+}
+
+:global(:is(html, body).fonte-baixa) .sidebar .sidebar-version {
+  font-size: 0.8rem !important;
+}
+
+:global(:is(html, body).fonte-media) .sidebar .sidebar-version {
+  font-size: 0.9rem !important;
+}
+
+:global(:is(html, body).fonte-alta) .sidebar .sidebar-version {
+  font-size: 1.0rem !important;
+}
 
 :root {
   --color-bg: #000000;
@@ -427,9 +511,13 @@ body.contraste-alto select {
   border: 1px solid var(--color-fg) !important;
 }
 
-body.contraste-alto *:focus {  outline: 2px solid var(--color-accent) !important;}
+body.contraste-alto *:focus {
+  outline: 2px solid var(--color-accent) !important;
+}
 
-body.contraste-alto img {  filter: brightness(0.9) contrast(1.2) !important;}
+body.contraste-alto img {
+  filter: brightness(0.9) contrast(1.2) !important;
+}
 
 body.contraste-alto h1,
 body.contraste-alto h2,
