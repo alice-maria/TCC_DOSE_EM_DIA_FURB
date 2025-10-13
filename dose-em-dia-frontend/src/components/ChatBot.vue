@@ -1045,11 +1045,12 @@ export default {
 }
 
 @media (max-width: 600px) {
-  :deep(.v-overlay__content.menu-acessibilidade) {
-    top: auto !important;
-    bottom: unset !important;
+  :deep(.menu-acessibilidade .v-overlay__content) {
+    top: 100% !important;         
+    bottom: auto !important;
     transform-origin: top center !important;
-    margin-top: 14px !important;
+    margin-top: 12px !important;  
   }
 }
+
 </style>
