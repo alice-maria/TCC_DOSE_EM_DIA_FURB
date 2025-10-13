@@ -1032,8 +1032,24 @@ export default {
 
 @media (max-width: 600px) {
   :deep(.v-overlay__content) {
-    margin-top: 20px !important;  
+    top: unset !important;
+    bottom: auto !important;
+    transform-origin: top center !important;
+    margin-top: 10px !important;
+  }
+
+  :deep(.v-overlay__content[data-side="bottom"]) {
+    top: auto !important;
+    bottom: auto !important;
   }
 }
 
+@media (max-width: 600px) {
+  :deep(.v-overlay__content.menu-acessibilidade) {
+    top: auto !important;
+    bottom: unset !important;
+    transform-origin: top center !important;
+    margin-top: 14px !important;
+  }
+}
 </style>
