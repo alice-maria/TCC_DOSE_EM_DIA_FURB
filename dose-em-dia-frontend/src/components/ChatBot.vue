@@ -1037,20 +1037,6 @@ export default {
     transform-origin: top center !important;
     margin-top: 10px !important;
   }
-
-  :deep(.v-overlay__content[data-side="bottom"]) {
-    top: auto !important;
-    bottom: auto !important;
-  }
-}
-
-@media (max-width: 600px) {
-  :deep(.menu-acessibilidade .v-overlay__content) {
-    top: 100% !important;         
-    bottom: auto !important;
-    transform-origin: top center !important;
-    margin-top: 12px !important;  
-  }
 }
 
 </style>
