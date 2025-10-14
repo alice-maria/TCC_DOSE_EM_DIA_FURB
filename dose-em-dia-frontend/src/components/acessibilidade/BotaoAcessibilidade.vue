@@ -282,47 +282,4 @@ export default {
     margin-right: 2px;
   }
 }
-
-@media (max-width: 360px) {
-  .acessibilidade-menu {
-    width: 94vw;
-  }
-}
-
-@media (max-width: 600px) {
-  .acessibilidade-container {
-    right: 12px;
-    bottom: calc(80px + env(safe-area-inset-bottom)); /* posição do botão */
-  }
-
-  .acessibilidade-wrap .acessibilidade-tooltip {
-    display: none;
-  }
-
-  .acessibilidade-menu {
-    bottom: calc(20px + env(safe-area-inset-bottom)); /* ↓ abaixei o menu */
-    right: 0;
-    top: auto;
-    min-width: 0;
-    width: min(92vw, 380px);
-    padding: 10px;
-    gap: 8px;
-    border-radius: 12px;
-    box-shadow: var(--acc-shadow-sm);
-  }
-
-  .acessibilidade-menu button {
-    padding: 12px 10px;
-    font-size: 16px;
-    border-radius: 10px;
-  }
-
-  .icone-menu {
-    width: 24px;
-    height: 24px;
-    flex: 0 0 24px;
-    margin-right: 2px;
-  }
-}
-
 </style>

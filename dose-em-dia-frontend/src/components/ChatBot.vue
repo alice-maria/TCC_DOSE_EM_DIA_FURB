@@ -1029,4 +1029,40 @@ export default {
     max-width: unset;
   }
 }
+
+@media (max-width: 600px) {
+  .chatbot-popup { --padx: 14px; }
+
+  .form-suporte { 
+    padding: 0 !important; 
+    max-width: 100% !important;
+  }
+
+  .form-suporte .botoes {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    width: calc(100% + (var(--padx) * 2));
+    margin-left: calc(var(--padx) * -1);
+    padding: 10px var(--padx) calc(env(safe-area-inset-bottom) + 8px);
+    background: #fff;
+    box-sizing: border-box;
+    gap: 10px;
+  }
+
+  .form-suporte .btn-acao,
+  .form-suporte .voltar {
+    position: static !important;
+    left: auto; right: auto;    
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 10px;
+  }
+
+  .voltar,
+  .btn-acao {
+    position: static !important;
+  }
+}
+
 </style>
