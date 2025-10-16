@@ -1,235 +1,128 @@
 ﻿using DoseEmDia.Helpers;
-using DoseEmDia.Models;
 using DoseEmDia.Models.db;
 using DoseEmDia.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace DoseEmDia.Services
+public sealed class VacinasEmailService : BackgroundService
 {
-    public class VacinasEmailService : BackgroundService
-    {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<VacinasEmailService> _logger;
-        private const int WINDOW_DAYS = 30;
-        private const int DEDUPE_DAYS = 31;
-        private const int MAX_POR_USUARIO = 2;
-        private static readonly TimeSpan CADENCIA = TimeSpan.FromMinutes(5);
+    private readonly IServiceProvider _sp;
+    private readonly ILogger<VacinasEmailService> _logger;
 
-        public VacinasEmailService(IServiceProvider serviceProvider, ILogger<VacinasEmailService> logger)
+    private const int RUN_HOUR_LOCAL = 9;   
+    private const int RUN_MINUTE_LOCAL = 0;
+    private static readonly TimeZoneInfo TZ = GetBrazilTz();
+
+    public VacinasEmailService(IServiceProvider sp, ILogger<VacinasEmailService> logger)
+    {
+        _sp = sp;
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("VacinasEmailService iniciado.");
+
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _serviceProvider = serviceProvider;
-            _logger = logger;
+            try
+            {
+                var delay = TempoAteProximaExecucao();
+                _logger.LogInformation("Próxima execução em {delay} (à(s) {hora} hora local).",
+                    delay, $"{RUN_HOUR_LOCAL:D2}:{RUN_MINUTE_LOCAL:D2}");
+
+                await Task.Delay(delay, stoppingToken);
+
+                await RunOnceAsync(stoppingToken);
+            }
+            catch (TaskCanceledException)
+            {
+                // encerrando
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro no loop do VacinasEmailDailyService.");
+                try { await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); } catch { /* ignore */ }
+            }
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        _logger.LogInformation("VacinasEmailDailyService finalizado.");
+    }
+
+    private async Task RunOnceAsync(CancellationToken ct)
+    {
+        using var scope = _sp.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var mailer = scope.ServiceProvider.GetRequiredService<EnvioEmail>();
+
+        var agoraUtc = DateTime.UtcNow;
+        var hojeLocal = TimeZoneInfo.ConvertTimeFromUtc(agoraUtc, TZ).Date;
+
+        _logger.LogInformation("Iniciando varredura diária {dataLocal}.", hojeLocal.ToString("yyyy-MM-dd"));
+
+        var usuarios = await db.Usuario
+            .AsNoTracking()
+            .Where(u => u.ReceberNotificacoes == true && !string.IsNullOrEmpty(u.Email))
+            .Select(u => new { u.IdUser, u.Email })
+            .ToListAsync(ct);
+
+        foreach (var u in usuarios)
         {
-            _logger.LogInformation("VacinasEmailService iniciado em {ts}", DateTimeOffset.Now);
-
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                using var scope = _serviceProvider.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                var emailService = scope.ServiceProvider.GetRequiredService<EnvioEmail>();
+                bool jaEnviouHoje = await db.Notificacao
+                    .AsNoTracking()
+                    .AnyAsync(n =>
+                        n.UsuarioId == u.IdUser
+                        && (n.Tipo == TipoNotificacao.VacinaAtrasada || n.Tipo == TipoNotificacao.VacinaVencendo)
+                        && TimeZoneInfo.ConvertTimeFromUtc(n.DataEnvio, TZ).Date == hojeLocal, ct);
 
-                var hoje = DateTime.Today;
-                var dataAlvo = hoje.AddDays(WINDOW_DAYS);
+                if (jaEnviouHoje)
+                    continue;
 
-                List<Vacina> vacinas = new();
+                bool temStatusRelevante = await db.Vacina
+                    .AsNoTracking()
+                    .AnyAsync(v =>
+                        v.UsuarioId == u.IdUser &&
+                        (v.Status == StatusVacina.EmAtraso || v.Status == StatusVacina.AVencer), ct);
 
-                try
-                {
-                    vacinas = await context.Vacina
-                        .AsNoTracking()
-                        .Include(v => v.Usuario)
-                        .Where(v => v.ValidadeMeses.HasValue
-                                 && v.DataAplicacao != null
-                                 && v.Usuario != null
-                                 && v.Usuario.ReceberNotificacoes)
-                        .ToListAsync(stoppingToken);
+                if (!temStatusRelevante)
+                    continue;
 
-                    _logger.LogInformation(
-                        "Consulta base retornou {qtde} vacinas (aplicadas, com validade e usuários aptos a notificação).",
-                        vacinas.Count);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Erro ao buscar vacinas.");
-                }
-
-                var candidatos = vacinas
-                    .Select(v =>
-                    {
-                        var venc = v.DataAplicacao!.AddMonths(v.ValidadeMeses ?? 12).Date;
-                        TipoNotificacao? tipo = null;
-                        if (venc < hoje) tipo = TipoNotificacao.VacinaAtrasada;
-                        else if (venc <= dataAlvo) tipo = TipoNotificacao.VacinaVencendo;
-                        return new { v, venc, tipo };
-                    })
-                    .Where(x => x.tipo != null)
-                    .OrderBy(x => x.tipo == TipoNotificacao.VacinaAtrasada ? 0 : 1)
-                    .ThenBy(x => x.venc)
-                    .ToList();
-
-                _logger.LogInformation("Candidatos a notificação: {qtde}", candidatos.Count);
-
-                if (candidatos.Count == 0)
-                {
-                    try
-                    {
-                        var semEmail = vacinas.Count(x => string.IsNullOrWhiteSpace(x.Usuario!.Email));
-                        var totalUsuariosSemNotif = await context.Usuario.CountAsync(u => !u.ReceberNotificacoes, stoppingToken);
-                        _logger.LogInformation(
-                            "Diagnóstico: usuários sem e-mail (na base atual)={semEmail}; usuários com ReceberNotificacoes=false={qtdeSemNotif}.",
-                            semEmail, totalUsuariosSemNotif);
-                    }
-                    catch { /* diagnóstico best-effort */ }
-                }
-
-                var notificacoesCriadas = new List<Notificacao>();
-                var emailsPorUsuario = new Dictionary<int, int>();
-
-                foreach (var c in candidatos)
-                {
-                    if (stoppingToken.IsCancellationRequested) break;
-
-                    var vacina = c.v;
-                    var dataVencimento = c.venc;
-                    var tipo = c.tipo!.Value;
-
-                    if (vacina.Usuario == null) continue;
-                    if (string.IsNullOrWhiteSpace(vacina.Usuario.Email))
-                    {
-                        _logger.LogWarning("Usuário {UsuarioId} sem e-mail. VacinaId={VacinaId}",
-                            vacina.UsuarioId, vacina.IdVacina);
-                        continue;
-                    }
-
-                    if (emailsPorUsuario.TryGetValue(vacina.UsuarioId, out int enviados) &&
-                        enviados >= MAX_POR_USUARIO)
-                        continue;
-
-                    string titulo = tipo == TipoNotificacao.VacinaAtrasada
-                        ? $"Vacina atrasada: {vacina.Nome}"
-                        : $"Vacina prestes a vencer: {vacina.Nome}";
-
-                    string h2Titulo = tipo == TipoNotificacao.VacinaAtrasada
-                        ? "Vacina em atraso"
-                        : "Vacina prestes a vencer";
-
-                    string statusTexto = tipo == TipoNotificacao.VacinaAtrasada
-                        ? "em atraso"
-                        : "prestes a vencer";
-
-                    string mensagem = $@"
-<html>
-  <body style='font-family: Arial, Helvetica, sans-serif; background-color: #f9f9f9; padding: 20px; color: #333;'>
-    <div style='max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; padding: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);'>
-      <h2 style='color: #d93025; text-align: center;'>{h2Titulo}</h2>
-      <p>Olá,</p>
-      <p>
-        Identificamos que a vacina <strong>{vacina.Nome}</strong> está <strong>{statusTexto}</strong>.
-        <br/>Data de vencimento estimada: <strong>{dataVencimento:dd/MM/yyyy}</strong>.
-      </p>
-      <p>
-        Manter sua vacinação em dia é essencial para garantir sua saúde e proteção.
-        Caso já tenha regularizado, por favor, desconsidere este aviso.
-      </p>
-      <hr style='border: none; border-top: 1px solid #eee; margin: 30px 0;' />
-      <p style='font-size: 13px; color: #666; text-align: center;'>
-        Este é um aviso automático do sistema <strong>Dose em Dia</strong>.<br/>
-        Não responda a este e-mail diretamente.
-      </p>
-    </div>
-  </body>
-</html>";
-
-                    bool jaEnviado = false;
-                    try
-                    {
-                        var cutoff = DateTime.Now.AddDays(-DEDUPE_DAYS);
-                        jaEnviado = await context.Notificacao.AnyAsync(n =>
-                            n.UsuarioId == vacina.UsuarioId
-                            && n.Tipo == tipo
-                            && n.Titulo == titulo
-                            && n.Mensagem.Contains(vacina.Nome)
-                            && n.DataEnvio > cutoff, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Falha ao verificar deduplicação para UsuarioId={UsuarioId}, VacinaId={VacinaId}",
-                            vacina.UsuarioId, vacina.IdVacina);
-                        jaEnviado = false; // fallback: deixa passar
-                    }
-
-                    if (jaEnviado)
-                    {
-                        _logger.LogInformation("Notificação já enviada recentemente para UsuarioId={UsuarioId}, Vacina={Vacina}.",
-                            vacina.UsuarioId, vacina.Nome);
-                        continue;
-                    }
-
-                    bool emailEnviado = false;
-                    try
-                    {
-                        _logger.LogInformation("Enviando e-mail para {Email} | UsuarioId={UsuarioId} | Vacina={Vacina} | Tipo={Tipo} | Venc={Venc}",
-                            vacina.Usuario.Email, vacina.UsuarioId, vacina.Nome, tipo, dataVencimento.ToString("yyyy-MM-dd"));
-
-                        await emailService.EnviarEmailAsync(vacina.Usuario.Email, titulo, mensagem);
-                        emailEnviado = true;
-
-                        emailsPorUsuario[vacina.UsuarioId] =
-                            emailsPorUsuario.TryGetValue(vacina.UsuarioId, out var ctt) ? ctt + 1 : 1;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Falha ao enviar e-mail para {Email} (VacinaId={VacinaId})",
-                            vacina.Usuario.Email, vacina.IdVacina);
-                    }
-
-                    notificacoesCriadas.Add(new Notificacao
-                    {
-                        UsuarioId = vacina.UsuarioId,
-                        Titulo = titulo,
-                        Mensagem = mensagem,
-                        Tipo = tipo,
-                        DataEnvio = DateTime.Now,
-                        Visualizada = false,
-                        EmailEnviado = emailEnviado
-                    });
-                }
-
-                if (notificacoesCriadas.Count > 0)
-                {
-                    try
-                    {
-                        context.Notificacao.AddRange(notificacoesCriadas);
-                        await context.SaveChangesAsync(stoppingToken);
-                        _logger.LogInformation("Notificações registradas: {qtde} (ok={ok}, falhas={falhas})",
-                            notificacoesCriadas.Count,
-                            notificacoesCriadas.Count(n => n.EmailEnviado),
-                            notificacoesCriadas.Count(n => !n.EmailEnviado));
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Erro ao salvar notificações.");
-                    }
-                }
-                else
-                {
-                    _logger.LogInformation("Nenhuma notificação criada nesta execução.");
-                }
-
-                try
-                {
-                    await Task.Delay(CADENCIA, stoppingToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
+                await mailer.EnviarResumoVacinasPorStatusAsync(u.IdUser, ct);
             }
+            catch (Exception exUser)
+            {
+                _logger.LogWarning(exUser, "Falha ao processar usuário {IdUser} no envio diário.", u.IdUser);
+            }
+        }
 
-            _logger.LogInformation("VacinasEmailService finalizado em {ts}", DateTimeOffset.Now);
+        _logger.LogInformation("Varredura diária concluída.");
+    }
+
+    private static TimeSpan TempoAteProximaExecucao()
+    {
+        var agoraUtc = DateTime.UtcNow;
+        var agoraLocal = TimeZoneInfo.ConvertTimeFromUtc(agoraUtc, TZ);
+
+        var proximaExecucaoLocal = new DateTime(
+            agoraLocal.Year, agoraLocal.Month, agoraLocal.Day,
+            RUN_HOUR_LOCAL, RUN_MINUTE_LOCAL, 0, agoraLocal.Kind);
+
+        if (proximaExecucaoLocal <= agoraLocal)
+            proximaExecucaoLocal = proximaExecucaoLocal.AddDays(1);
+
+        var proximaExecucaoUtc = TimeZoneInfo.ConvertTimeToUtc(proximaExecucaoLocal, TZ);
+        var delay = proximaExecucaoUtc - agoraUtc;
+        return delay > TimeSpan.Zero ? delay : TimeSpan.Zero;
+    }
+
+    private static TimeZoneInfo GetBrazilTz()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo"); }
+        catch
+        {
+            try { return TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"); }
+            catch { return TimeZoneInfo.Local; }
         }
     }
 }

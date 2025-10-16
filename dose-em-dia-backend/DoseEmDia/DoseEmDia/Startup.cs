@@ -41,7 +41,7 @@ namespace DoseEmDia
             services.AddScoped<PaisService>();
             services.AddScoped<ComprovanteService>();
             services.AddHostedService<CampanhasEmailService>();
-           // services.AddScoped<VacinasEmailService>();
+            services.AddScoped<VacinasEmailService>();
             services.AddHttpClient();
             services.AddMemoryCache();
             services.AddHttpClient<DoseEmDia.Services.Geo.PostoVacinacaoLocService>();
