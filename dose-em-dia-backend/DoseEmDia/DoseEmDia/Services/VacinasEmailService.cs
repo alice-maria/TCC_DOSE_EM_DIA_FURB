@@ -10,10 +10,10 @@ namespace DoseEmDia.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<VacinasEmailService> _logger;
-
-        private const int WINDOW_DAYS = 30;   
-        private const int DEDUPE_DAYS = 31;   
+        private const int WINDOW_DAYS = 30;
+        private const int DEDUPE_DAYS = 31;
         private const int MAX_POR_USUARIO = 2;
+        private static readonly TimeSpan CADENCIA = TimeSpan.FromMinutes(5);
 
         public VacinasEmailService(IServiceProvider serviceProvider, ILogger<VacinasEmailService> logger)
         {
@@ -48,7 +48,7 @@ namespace DoseEmDia.Services
                         .ToListAsync(stoppingToken);
 
                     _logger.LogInformation(
-                        "Consulta base retornou {qtde} vacinas (aplicadas, com validade e usuários que aceitam notificação).",
+                        "Consulta base retornou {qtde} vacinas (aplicadas, com validade e usuários aptos a notificação).",
                         vacinas.Count);
                 }
                 catch (Exception ex)
@@ -79,10 +79,10 @@ namespace DoseEmDia.Services
                         var semEmail = vacinas.Count(x => string.IsNullOrWhiteSpace(x.Usuario!.Email));
                         var totalUsuariosSemNotif = await context.Usuario.CountAsync(u => !u.ReceberNotificacoes, stoppingToken);
                         _logger.LogInformation(
-                            "Diagnóstico: usuários sem e-mail (dentre as vacinas base)={semEmail}; usuários com ReceberNotificacoes=false={qtdeSemNotif}.",
+                            "Diagnóstico: usuários sem e-mail (na base atual)={semEmail}; usuários com ReceberNotificacoes=false={qtdeSemNotif}.",
                             semEmail, totalUsuariosSemNotif);
                     }
-                    catch { /*  */ }
+                    catch { /* diagnóstico best-effort */ }
                 }
 
                 var notificacoesCriadas = new List<Notificacao>();
@@ -109,8 +109,8 @@ namespace DoseEmDia.Services
                         continue;
 
                     string titulo = tipo == TipoNotificacao.VacinaAtrasada
-                        ? "Vacina atrasada"
-                        : "Vacina prestes a vencer";
+                        ? $"Vacina atrasada: {vacina.Nome}"
+                        : $"Vacina prestes a vencer: {vacina.Nome}";
 
                     string h2Titulo = tipo == TipoNotificacao.VacinaAtrasada
                         ? "Vacina em atraso"
@@ -120,7 +120,28 @@ namespace DoseEmDia.Services
                         ? "em atraso"
                         : "prestes a vencer";
 
-                    string mensagem = $@" <html> <body style='font-family: Arial, Helvetica, sans-serif; background-color: #f9f9f9; padding: 20px; color: #333;'> <div style='max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; padding: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);'> <h2 style='color: #d93025; text-align: center;'>{h2Titulo}</h2> <p>Olá,</p> <p> Identificamos que a vacina <strong>{vacina.Nome}</strong> está <strong>{statusTexto}</strong> e requer a sua atenção imediata. </p> <p> Manter sua vacinação em dia é essencial para garantir sua saúde e proteção contra doenças preveníveis. Caso já tenha regularizado sua vacinação, por favor, desconsidere este aviso. </p> <hr style='border: none; border-top: 1px solid #eee; margin: 30px 0;' /> <p style='font-size: 13px; color: #666; text-align: center;'> Este é um aviso automático do sistema <strong>Dose em Dia</strong>.<br/> Não responda a este e-mail diretamente. </p> </div> </body> </html>";
+                    string mensagem = $@"
+<html>
+  <body style='font-family: Arial, Helvetica, sans-serif; background-color: #f9f9f9; padding: 20px; color: #333;'>
+    <div style='max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; padding: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);'>
+      <h2 style='color: #d93025; text-align: center;'>{h2Titulo}</h2>
+      <p>Olá,</p>
+      <p>
+        Identificamos que a vacina <strong>{vacina.Nome}</strong> está <strong>{statusTexto}</strong>.
+        <br/>Data de vencimento estimada: <strong>{dataVencimento:dd/MM/yyyy}</strong>.
+      </p>
+      <p>
+        Manter sua vacinação em dia é essencial para garantir sua saúde e proteção.
+        Caso já tenha regularizado, por favor, desconsidere este aviso.
+      </p>
+      <hr style='border: none; border-top: 1px solid #eee; margin: 30px 0;' />
+      <p style='font-size: 13px; color: #666; text-align: center;'>
+        Este é um aviso automático do sistema <strong>Dose em Dia</strong>.<br/>
+        Não responda a este e-mail diretamente.
+      </p>
+    </div>
+  </body>
+</html>";
 
                     bool jaEnviado = false;
                     try
@@ -137,7 +158,7 @@ namespace DoseEmDia.Services
                     {
                         _logger.LogError(ex, "Falha ao verificar deduplicação para UsuarioId={UsuarioId}, VacinaId={VacinaId}",
                             vacina.UsuarioId, vacina.IdVacina);
-                        jaEnviado = false; 
+                        jaEnviado = false; // fallback: deixa passar
                     }
 
                     if (jaEnviado)
@@ -200,7 +221,8 @@ namespace DoseEmDia.Services
 
                 try
                 {
-                    await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
+                    // >>> CADÊNCIA CURTA: 5 MINUTOS <<<
+                    await Task.Delay(CADENCIA, stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {

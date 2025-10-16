@@ -1031,10 +1031,12 @@ export default {
 }
 
 @media (max-width: 600px) {
-  .chatbot-popup { --padx: 14px; }
+  .chatbot-popup {
+    --padx: 14px;
+  }
 
-  .form-suporte { 
-    padding: 0 !important; 
+  .form-suporte {
+    padding: 0 !important;
     max-width: 100% !important;
   }
 
@@ -1048,12 +1050,18 @@ export default {
     background: #fff;
     box-sizing: border-box;
     gap: 10px;
+    background-color: #f46c20 !important;
+    color: #fff !important;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition: background-color 0.2s ease;
   }
 
   .form-suporte .btn-acao,
   .form-suporte .voltar {
     position: static !important;
-    left: auto; right: auto;    
+    left: auto;
+    right: auto;
     width: 100% !important;
     margin: 0 !important;
     border-radius: 10px;
@@ -1064,5 +1072,4 @@ export default {
     position: static !important;
   }
 }
-
 </style>
