@@ -40,12 +40,12 @@ public sealed class VacinasEmailService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro no loop do VacinasEmailDailyService.");
+                _logger.LogError(ex, "Erro no loop do VacinasEmailService.");
                 try { await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); } catch { /* ignore */ }
             }
         }
 
-        _logger.LogInformation("VacinasEmailDailyService finalizado.");
+        _logger.LogInformation("VacinasEmailService finalizado.");
     }
 
     private async Task RunOnceAsync(CancellationToken ct)
