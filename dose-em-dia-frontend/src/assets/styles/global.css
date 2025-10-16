@@ -562,6 +562,26 @@ html.fonte-alta .pagina-notificacoes .mensagem-nenhuma-notificacao {
   font-size: 1.25rem !important;
 }
 
+html.fonte-baixa .pagina-notificacoes .text-body-1 {
+  font-size: 1.05rem !important;
+}
+html.fonte-media .pagina-notificacoes .text-body-1 {
+  font-size: 1.15rem !important;
+}
+html.fonte-alta .pagina-notificacoes .text-body-1 {
+  font-size: 1.25rem !important;
+}
+
+html.fonte-baixa .pagina-notificacoes .text-caption {
+  font-size: 0.95rem !important;
+}
+html.fonte-media .pagina-notificacoes .text-caption {
+  font-size: 1.05rem !important;
+}
+html.fonte-alta .pagina-notificacoes .text-caption {
+  font-size: 1.15rem !important;
+}
+
 :root {
   --color-bg: #000000;
   --color-fg: #00cc88;
