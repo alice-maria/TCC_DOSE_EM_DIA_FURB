@@ -287,7 +287,7 @@ namespace DoseEmDia.Helpers
             await ThrowIfFailedAsync(resp, "Falha ao enviar o e-mail de suporte.");
         }
 
-        public async Task EnviarResumoVacinasPorStatusAsync(int usuarioId, CancellationToken ct = default)
+        public async Task EnviarVacinasAtrasadasAsync(int usuarioId, CancellationToken ct = default)
         {
             var usuario = await _db.Usuario
                 .AsNoTracking()
@@ -297,52 +297,113 @@ namespace DoseEmDia.Helpers
 
             if (usuario is null || string.IsNullOrWhiteSpace(usuario.Email))
                 throw new InvalidOperationException("Usuário não encontrado ou sem e-mail cadastrado.");
+            if (!usuario.ReceberNotificacoes) return;
 
-            if (!usuario.ReceberNotificacoes)
-                return; 
-
-            var vacinas = await _db.Vacina
+            var atrasadas = await _db.Vacina
                 .AsNoTracking()
-                .Where(v => v.UsuarioId == usuarioId &&
-                           (v.Status == StatusVacina.EmAtraso || v.Status == StatusVacina.AVencer))
-                .Select(v => new
-                {
-                    v.Nome,
-                    v.Status,
-                    v.DataAplicacao,
-                    v.ValidadeMeses
-                })
+                .Where(v => v.UsuarioId == usuarioId && v.Status == StatusVacina.EmAtraso)
+                .Select(v => new { v.Nome, v.DataAplicacao, v.ValidadeMeses })
+                .OrderBy(v => v.DataAplicacao)
                 .ToListAsync(ct);
 
-            if (vacinas.Count == 0)
-                return; 
+            if (atrasadas.Count == 0) return;
 
-            var atrasadas = vacinas
-                .Where(v => v.Status == StatusVacina.EmAtraso)
-                .OrderBy(v => v.DataAplicacao)
-                .ToList();
+            string corpoHtml = MontarEmailTabela(
+                tituloTopo: "Vacinas Atrasadas — Dose em Dia",
+                introducao: $"Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, identificamos vacina(s) com status <strong>atrasada</strong> no seu cadastro:",
+                tituloSecao: "Atrasadas",
+                itens: atrasadas.Select(x => (Nome: x.Nome, Aplicacao: x.DataAplicacao, ValMeses: x.ValidadeMeses))
+            );
 
-            var aVencer = vacinas
-                .Where(v => v.Status == StatusVacina.AVencer)
-                .OrderBy(v => v.DataAplicacao)
-                .ToList();
+            var assunto = "Vacinas atrasadas — Dose em Dia";
+            await EnviarEmailAsync(usuario.Email, assunto, corpoHtml, ct);
 
-            string MontarSecao(string titulo, IEnumerable<(string Nome, DateTime Aplicacao, int? ValMeses)> itens)
+            try
             {
-                if (!itens.Any()) return string.Empty;
+                _db.Notificacao.Add(new Notificacao
+                {
+                    UsuarioId = usuario.IdUser,
+                    Tipo = TipoNotificacao.VacinaAtrasada,
+                    Titulo = "Vacinas Atrasadas",
+                    Mensagem = $"Você possui {atrasadas.Count} vacina(s) atrasada(s).",
+                    DataEnvio = DateTime.UtcNow,
+                    EmailEnviado = true,
+                    Visualizada = false
+                });
+                await _db.SaveChangesAsync(ct);
+            }
+            catch { /* não interrompe o fluxo se falhar o log */ }
+        }
 
+        public async Task EnviarVacinasAVencerAsync(int usuarioId, CancellationToken ct = default)
+        {
+            var usuario = await _db.Usuario
+                .AsNoTracking()
+                .Where(u => u.IdUser == usuarioId)
+                .Select(u => new { u.IdUser, u.Nome, u.Email, u.ReceberNotificacoes })
+                .FirstOrDefaultAsync(ct);
+
+            if (usuario is null || string.IsNullOrWhiteSpace(usuario.Email))
+                throw new InvalidOperationException("Usuário não encontrado ou sem e-mail cadastrado.");
+            if (!usuario.ReceberNotificacoes) return;
+
+            var aVencer = await _db.Vacina
+                .AsNoTracking()
+                .Where(v => v.UsuarioId == usuarioId && v.Status == StatusVacina.AVencer)
+                .Select(v => new { v.Nome, v.DataAplicacao, v.ValidadeMeses })
+                .OrderBy(v => v.DataAplicacao)
+                .ToListAsync(ct);
+
+            if (aVencer.Count == 0) return;
+
+            string corpoHtml = MontarEmailTabela(
+                tituloTopo: "Vacinas a Vencer — Dose em Dia",
+                introducao: $"Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, identificamos vacina(s) com status <strong>a vencer</strong> no seu cadastro:",
+                tituloSecao: "A vencer",
+                itens: aVencer.Select(x => (Nome: x.Nome, Aplicacao: x.DataAplicacao, ValMeses: x.ValidadeMeses))
+            );
+
+            var assunto = "Vacinas a vencer — Dose em Dia";
+            await EnviarEmailAsync(usuario.Email, assunto, corpoHtml, ct);
+
+            try
+            {
+                _db.Notificacao.Add(new Notificacao
+                {
+                    UsuarioId = usuario.IdUser,
+                    Tipo = TipoNotificacao.VacinaVencendo,
+                    Titulo = "Vacinas a Vencer",
+                    Mensagem = $"Você possui {aVencer.Count} vacina(s) a vencer.",
+                    DataEnvio = DateTime.UtcNow,
+                    EmailEnviado = true,
+                    Visualizada = false
+                });
+                await _db.SaveChangesAsync(ct);
+            }
+            catch { /* não interrompe o fluxo se falhar o log */ }
+        }
+
+        // Helper para montar o HTML padrão dos e-mails de vacinas
+        private static string MontarEmailTabela(
+            string tituloTopo,
+            string introducao,
+            string tituloSecao,
+            IEnumerable<(string Nome, DateTime Aplicacao, int? ValMeses)> itens)
+        {
+            string MontarSecao()
+            {
                 var sb = new StringBuilder();
                 sb.AppendLine($@"
-                 <h3 style='margin:16px 0 8px;color:#d35400'>{titulo}</h3>
-                 <table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='border-collapse:collapse'>
-                   <thead>
-                     <tr>
-                       <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Vacina</th>
-                       <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Data aplicação</th>
-                       <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Validade estimada</th>
-                     </tr>
-                   </thead>
-                   <tbody>");
+                  <h3 style='margin:16px 0 8px;color:#d35400'>{WebUtility.HtmlEncode(tituloSecao)}</h3>
+                  <table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='border-collapse:collapse'>
+                    <thead>
+                      <tr>
+                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Vacina</th>
+                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Data aplicação</th>
+                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Validade estimada</th>
+                      </tr>
+                    </thead>
+                    <tbody>");
                 foreach (var it in itens)
                 {
                     var validade = it.ValMeses.HasValue
@@ -350,94 +411,50 @@ namespace DoseEmDia.Helpers
                         : "—";
 
                     sb.AppendLine($@"
-              <tr>
-                <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(it.Nome)}</td>
-                <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{it.Aplicacao:dd/MM/yyyy}</td>
-                <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{validade}</td>
-              </tr>");
+                      <tr>
+                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(it.Nome)}</td>
+                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{it.Aplicacao:dd/MM/yyyy}</td>
+                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{validade}</td>
+                      </tr>");
                 }
                 sb.AppendLine("</tbody></table>");
                 return sb.ToString();
             }
 
             var corpoHtml = $@"
-             <!DOCTYPE html>
-             <html lang='pt-BR'>
-               <body style='margin:0;padding:24px;background:#fafafa;
-                            font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;color:#111'>
-                 <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'>
-                   <tr><td align='center'>
-                     <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'
-                            style='max-width:720px;background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden'>
-                       <tr>
-                         <td style='padding:20px 24px;background:#fff3e9;border-bottom:1px solid #ffe3cf'>
-                           <h2 style='margin:0;color:#f46c20'>Status de Vacinas — Dose em Dia</h2>
-                         </td>
-                       </tr>
+            <!DOCTYPE html>
+            <html lang='pt-BR'>
+              <body style='margin:0;padding:24px;background:#fafafa;
+                           font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;color:#111'>
+                <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'>
+                  <tr><td align='center'>
+                    <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'
+                           style='max-width:720px;background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden'>
+                      <tr>
+                        <td style='padding:20px 24px;background:#fff3e9;border-bottom:1px solid #ffe3cf'>
+                          <h2 style='margin:0;color:#f46c20'>{WebUtility.HtmlEncode(tituloTopo)}</h2>
+                        </td>
+                      </tr>
 
-                       <tr><td style='padding:20px 24px'>
-                         <p style='margin:0 0 12px'>
-                           Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, 
-                           identificamos vacinas com status de <strong>atrasadas</strong> e/ou <strong>a vencer</strong> em seu cadastro:
-                         </p>
+                      <tr><td style='padding:20px 24px'>
+                        <p style='margin:0 0 12px'>{introducao}</p>
+                        {MontarSecao()}
+                        <div style='height:16px'></div>
+                        <p style='font-size:13px;color:#555;margin:0'>
+                          Mantenha seu cartão de vacinação em dia. Em caso de dúvidas, procure uma unidade de saúde.
+                        </p>
+                        <div style='height:8px'></div>
+                        <p style='font-size:13px;color:#555;margin:0'>
+                          Este é um e-mail automático. Não responda por este canal.
+                        </p>
+                      </td></tr>
+                    </table>
+                  </td></tr>
+                </table>
+              </body>
+            </html>";
 
-                         {MontarSecao("Atrasadas", atrasadas.Select(x => (x.Nome, x.DataAplicacao, x.ValidadeMeses)))}
-                         {MontarSecao("A vencer", aVencer.Select(x => (x.Nome, x.DataAplicacao, x.ValidadeMeses)))}
-
-                         <div style='height:16px'></div>
-                         <p style='font-size:13px;color:#555;margin:0'>
-                           Mantenha seu cartão de vacinação em dia. Em caso de dúvidas, procure uma unidade de saúde.
-                         </p>
-                         <div style='height:8px'></div>
-                         <p style='font-size:13px;color:#555;margin:0'>
-                           Este é um e-mail automático. Não responda por este canal.
-                         </p>
-                       </td></tr>
-                     </table>
-                   </td></tr>
-                 </table>
-               </body>
-             </html>";
-
-            var assunto = "Vacinas atrasadas e a vencer — Dose em Dia";
-            await EnviarEmailAsync(usuario.Email, assunto, corpoHtml, ct);
-
-            try
-            {
-                if (atrasadas.Count > 0)
-                {
-                    _db.Notificacao.Add(new Notificacao
-                    {
-                        UsuarioId = usuario.IdUser,
-                        Tipo = TipoNotificacao.VacinaAtrasada,
-                        Titulo = "Vacinas Atrasadas",
-                        Mensagem = $"Você possui {atrasadas.Count} vacina(s) vencida(s).",
-                        DataEnvio = DateTime.UtcNow,
-                        EmailEnviado = true,
-                        Visualizada = false
-                    });
-                }
-
-                if (aVencer.Count > 0)
-                {
-                    _db.Notificacao.Add(new Notificacao
-                    {
-                        UsuarioId = usuario.IdUser,
-                        Tipo = TipoNotificacao.VacinaVencendo,
-                        Titulo = "Vacinas a Vencer",
-                        Mensagem = $"Você possui {aVencer.Count} vacina(s) a vencer nos próximos dias.",
-                        DataEnvio = DateTime.UtcNow,
-                        EmailEnviado = true,
-                        Visualizada = false
-                    });
-                }
-
-                await _db.SaveChangesAsync(ct);
-            }
-            catch
-            {
-                // não interrompe o envio se falhar o registro
-            }
+            return corpoHtml;
         }
 
         private static string StripHtml(string html)

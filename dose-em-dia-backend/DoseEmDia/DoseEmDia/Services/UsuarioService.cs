@@ -205,7 +205,8 @@ public class UsuarioService
                 {
                     if (usuario.ReceberNotificacoes) 
                     {
-                        await _envioEmail.EnviarResumoVacinasPorStatusAsync(usuario.IdUser, ct);
+                        await _envioEmail.EnviarVacinasAtrasadasAsync(usuario.IdUser, ct);
+                        await _envioEmail.EnviarVacinasAVencerAsync(usuario.IdUser, ct);
                     }
                 }
                 catch (Exception ex)

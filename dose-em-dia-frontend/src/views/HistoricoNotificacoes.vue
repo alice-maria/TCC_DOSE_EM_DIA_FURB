@@ -138,7 +138,7 @@ export default {
         return;
       }
       try {
-        const { data } = await axios.get(
+        const { data } = await api.get(
           `/api/notificacoes/usuario/${cpf}/historico`
         );
         this.notificacoes = Array.isArray(data) ? data : [];
