@@ -456,6 +456,11 @@ namespace DoseEmDia.Helpers
 
             return corpoHtml;
         }
+        public async Task EnviarResumoVacinasPorStatusAsync(int usuarioId, CancellationToken ct = default)
+        {
+            await EnviarVacinasAtrasadasAsync(usuarioId, ct);
+            await EnviarVacinasAVencerAsync(usuarioId, ct);
+        }
 
         private static string StripHtml(string html)
         {
