@@ -221,7 +221,6 @@ namespace DoseEmDia.Services
 
                 try
                 {
-                    // >>> CADÊNCIA CURTA: 5 MINUTOS <<<
                     await Task.Delay(CADENCIA, stoppingToken);
                 }
                 catch (OperationCanceledException)

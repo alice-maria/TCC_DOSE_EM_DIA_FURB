@@ -250,7 +250,7 @@ export default {
 @media (max-width: 600px) {
   .acessibilidade-container {
     right: 12px;
-    bottom: calc(380px + env(safe-area-inset-bottom));
+    bottom: calc(320px + env(safe-area-inset-bottom));
   }
 
   .acessibilidade-wrap .acessibilidade-tooltip {
@@ -258,15 +258,19 @@ export default {
   }
 
   .acessibilidade-menu {
-    bottom: calc(56px + env(safe-area-inset-bottom));
+    position: absolute;
     right: 0;
     top: auto;
-    min-width: 0;
+    bottom: calc(56px + env(safe-area-inset-bottom));
+    transform: translateY(14vh);   
     width: min(92vw, 380px);
+    max-height: 70vh;               
+    overflow-y: auto;                
     padding: 10px;
     gap: 8px;
     border-radius: 12px;
     box-shadow: var(--acc-shadow-sm);
+    z-index: 10000;
   }
 
   .acessibilidade-menu button {

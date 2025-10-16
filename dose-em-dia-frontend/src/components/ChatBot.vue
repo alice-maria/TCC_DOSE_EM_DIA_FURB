@@ -1041,35 +1041,63 @@ export default {
   }
 
   .form-suporte .botoes {
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
-    width: calc(100% + (var(--padx) * 2));
-    margin-left: calc(var(--padx) * -1);
-    padding: 10px var(--padx) calc(env(safe-area-inset-bottom) + 8px);
-    background: #fff;
-    box-sizing: border-box;
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+    position: static;
+  }
+
+  .form-suporte .btn-acao {
     background-color: #f46c20 !important;
     color: #fff !important;
     border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
     transition: background-color 0.2s ease;
+    width: 100%;
+    position: static !important;
   }
 
-  .form-suporte .btn-acao,
+  .form-suporte .btn-acao:hover {
+    background-color: #d45c18 !important;
+  }
+
   .form-suporte .voltar {
+    background-color: #f0f0f0 !important;
+    color: #1f1f1f !important;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
     position: static !important;
-    left: auto;
-    right: auto;
-    width: 100% !important;
-    margin: 0 !important;
-    border-radius: 10px;
   }
 
-  .voltar,
-  .btn-acao {
-    position: static !important;
+  .form-suporte .voltar:hover {
+    background-color: #e0e0e0 !important;
+  }
+
+  @media (max-width: 600px) {
+    .form-suporte .botoes {
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .form-suporte .btn-acao,
+    .form-suporte .voltar {
+      width: 100% !important;
+      margin: 0 !important;
+      border-radius: 10px;
+      font-size: .95rem;
+    }
   }
 }
 </style>
