@@ -29,26 +29,48 @@
 
       <!-- Filtros -->
       <div class="d-flex flex-wrap gap-2 mb-4">
+        <!-- Todas -->
         <button class="btn-filtro" :class="filtro === '' ? 'btn-dark text-white' : 'btn-outline-dark'"
-          @click="filtro = ''">
+          @click="filtro = ''" aria-label="Filtrar: todas as vacinas" title="Exibe todas as vacinas">
           Todas
         </button>
 
-        <button class="btn-filtro" :class="filtro === 'Aplicada' ? 'btn-success text-white' : 'btn-outline-success'"
-          @click="filtro = 'Aplicada'">
-          Aplicadas
-        </button>
+        <!-- Aplicadas -->
+        <v-tooltip text="Vacinas já aplicadas." location="top" open-delay="120">
+          <template #activator="{ props }">
+            <button v-bind="props" class="btn-filtro"
+              :class="filtro === 'Aplicada' ? 'btn-success text-white' : 'btn-outline-success'"
+              @click="filtro = 'Aplicada'" aria-label="Filtrar: vacinas aplicadas" title="Vacinas já aplicadas.">
+              Aplicadas
+            </button>
+          </template>
+        </v-tooltip>
 
-        <button class="btn-filtro" :class="filtro === 'A vencer' ? 'btn-warning text-white' : 'btn-outline-warning'"
-          @click="filtro = 'A vencer'">
-          A vencer
-        </button>
+        <!-- A vencer -->
+        <v-tooltip text="Vacinas com a data de aplicação da próxima dose para vencer em 30 dias." location="top"
+          open-delay="120">
+          <template #activator="{ props }">
+            <button v-bind="props" class="btn-filtro"
+              :class="filtro === 'A vencer' ? 'btn-warning text-white' : 'btn-outline-warning'"
+              @click="filtro = 'A vencer'" aria-label="Filtrar: vacinas a vencer"
+              title="Vacinas com a data de aplicação da próxima dose para vencer em 30 dias.">
+              A vencer
+            </button>
+          </template>
+        </v-tooltip>
 
-        <button class="btn-filtro" :class="filtro === 'Vencida' ? 'btn-danger text-white' : 'btn-outline-danger'"
-          @click="filtro = 'Vencida'">
-          Vencidas
-        </button>
+        <!-- Vencidas -->
+        <v-tooltip text="Vacinas com a data de aplicação da próxima dose em atraso." location="top" open-delay="120">
+          <template #activator="{ props }">
+            <button v-bind="props" class="btn-filtro"
+              :class="filtro === 'Vencida' ? 'btn-danger text-white' : 'btn-outline-danger'" @click="filtro = 'Vencida'"
+              aria-label="Filtrar: vacinas vencidas" title="Vacinas com a data de aplicação da próxima dose em atraso.">
+              Vencidas
+            </button>
+          </template>
+        </v-tooltip>
       </div>
+
       <!-- Vacinas -->
       <div class="row row-cols-1 row-cols-md-3 gx-4">
         <template v-for="vacina in vacinasFiltradas" :key="vacina.id">

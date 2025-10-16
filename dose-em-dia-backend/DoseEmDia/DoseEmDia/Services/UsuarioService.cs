@@ -200,6 +200,19 @@ public class UsuarioService
                 await _vacinaService.GerarEVincularVacinas(usuario.IdUser, idade, usuario.Sexo);
 
                 await tx.CommitAsync(ct);
+
+                try
+                {
+                    if (usuario.ReceberNotificacoes) 
+                    {
+                        await _envioEmail.EnviarResumoVacinasPorStatusAsync(usuario.IdUser, ct);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Falha ao enviar e-mail inicial de vacinas para o usuário {IdUser}", usuario.IdUser);
+                }
+
                 return usuario;
             }
             catch (DbUpdateException ex) when (ex.InnerException is PostgresException pg && pg.SqlState == "23505")
