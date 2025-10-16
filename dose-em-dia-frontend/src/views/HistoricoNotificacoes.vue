@@ -56,7 +56,7 @@ import UsuarioMenu from "@/views/UsuarioMenu.vue";
 const baseURL = process.env.VUE_APP_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
 
 export const api = axios.create({
-  baseURL: baseURL.replace(/\/+$/, ""), 
+  baseURL: baseURL.replace(/\/+$/, ""),
   timeout: 20000,
 });
 
@@ -217,5 +217,95 @@ export default {
 .mensagem-nenhuma-notificacao {
   text-align: center;
   color: #6b7280;
+}
+
+@media (max-width: 960px) {
+  .pagina-notificacoes {
+    margin-left: 0;
+    padding-inline: 12px;
+  }
+
+  .header {
+    padding: calc(1rem * var(--scale)) 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .titulo {
+    font-size: calc(1.6rem * var(--scale));
+  }
+
+  :deep(.meus-breadcrumbs) {
+    padding-inline: 0 !important;
+  }
+
+  :deep(.meus-breadcrumbs .v-breadcrumbs-item),
+  :deep(.meus-breadcrumbs .v-breadcrumbs-item a),
+  :deep(.meus-breadcrumbs .v-breadcrumbs-item span),
+  :deep(.meus-breadcrumbs .v-breadcrumbs-divider) {
+    font-size: calc(0.95rem * var(--scale));
+  }
+
+  .breadcrumb-link {
+    font-size: calc(1rem * var(--scale));
+  }
+
+  .breadcrumb-home-img {
+    width: calc(16px * var(--scale));
+  }
+
+  .outlined-card {
+    margin-left: 0;
+    padding: calc(0.75rem * var(--scale)) calc(0.9rem * var(--scale));
+    min-height: calc(120px * var(--scale));
+  }
+
+  :deep(.outlined-card .text-orange-darken-2) {
+    font-size: calc(1.06rem * var(--scale));
+  }
+
+  :deep(.outlined-card .text-body-1) {
+    font-size: calc(0.98rem * var(--scale));
+  }
+
+  :deep(.outlined-card .text-caption) {
+    font-size: calc(0.88rem * var(--scale));
+  }
+
+  .icone-notificacao {
+    width: calc(20px * var(--scale));
+    margin-right: calc(0.4rem * var(--scale));
+  }
+
+  :deep(.d-flex.flex-column.gap-4) {
+    gap: calc(1.1rem * var(--scale)) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    gap: 0.25rem;
+  }
+
+  .titulo {
+    font-size: calc(1.45rem * var(--scale));
+  }
+
+  :deep(.outlined-card .text-orange-darken-2) {
+    font-size: calc(1.02rem * var(--scale));
+  }
+
+  :deep(.outlined-card .text-body-1) {
+    font-size: calc(0.96rem * var(--scale));
+  }
+
+  :deep(.outlined-card .text-caption) {
+    font-size: calc(0.86rem * var(--scale));
+  }
+
+  .icone-notificacao {
+    width: calc(18px * var(--scale));
+  }
 }
 </style>

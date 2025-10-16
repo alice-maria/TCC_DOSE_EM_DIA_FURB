@@ -451,6 +451,51 @@ body.fonte-alta .lista li {
   font-size: 1.0rem !important;
 }
 
+.pagina-notificacoes .titulo {
+  font-size: calc(1.8rem * var(--heading-scale)) !important;
+  line-height: 1.2;
+}
+
+.pagina-notificacoes .meus-breadcrumbs :is(.v-breadcrumbs-item, .v-breadcrumbs-item a, .v-breadcrumbs-item span, .v-breadcrumbs-divider) {
+  font-size: calc(1rem * var(--scale)) !important;
+  line-height: 1.3;
+}
+
+.pagina-notificacoes .outlined-card {
+  padding: calc(0.5rem * var(--scale));
+  min-height: calc(140px * var(--scale));
+}
+
+.pagina-notificacoes .outlined-card :is(h5, .text-orange-darken-2) {
+  font-size: calc(1.125rem * var(--scale)) !important;
+  line-height: 1.28;
+  font-weight: 700;
+}
+
+.pagina-notificacoes .outlined-card .text-body-1 {
+  font-size: calc(1rem * var(--scale)) !important;
+  line-height: 1.5;
+}
+
+.pagina-notificacoes .outlined-card .text-caption {
+  font-size: calc(0.92rem * var(--scale)) !important;
+  line-height: 1.35;
+}
+
+.pagina-notificacoes .icone-notificacao {
+  width: calc(22px * var(--scale));
+  height: auto;
+  margin-right: calc(0.5rem * var(--scale));
+}
+
+.pagina-notificacoes .d-flex.flex-column.gap-4 {
+  gap: calc(1rem * var(--scale)) !important;
+}
+
+.pagina-notificacoes .mensagem-nenhuma-notificacao {
+  font-size: calc(1rem * var(--scale)) !important;
+}
+
 :root {
   --color-bg: #000000;
   --color-fg: #00cc88;
