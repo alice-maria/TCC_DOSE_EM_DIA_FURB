@@ -302,7 +302,7 @@ namespace DoseEmDia.Helpers
             var atrasadas = await _db.Vacina
                 .AsNoTracking()
                 .Where(v => v.UsuarioId == usuarioId && v.Status == StatusVacina.EmAtraso)
-                .Select(v => new { v.Nome, v.DataAplicacao, v.ValidadeMeses })
+                .Select(v => new { v.Nome, v.DataAplicacao, v.NumeroLote })
                 .OrderBy(v => v.DataAplicacao)
                 .ToListAsync(ct);
 
@@ -312,7 +312,7 @@ namespace DoseEmDia.Helpers
                 tituloTopo: "Vacinas Atrasadas — Dose em Dia",
                 introducao: $"Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, identificamos vacina(s) com status <strong>atrasada</strong> no seu cadastro:",
                 tituloSecao: "Atrasadas",
-                itens: atrasadas.Select(x => (Nome: x.Nome, Aplicacao: x.DataAplicacao, ValMeses: x.ValidadeMeses))
+                itens: atrasadas.Select(x => (x.Nome, x.DataAplicacao, x.NumeroLote ))
             );
 
             var assunto = "Vacinas atrasadas — Dose em Dia";
@@ -350,7 +350,7 @@ namespace DoseEmDia.Helpers
             var aVencer = await _db.Vacina
                 .AsNoTracking()
                 .Where(v => v.UsuarioId == usuarioId && v.Status == StatusVacina.AVencer)
-                .Select(v => new { v.Nome, v.DataAplicacao, v.ValidadeMeses })
+                .Select(v => new { v.Nome, v.DataAplicacao, v.NumeroLote })
                 .OrderBy(v => v.DataAplicacao)
                 .ToListAsync(ct);
 
@@ -360,7 +360,7 @@ namespace DoseEmDia.Helpers
                 tituloTopo: "Vacinas a Vencer — Dose em Dia",
                 introducao: $"Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, identificamos vacina(s) com status <strong>a vencer</strong> no seu cadastro:",
                 tituloSecao: "A vencer",
-                itens: aVencer.Select(x => (Nome: x.Nome, Aplicacao: x.DataAplicacao, ValMeses: x.ValidadeMeses))
+                itens: aVencer.Select(x => (Nome: x.Nome, Áplicacao: x.DataAplicacao, Lote: x.NumeroLote ))
             );
 
             var assunto = "Vacinas a vencer — Dose em Dia";
@@ -383,12 +383,11 @@ namespace DoseEmDia.Helpers
             catch { /* não interrompe o fluxo se falhar o log */ }
         }
 
-        // Helper para montar o HTML padrão dos e-mails de vacinas
         private static string MontarEmailTabela(
             string tituloTopo,
             string introducao,
             string tituloSecao,
-            IEnumerable<(string Nome, DateTime Aplicacao, int? ValMeses)> itens)
+            IEnumerable<(string Nome, DateTime Aplicacao, int Lote)> itens)
         {
             string MontarSecao()
             {
@@ -401,20 +400,17 @@ namespace DoseEmDia.Helpers
                         <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Vacina</th>
                         <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Data aplicação</th>
                         <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Validade estimada</th>
+                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Lote</th>
                       </tr>
                     </thead>
                     <tbody>");
                 foreach (var it in itens)
                 {
-                    var validade = it.ValMeses.HasValue
-                        ? it.Aplicacao.AddMonths(it.ValMeses.Value).ToString("dd/MM/yyyy")
-                        : "—";
-
                     sb.AppendLine($@"
                       <tr>
                         <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(it.Nome)}</td>
                         <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{it.Aplicacao:dd/MM/yyyy}</td>
-                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{validade}</td>
+                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(it.Lote.ToString())}</td>
                       </tr>");
                 }
                 sb.AppendLine("</tbody></table>");
