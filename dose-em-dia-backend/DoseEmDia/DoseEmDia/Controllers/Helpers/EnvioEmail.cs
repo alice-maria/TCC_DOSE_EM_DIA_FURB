@@ -309,13 +309,13 @@ namespace DoseEmDia.Helpers
             if (atrasadas.Count == 0) return;
 
             string corpoHtml = MontarEmailTabela(
-                tituloTopo: "Vacinas Atrasadas — Dose em Dia",
-                introducao: $"Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, identificamos vacina(s) com status <strong>atrasada</strong> no seu cadastro:",
-                tituloSecao: "Atrasadas",
+                tituloTopo: "Vacinas Vencidas — Dose em Dia",
+                introducao: $"Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, identificamos vacina(s) com status <strong>vencida</strong> no seu cadastro:",
+                tituloSecao: "Vencidas",
                 itens: atrasadas.Select(x => (x.Nome, x.DataAplicacao, x.NumeroLote ))
             );
 
-            var assunto = "Vacinas atrasadas — Dose em Dia";
+            var assunto = "Vacinas vencidas — Dose em Dia";
             await EnviarEmailAsync(usuario.Email, assunto, corpoHtml, ct);
 
             try
@@ -324,7 +324,7 @@ namespace DoseEmDia.Helpers
                 {
                     UsuarioId = usuario.IdUser,
                     Tipo = TipoNotificacao.VacinaAtrasada,
-                    Titulo = "Vacinas Atrasadas",
+                    Titulo = "Vacinas Vencidas",
                     Mensagem = $"Você possui {atrasadas.Count} vacina(s) atrasada(s).",
                     DataEnvio = DateTime.UtcNow,
                     EmailEnviado = true,
@@ -399,7 +399,6 @@ namespace DoseEmDia.Helpers
                       <tr>
                         <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Vacina</th>
                         <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Data aplicação</th>
-                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Validade estimada</th>
                         <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Lote</th>
                       </tr>
                     </thead>

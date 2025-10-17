@@ -247,11 +247,12 @@ export default {
   },
   computed: {
     dataNascimentoTexto() {
-      if (!this.form.dataNascimento) return "";
-      const [y, m, d] = this.form.dataNascimento.split("-").map(Number);
-      const dt = new Date(Date.UTC(y, (m - 1), d));
-      return dt.toLocaleDateString("pt-BR");
+      const v = this.form.dataNascimento;
+      if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return "";
+      const [y, m, d] = v.split("-");
+      return `${d}/${m}/${y}`;
     },
+
     percentualPreenchido() {
       const campos = [
         this.form.nome,
@@ -308,7 +309,11 @@ export default {
 
   methods: {
     toISO(dateLike) {
-      const d = new Date(dateLike);
+      if (!dateLike) return "";
+      if (typeof dateLike === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateLike)) {
+        return dateLike;
+      }
+      const d = dateLike instanceof Date ? dateLike : new Date(dateLike);
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, "0");
       const dd = String(d.getDate()).padStart(2, "0");
@@ -321,18 +326,20 @@ export default {
     confirmarData() {
       if (this.dateModel) {
         this.form.dataNascimento =
-          this.dateModel instanceof Date
-            ? this.toISO(this.dateModel)
-            : this.dateModel;
+          typeof this.dateModel === "string"
+            ? this.dateModel
+            : this.toISO(this.dateModel);
       }
       this.dateDialog = false;
     },
+
     abrirData() {
       this.dateModel = this.form.dataNascimento
         ? this.form.dataNascimento
         : this.toISO(new Date());
       this.dateDialog = true;
     },
+
     validarEmail() {
       const field = this.form.email;
       const usuario = field.substring(0, field.indexOf("@"));
