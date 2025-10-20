@@ -47,13 +47,26 @@
                   required @click="abrirData" @focus="abrirData" @keydown.enter.prevent="abrirData" />
                 <v-dialog v-model="dateDialog" max-width="360">
                   <v-card>
-                    <v-card-title class="pl-6 pt-4">Selecionar data</v-card-title>
                     <v-card-text class="pt-2">
-                      <v-date-picker v-model="dateModel" locale="pt-BR" show-adjacent-months min="1800-01-01"
-                        :first-day-of-week="1" hide-header>
+                      <div class="year-controls">
+                        <v-btn density="comfortable" variant="text" icon @click="displayedYear--"
+                          aria-label="Ano anterior">
+                          <v-icon>mdi-chevron-left</v-icon>
+                        </v-btn>
+                        <v-select class="ano-select" :items="anos" v-model="displayedYear" density="compact"
+                          variant="outlined" hide-details />
+                        <v-btn density="comfortable" variant="text" icon @click="displayedYear++"
+                          aria-label="Próximo ano">
+                          <v-icon>mdi-chevron-right</v-icon>
+                        </v-btn>
+                      </div>
+                      <v-date-picker v-model="dateModel" v-model:displayed-year="displayedYear"
+                        v-model:displayed-month="displayedMonth" locale="pt-BR" show-adjacent-months hide-header
+                        :first-day-of-week="1" min="1800-01-01">
                         <template #title></template>
                       </v-date-picker>
                     </v-card-text>
+
                     <v-card-actions class="justify-end">
                       <v-btn variant="text" @click="cancelarData">Cancelar</v-btn>
                       <v-btn color="orange" variant="flat" @click="confirmarData">OK</v-btn>
@@ -223,6 +236,9 @@ export default {
       modalSucesso: false,
       erro: '',
       mostrarErro: false,
+      displayedYear: anoAtual,
+      displayedMonth: new Date().getMonth(),
+      anos: Array.from({ length: (anoAtual - 1800 + 1) }, (_, i) => 1800 + i),
       iconeOlhoAberto: require('@/assets/icons/eyes-on.svg'),
       iconeOlhoFechado: require('@/assets/icons/eyes-off.svg'),
       form: {
@@ -327,22 +343,40 @@ export default {
       this.dateDialog = false;
     },
     confirmarData() {
+      const y = this.displayedYear;
+      const m = this.displayedMonth;
+
+      let day = 1;
       if (this.dateModel) {
-        this.form.dataNascimento =
-          typeof this.dateModel === "string"
-            ? this.dateModel
-            : this.toISO(this.dateModel);
+        if (typeof this.dateModel === "string" && /^\d{4}-\d{2}-\d{2}$/.test(this.dateModel)) {
+          day = parseInt(this.dateModel.slice(8, 10), 10);
+        } else if (this.dateModel instanceof Date) {
+          day = this.dateModel.getDate();
+        }
       }
+
+      const ultimoDiaMes = new Date(y, m + 1, 0).getDate();
+      day = Math.min(Math.max(1, day), ultimoDiaMes);
+
+      const mm = String(m + 1).padStart(2, "0");
+      const dd = String(day).padStart(2, "0");
+      this.form.dataNascimento = `${y}-${mm}-${dd}`;
+
       this.dateDialog = false;
     },
-
     abrirData() {
       this.dateModel = this.form.dataNascimento
         ? this.form.dataNascimento
         : this.toISO(new Date());
+
+      const base = this.form.dataNascimento
+        ? new Date(this.form.dataNascimento + 'T00:00:00')
+        : new Date();
+
+      this.displayedYear = base.getFullYear();
+      this.displayedMonth = base.getMonth();
       this.dateDialog = true;
     },
-
     validarEmail() {
       const field = this.form.email;
       const usuario = field.substring(0, field.indexOf("@"));
@@ -682,11 +716,27 @@ export default {
   padding: 6px 16px;
 }
 
-:deep(.v-date-picker-header),
 :deep(.v-date-picker-title),
 :deep(.v-picker-title),
+:deep(.v-date-picker-header),
 :deep(.v-date-picker-header__content) {
   display: none !important;
+}
+
+.year-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.ano-select :deep(.v-field) {
+  height: 32px;
+}
+
+.ano-select {
+  max-width: 120px;
 }
 
 /* Mobile */
