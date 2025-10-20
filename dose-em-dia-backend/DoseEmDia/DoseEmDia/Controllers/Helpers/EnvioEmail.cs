@@ -186,8 +186,7 @@ namespace DoseEmDia.Helpers
                     Titulo = assunto,
                     Mensagem = assunto,
                     DataEnvio = DateTime.UtcNow,
-                    EmailEnviado = enviado,
-                    Visualizada = false
+                    EmailEnviado = enviado
                 });
             }
 
@@ -327,8 +326,7 @@ namespace DoseEmDia.Helpers
                     Titulo = "Vacinas Vencidas",
                     Mensagem = $"Você possui {atrasadas.Count} vacina(s) atrasada(s).",
                     DataEnvio = DateTime.UtcNow,
-                    EmailEnviado = true,
-                    Visualizada = false
+                    EmailEnviado = true
                 });
                 await _db.SaveChangesAsync(ct);
             }
@@ -375,8 +373,7 @@ namespace DoseEmDia.Helpers
                     Titulo = "Vacinas a Vencer",
                     Mensagem = $"Você possui {aVencer.Count} vacina(s) a vencer.",
                     DataEnvio = DateTime.UtcNow,
-                    EmailEnviado = true,
-                    Visualizada = false
+                    EmailEnviado = true
                 });
                 await _db.SaveChangesAsync(ct);
             }

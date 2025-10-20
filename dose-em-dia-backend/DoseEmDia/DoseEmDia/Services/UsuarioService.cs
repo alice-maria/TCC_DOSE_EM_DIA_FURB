@@ -551,7 +551,6 @@ public class UsuarioService
             Titulo = titulo,
             Mensagem = mensagem,
             DataEnvio = DateTime.UtcNow,
-            Visualizada = false,
             EmailEnviado = emailEnviado
         });
 

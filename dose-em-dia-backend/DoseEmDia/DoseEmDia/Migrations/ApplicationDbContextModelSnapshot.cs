@@ -164,9 +164,6 @@ namespace DoseEmDia.Migrations
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("Visualizada")
-                        .HasColumnType("boolean");
-
                     b.HasKey("IdNotificacao");
 
                     b.HasIndex("UsuarioId");

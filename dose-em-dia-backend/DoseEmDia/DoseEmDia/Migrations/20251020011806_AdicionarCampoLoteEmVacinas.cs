@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DoseEmDia.Migrations
 {
-    public partial class NovaMigration : Migration
+    public partial class AdicionarCampoLoteEmVacinas : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -148,7 +148,6 @@ namespace DoseEmDia.Migrations
                     Mensagem = table.Column<string>(type: "text", nullable: false),
                     Tipo = table.Column<string>(type: "text", nullable: false),
                     DataEnvio = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    Visualizada = table.Column<bool>(type: "boolean", nullable: false),
                     EmailEnviado = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>

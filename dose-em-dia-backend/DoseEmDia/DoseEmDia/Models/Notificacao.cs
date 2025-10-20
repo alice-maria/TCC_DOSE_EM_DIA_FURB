@@ -18,7 +18,6 @@ namespace DoseEmDia.Models
 
         [Column(TypeName = "timestamp without time zone")]
         public DateTime DataEnvio { get; set; }
-        public bool Visualizada { get; set; } = false;
 
         [Column("EmailEnviado")]
         public bool EmailEnviado { get; set; } = false;

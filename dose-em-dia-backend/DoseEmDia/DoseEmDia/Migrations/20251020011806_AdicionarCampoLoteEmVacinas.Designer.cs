@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DoseEmDia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250920234756_NovaMigration")]
-    partial class NovaMigration
+    [Migration("20251020011806_AdicionarCampoLoteEmVacinas")]
+    partial class AdicionarCampoLoteEmVacinas
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -165,9 +165,6 @@ namespace DoseEmDia.Migrations
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer");
-
-                    b.Property<bool>("Visualizada")
-                        .HasColumnType("boolean");
 
                     b.HasKey("IdNotificacao");
 
