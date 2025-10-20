@@ -211,6 +211,8 @@ import axios from "axios";
 import { mask } from "vue-the-mask";
 
 const baseURL = process.env.VUE_APP_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
+const now = new Date();
+const anoAtual = now.getFullYear();
 
 export const api = axios.create({
   baseURL: baseURL.replace(/\/+$/, ""),
@@ -237,7 +239,7 @@ export default {
       erro: '',
       mostrarErro: false,
       displayedYear: anoAtual,
-      displayedMonth: new Date().getMonth(),
+      displayedMonth: now.getMonth(), 
       anos: Array.from({ length: (anoAtual - 1800 + 1) }, (_, i) => 1800 + i),
       iconeOlhoAberto: require('@/assets/icons/eyes-on.svg'),
       iconeOlhoFechado: require('@/assets/icons/eyes-off.svg'),
