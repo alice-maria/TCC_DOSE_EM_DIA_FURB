@@ -49,7 +49,10 @@
                   <v-card>
                     <v-card-title class="pl-6 pt-4">Selecionar data</v-card-title>
                     <v-card-text class="pt-2">
-                      <v-date-picker v-model="dateModel" locale="pt-BR" show-adjacent-months min="1800-01-01" />
+                      <v-date-picker v-model="dateModel" locale="pt-BR" show-adjacent-months min="1800-01-01"
+                        :first-day-of-week="1" hide-header>
+                        <template #title></template>
+                      </v-date-picker>
                     </v-card-text>
                     <v-card-actions class="justify-end">
                       <v-btn variant="text" @click="cancelarData">Cancelar</v-btn>
@@ -679,14 +682,12 @@ export default {
   padding: 6px 16px;
 }
 
-.v-date-picker-title {
+:deep(.v-date-picker-header),
+:deep(.v-date-picker-title),
+:deep(.v-picker-title),
+:deep(.v-date-picker-header__content) {
   display: none !important;
 }
-
-.v-date-picker-header__content {
-  display: none !important;
-}
-
 
 /* Mobile */
 @media (max-width: 600px) {
