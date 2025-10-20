@@ -683,6 +683,11 @@ export default {
   display: none !important;
 }
 
+.v-date-picker-header__content {
+  display: none !important;
+}
+
+
 /* Mobile */
 @media (max-width: 600px) {
   .pagina {
