@@ -49,7 +49,7 @@
                   <v-card>
                     <v-card-title class="pl-6 pt-4">Selecionar data</v-card-title>
                     <v-card-text class="pt-2">
-                      <v-date-picker v-model="dateModel" locale="pt-BR" show-adjacent-months hide-header />
+                      <v-date-picker v-model="dateModel" locale="pt-BR" show-adjacent-months min="1800-01-01" />
                     </v-card-text>
                     <v-card-actions class="justify-end">
                       <v-btn variant="text" @click="cancelarData">Cancelar</v-btn>
