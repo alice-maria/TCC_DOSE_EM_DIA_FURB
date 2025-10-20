@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DoseEmDia.Migrations
 {
-    public partial class AdicionarCampoLoteEmVacinas : Migration
+    public partial class AjustesMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

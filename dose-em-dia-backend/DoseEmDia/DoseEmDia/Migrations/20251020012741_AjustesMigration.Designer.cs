@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DoseEmDia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251020011806_AdicionarCampoLoteEmVacinas")]
-    partial class AdicionarCampoLoteEmVacinas
+    [Migration("20251020012741_AjustesMigration")]
+    partial class AjustesMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
