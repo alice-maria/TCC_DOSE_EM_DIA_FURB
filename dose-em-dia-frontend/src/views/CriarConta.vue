@@ -60,11 +60,8 @@
                           <v-icon>mdi-chevron-right</v-icon>
                         </v-btn>
                       </div>
-                      <v-date-picker v-model="dateModel" v-model:displayed-year="displayedYear"
-                        v-model:displayed-month="displayedMonth" locale="pt-BR" show-adjacent-months hide-header
-                        :first-day-of-week="1" min="1800-01-01">
-                        <template #title></template>
-                      </v-date-picker>
+                      <v-date-picker v-model="dateModel" locale="pt-BR" show-adjacent-months min="1800-01-01"
+                        :first-day-of-week="1" />
                     </v-card-text>
 
                     <v-card-actions class="justify-end">
@@ -239,7 +236,7 @@ export default {
       erro: '',
       mostrarErro: false,
       displayedYear: anoAtual,
-      displayedMonth: now.getMonth(), 
+      displayedMonth: now.getMonth(),
       anos: Array.from({ length: (anoAtual - 1800 + 1) }, (_, i) => 1800 + i),
       iconeOlhoAberto: require('@/assets/icons/eyes-on.svg'),
       iconeOlhoFechado: require('@/assets/icons/eyes-off.svg'),
