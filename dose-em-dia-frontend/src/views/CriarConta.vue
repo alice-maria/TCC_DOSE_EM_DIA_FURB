@@ -679,6 +679,10 @@ export default {
   padding: 6px 16px;
 }
 
+.v-date-picker-title {
+  display: none !important;
+}
+
 /* Mobile */
 @media (max-width: 600px) {
   .pagina {
