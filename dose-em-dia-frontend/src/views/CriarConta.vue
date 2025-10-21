@@ -48,20 +48,10 @@
                 <v-dialog v-model="dateDialog" max-width="360">
                   <v-card>
                     <v-card-text class="pt-2">
-                      <div class="year-controls">
-                        <v-btn density="comfortable" variant="text" icon @click="displayedYear--"
-                          aria-label="Ano anterior">
-                          <v-icon>mdi-chevron-left</v-icon>
-                        </v-btn>
-                        <v-select class="ano-select" :items="anos" v-model="displayedYear" density="compact"
-                          variant="outlined" hide-details />
-                        <v-btn density="comfortable" variant="text" icon @click="displayedYear++"
-                          aria-label="Próximo ano">
-                          <v-icon>mdi-chevron-right</v-icon>
-                        </v-btn>
-                      </div>
                       <v-date-picker v-model="dateModel" locale="pt-BR" show-adjacent-months min="1800-01-01"
-                        :first-day-of-week="1" />
+                        :first-day-of-week="1">
+                        <template #title></template>
+                      </v-date-picker>
                     </v-card-text>
 
                     <v-card-actions class="justify-end">
@@ -208,8 +198,6 @@ import axios from "axios";
 import { mask } from "vue-the-mask";
 
 const baseURL = process.env.VUE_APP_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
-const now = new Date();
-const anoAtual = now.getFullYear();
 
 export const api = axios.create({
   baseURL: baseURL.replace(/\/+$/, ""),
@@ -235,9 +223,6 @@ export default {
       modalSucesso: false,
       erro: '',
       mostrarErro: false,
-      displayedYear: anoAtual,
-      displayedMonth: now.getMonth(),
-      anos: Array.from({ length: (anoAtual - 1800 + 1) }, (_, i) => 1800 + i),
       iconeOlhoAberto: require('@/assets/icons/eyes-on.svg'),
       iconeOlhoFechado: require('@/assets/icons/eyes-off.svg'),
       form: {
@@ -342,24 +327,16 @@ export default {
       this.dateDialog = false;
     },
     confirmarData() {
-      const y = this.displayedYear;
-      const m = this.displayedMonth;
-
-      let day = 1;
-      if (this.dateModel) {
-        if (typeof this.dateModel === "string" && /^\d{4}-\d{2}-\d{2}$/.test(this.dateModel)) {
-          day = parseInt(this.dateModel.slice(8, 10), 10);
-        } else if (this.dateModel instanceof Date) {
-          day = this.dateModel.getDate();
-        }
+      if (!this.dateModel) {
+        this.dateDialog = false;
+        return;
       }
 
-      const ultimoDiaMes = new Date(y, m + 1, 0).getDate();
-      day = Math.min(Math.max(1, day), ultimoDiaMes);
-
-      const mm = String(m + 1).padStart(2, "0");
-      const dd = String(day).padStart(2, "0");
-      this.form.dataNascimento = `${y}-${mm}-${dd}`;
+      // aceita Date ou string 'YYYY-MM-DD'
+      this.form.dataNascimento =
+        typeof this.dateModel === 'string'
+          ? this.dateModel
+          : this.toISO(this.dateModel);
 
       this.dateDialog = false;
     },
@@ -367,13 +344,6 @@ export default {
       this.dateModel = this.form.dataNascimento
         ? this.form.dataNascimento
         : this.toISO(new Date());
-
-      const base = this.form.dataNascimento
-        ? new Date(this.form.dataNascimento + 'T00:00:00')
-        : new Date();
-
-      this.displayedYear = base.getFullYear();
-      this.displayedMonth = base.getMonth();
       this.dateDialog = true;
     },
     validarEmail() {
@@ -716,26 +686,8 @@ export default {
 }
 
 :deep(.v-date-picker-title),
-:deep(.v-picker-title),
-:deep(.v-date-picker-header),
-:deep(.v-date-picker-header__content) {
+:deep(.v-picker-title) {
   display: none !important;
-}
-
-.year-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.ano-select :deep(.v-field) {
-  height: 32px;
-}
-
-.ano-select {
-  max-width: 120px;
 }
 
 /* Mobile */
