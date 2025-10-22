@@ -81,9 +81,12 @@
                 <span class="text-h6 fw-bold">{{ vacina.nome }}</span>
               </v-card-title>
               <v-card-text class="pt-1">
-                <p class="mb-1 text-body-1">Aplicada em: {{ formatarData(vacina.dataAplicacao) }}</p>
-                <p class="mb-1 text-body-1">Lote: {{ vacina.lote }}</p>
-                <p class="mb-0 text-body-1">Status: {{ mapearStatus(vacina.status) }}</p>
+                <p class="mb-1 text-body-1">Data de aplicação da dose: {{ formatarData(vacina.dataAplicacao) }}</p>
+                <p class="mb-1 text-body-1">Lote da dose: {{ vacina.lote }}</p>
+                <p class="mb-1 text-body-1">Status da dose: {{ mapearStatus(vacina.status) }}</p>
+                <p class="mt-2 text-body-2">
+                  {{ mensagemStatus(vacina.statusLabel) }}
+                </p>
               </v-card-text>
             </v-card>
           </div>
@@ -206,6 +209,19 @@ export default {
 
     navegar(to) {
       this.$router.push(to);
+    },
+
+    mensagemStatus(statusLabel) {
+      switch (statusLabel) {
+        case STATUS_LABELS.APLICADA:
+          return 'Doses em dia';
+        case STATUS_LABELS.A_VENCER:
+          return 'Essa dose está prestes a vencer';
+        case STATUS_LABELS.VENCIDA:
+          return 'Essa dose passou da data estimada';
+        default:
+          return '';
+      }
     },
   },
 
