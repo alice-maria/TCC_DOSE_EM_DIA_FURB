@@ -214,11 +214,11 @@ export default {
     mensagemStatus(statusLabel) {
       switch (statusLabel) {
         case STATUS_LABELS.APLICADA:
-          return 'Dose em dia.';
+          return 'Essa dose está em dia.';
         case STATUS_LABELS.A_VENCER:
-          return 'Essa dose está prestes a vencer.';
+          return 'Atenção: essa dose está próxima do vencimento. Programe-se para aplicar a próxima dose em breve.';
         case STATUS_LABELS.VENCIDA:
-          return 'Essa dose passou da data estimada de vencimento.';
+          return 'Essa dose já ultrapassou a data estimada. Procure aplicar a próxima o quanto antes.';
         default:
           return '';
       }
