@@ -43,6 +43,11 @@
           <div class="text-caption text-grey-darken-1">
             Enviado em {{ formatarData(notificacao?.dataEnvio) }}
           </div>
+
+          <!-- Aviso para verificar caixa de spam -->
+          <div class="text-caption aviso-spam">
+            Caso não tenha recebido o e-mail, verifique sua caixa de spam ou lixo eletrônico.
+          </div>
         </v-card>
       </div>
     </div>
@@ -219,4 +224,8 @@ export default {
   color: #6b7280;
 }
 
+.aviso-spam {
+  color: #9ca3af;
+  font-style: italic;
+}
 </style>
