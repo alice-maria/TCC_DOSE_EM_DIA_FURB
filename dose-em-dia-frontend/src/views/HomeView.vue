@@ -84,7 +84,7 @@
                 <p class="mb-1 text-body-1">Data de aplicação da dose: {{ formatarData(vacina.dataAplicacao) }}</p>
                 <p class="mb-1 text-body-1">Lote da dose: {{ vacina.lote }}</p>
                 <p class="mb-1 text-body-1">Status da dose: {{ mapearStatus(vacina.status) }}</p>
-                <p class="mt-2 text-body-2">
+                <p class="mt-2 text-body-1 fw-bold">
                   {{ mensagemStatus(vacina.statusLabel) }}
                 </p>
               </v-card-text>
@@ -214,11 +214,11 @@ export default {
     mensagemStatus(statusLabel) {
       switch (statusLabel) {
         case STATUS_LABELS.APLICADA:
-          return 'Doses em dia';
+          return 'Dose em dia.';
         case STATUS_LABELS.A_VENCER:
-          return 'Essa dose está prestes a vencer';
+          return 'Essa dose está prestes a vencer.';
         case STATUS_LABELS.VENCIDA:
-          return 'Essa dose passou da data estimada';
+          return 'Essa dose passou da data estimada de vencimento.';
         default:
           return '';
       }
