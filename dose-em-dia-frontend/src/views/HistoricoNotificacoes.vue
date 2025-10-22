@@ -80,13 +80,13 @@ export default {
   },
   methods: {
     formatarData(data) {
-      const date = new Date(data);
-      if (isNaN(date)) return "Data inválida";
-      return (
-        date.toLocaleDateString("pt-BR") +
-        " às " +
-        date.toLocaleTimeString("pt-BR")
-      );
+      const d = new Date(data);
+      if (isNaN(d)) return "Data inválida";
+
+      const dataStr = d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      const horaStr = d.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
+
+      return `${dataStr} às ${horaStr}`;
     },
 
     limparHtml(html) {
@@ -155,16 +155,6 @@ export default {
 
     navegar(destino) {
       if (destino) this.$router.push(destino);
-    },
-
-    formatarData(data) {
-      const d = new Date(data);
-      if (isNaN(d)) return "Data inválida";
-
-      const dataStr = d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
-      const horaStr = d.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
-
-      return `${dataStr} às ${horaStr}`;
     },
   },
   mounted() {
