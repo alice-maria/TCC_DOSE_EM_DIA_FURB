@@ -48,7 +48,7 @@ public class UsuarioService
         return cod;
     }
 
-    private async Task<Cep> EnsureCepAsync(string cepCodigo, Cidade cidade, string? bairro, CancellationToken ct) // <<<
+    private async Task<Cep> EnsureCepAsync(string cepCodigo, Cidade cidade, string? bairro, CancellationToken ct) 
     {
         var tracked = _context.ChangeTracker.Entries<Cep>()
             .FirstOrDefault(e => e.Entity.Codigo == cepCodigo)?.Entity;
@@ -420,7 +420,6 @@ public class UsuarioService
                 }
             }
 
-            // ---------- Endereço ----------
             if (request.Endereco is not null)
             {
                 var req = request.Endereco;
@@ -438,7 +437,6 @@ public class UsuarioService
                 {
                     if (usuario.Endereco is null)
                     {
-                        // Primeiro cadastro: exige CEP e Número e uma cidade válida
                         if (string.IsNullOrWhiteSpace(req.CEP) || string.IsNullOrWhiteSpace(req.Numero))
                             throw new ArgumentException("Para cadastrar o endereço pela primeira vez, informe CEP e Número.");
 

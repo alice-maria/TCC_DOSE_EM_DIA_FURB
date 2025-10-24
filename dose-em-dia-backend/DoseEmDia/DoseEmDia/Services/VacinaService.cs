@@ -80,7 +80,7 @@ namespace DoseEmDia.Controllers
 
             var lista = new List<Vacina>();
 
-            // ====== BCG sempre, no ano de nascimento ======
+            // ====== BCG sempre, na data de nascimento ======
             bool bcgAdicionada = false;
             var esquemaBCG = elegiveis.FirstOrDefault(e => e.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase))
                           ?? _tabelaVacinas.FirstOrDefault(e => e.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase));
@@ -90,8 +90,7 @@ namespace DoseEmDia.Controllers
                 if (!maxPorNome.ContainsKey(esquemaBCG.Nome)) maxPorNome[esquemaBCG.Nome] = 1;
                 if (!countPorNome.ContainsKey(esquemaBCG.Nome)) countPorNome[esquemaBCG.Nome] = 0;
 
-                var anoNascimento = hoje.Year - idadeAtual;
-                var dataAplicacaoBCG = new DateTime(anoNascimento, 1, 15);
+                var dataAplicacaoBCG = nascimento.Date;
 
                 lista.Add(new Vacina
                 {
@@ -102,7 +101,7 @@ namespace DoseEmDia.Controllers
                     DataAplicacao = dataAplicacaoBCG,
                     ValidadeMeses = esquemaBCG.ValidadeMeses,
                     Fabricante = esquemaBCG.Fabricante,
-                    Status = StatusVacina.Aplicada
+                    Status = StatusVacina.Aplicada 
                 });
 
                 countPorNome[esquemaBCG.Nome] = Math.Min(countPorNome[esquemaBCG.Nome] + 1, maxPorNome[esquemaBCG.Nome]);
@@ -171,8 +170,17 @@ namespace DoseEmDia.Controllers
                 : hoje;
 
             var limiteDezAnos = hoje.AddYears(-10);
-            var minDate = new DateTime(Math.Max(minDateIdade.Ticks, limiteDezAnos.Ticks));
-            var maxDate = new DateTime(Math.Min(maxDateIdade.Ticks, hoje.Ticks));
+            var minDateBase = new DateTime(Math.Max(minDateIdade.Ticks, limiteDezAnos.Ticks));
+            var maxDateBase = new DateTime(Math.Min(maxDateIdade.Ticks, hoje.Ticks));
+
+            if (esquema.Nome.Equals("Covid-19", StringComparison.OrdinalIgnoreCase))
+            {
+                var covidMin = new DateTime(2020, 1, 1);
+                if (minDateBase < covidMin) minDateBase = covidMin;
+            }
+
+            var minDate = minDateBase;
+            var maxDate = maxDateBase;
 
             if (minDate > maxDate)
                 return null;
@@ -192,7 +200,7 @@ namespace DoseEmDia.Controllers
                 var fimVencEfetivo = fimJanelaVenc;
 
                 if (inicioVencEfetivo > fimVencEfetivo)
-                    return null; 
+                    return null;
 
                 var vencimentoAlvo = DataAleatoriaEntre(inicioVencEfetivo, fimVencEfetivo, rand);
                 dataAplicacao = vencimentoAlvo.AddMonths(-validade);
@@ -221,7 +229,7 @@ namespace DoseEmDia.Controllers
             {
                 var upperSugerido = hoje.AddDays(-31);
                 var upper = new DateTime(Math.Min(maxDate.Ticks, upperSugerido.Ticks));
-                if (upper < minDate) upper = maxDate; 
+                if (upper < minDate) upper = maxDate;
 
                 dataAplicacao = DataAleatoriaEntre(minDate, upper, rand);
             }
