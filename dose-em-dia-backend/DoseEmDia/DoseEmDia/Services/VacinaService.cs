@@ -1,4 +1,5 @@
-﻿using DoseEmDia.Models;
+﻿using DoseEmDia.Controllers.DTO;
+using DoseEmDia.Models;
 using DoseEmDia.Models.db;
 using DoseEmDia.Models.Enums;
 using DoseEmDia.Models.Exceptions;
@@ -46,6 +47,55 @@ namespace DoseEmDia.Controllers
             }
             await _context.SaveChangesAsync();
             return vacinas;
+        }
+
+        public async Task<ResumoVacinasUsuario> ObterResumoVacinasUsuarioAsync(int usuarioId, CancellationToken ct = default)
+        {
+            var usuario = await _context.Usuario
+                .AsNoTracking()
+                .Include(u => u.Vacinas)
+                .FirstOrDefaultAsync(u => u.IdUser == usuarioId, ct);
+
+            if (usuario is null)
+                throw UsuarioException.UsuarioNaoEncontradoPorCpf(usuario.CPF);
+
+            var dataNasc = usuario.DataNascimento == default
+                ? DateTime.Today
+                : usuario.DataNascimento;
+            var sexo = usuario.Sexo; 
+            var idade = CalcularIdadeEmAnos(dataNasc);
+
+            return await ObterResumoVacinasUsuarioAsync(usuarioId, idade, sexo, ct);
+        }
+
+        public async Task<ResumoVacinasUsuario> ObterResumoVacinasUsuarioAsync(int usuarioId, int idade, string? sexo, CancellationToken ct = default)
+        {
+            var doUsuario = await _context.Vacina
+                .AsNoTracking()
+                .Where(v => v.UsuarioId == usuarioId)
+                .Select(v => v.Nome)
+                .ToListAsync(ct);
+
+            var nomesJaTem = new HashSet<string>(doUsuario, StringComparer.OrdinalIgnoreCase);
+
+            var elegiveis = ElegiveisPorPerfil(idade, sexo)
+                .GroupBy(v => v.Nome, StringComparer.OrdinalIgnoreCase) 
+                .Select(g => g.First())
+                .Select(v => new VacinaElegivel(v.Nome, v.IdadeMinima, v.IdadeMaxima, v.Sexo, v.Intervalo, v.NumeroDoses))
+                .OrderBy(v => v.Nome)
+                .ToList();
+
+            var faltantes = elegiveis
+                .Where(v => !nomesJaTem.Contains(v.Nome))
+                .OrderBy(v => v.Nome)
+                .ToList();
+
+            return new ResumoVacinasUsuario(
+                UsuarioId: usuarioId,
+                VacinasJaVinculadas: nomesJaTem.OrderBy(x => x).ToList(),
+                VacinasElegiveis: elegiveis,
+                VacinasFaltantes: faltantes
+            );
         }
 
         private List<Vacina> GerarHistoricoVacinalPorIdade(int idadeAtual, string? sexo)
@@ -292,6 +342,27 @@ namespace DoseEmDia.Controllers
             var range = (fim - inicio).Days;
             return inicio.AddDays(rand.Next(0, range + 1));
         }
+
+        private static int CalcularIdadeEmAnos(DateTime dataNascimento, DateTime? hoje = null)
+        {
+            var refDate = (hoje ?? DateTime.Today).Date;
+            var idade = refDate.Year - dataNascimento.Year;
+            if (dataNascimento.Date > refDate.AddYears(-idade)) idade--;
+            return Math.Max(idade, 0);
+        }
+
+        private IEnumerable<EsquemaVacinal> ElegiveisPorPerfil(int idade, string? sexo)
+        {
+            var lista = _tabelaVacinas
+                .Where(v =>
+                    idade >= v.IdadeMinima &&
+                    (!v.IdadeMaxima.HasValue || idade <= v.IdadeMaxima.Value) &&
+                    (string.IsNullOrWhiteSpace(v.Sexo) || string.Equals(v.Sexo, sexo, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            return lista.Any() ? lista : _tabelaVacinas; 
+        }
+
 
         private readonly List<EsquemaVacinal> _tabelaVacinas = new()
         {

@@ -311,7 +311,7 @@ namespace DoseEmDia.Helpers
                 tituloTopo: "Vacinas Vencidas — Dose em Dia",
                 introducao: $"Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, identificamos vacina(s) com status <strong>vencida</strong> no seu cadastro:",
                 tituloSecao: "Vencidas",
-                itens: atrasadas.Select(x => (x.Nome, x.DataAplicacao, x.NumeroLote ))
+                itens: atrasadas.Select(x => (x.Nome, x.DataAplicacao, x.NumeroLote))
             );
 
             var assunto = "Vacinas vencidas — Dose em Dia";
@@ -358,7 +358,7 @@ namespace DoseEmDia.Helpers
                 tituloTopo: "Vacinas a Vencer — Dose em Dia",
                 introducao: $"Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, identificamos vacina(s) com status <strong>a vencer</strong> no seu cadastro:",
                 tituloSecao: "A vencer",
-                itens: aVencer.Select(x => (Nome: x.Nome, Áplicacao: x.DataAplicacao, Lote: x.NumeroLote ))
+                itens: aVencer.Select(x => (Nome: x.Nome, Áplicacao: x.DataAplicacao, Lote: x.NumeroLote))
             );
 
             var assunto = "Vacinas a vencer — Dose em Dia";
@@ -452,6 +452,91 @@ namespace DoseEmDia.Helpers
         {
             await EnviarVacinasAtrasadasAsync(usuarioId, ct);
             await EnviarVacinasAVencerAsync(usuarioId, ct);
+            await EnviarVacinasFaltantesAsync(usuarioId, ct);
+
+        }
+        public async Task EnviarVacinasFaltantesAsync(int usuarioId, CancellationToken ct = default)
+        {
+            var usuario = await _db.Usuario
+                .AsNoTracking()
+                .Where(u => u.IdUser == usuarioId)
+                .Select(u => new { u.IdUser, u.Nome, u.Email, u.DataNascimento, u.Sexo, u.ReceberNotificacoes })
+                .FirstOrDefaultAsync(ct);
+
+            if (usuario is null || string.IsNullOrWhiteSpace(usuario.Email))
+                throw new InvalidOperationException("Usuário não encontrado ou sem e-mail cadastrado.");
+            if (!usuario.ReceberNotificacoes) return;
+
+            var dataNasc = usuario.DataNascimento == default ? DateTime.Today : usuario.DataNascimento;
+            var idade = CalcularIdadeEmAnos(dataNasc);
+
+            var svc = new DoseEmDia.Controllers.VacinaService(_db);
+            var resumo = await svc.ObterResumoVacinasUsuarioAsync(usuario.IdUser, idade, usuario.Sexo, ct);
+
+            string nome = string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}";
+            var sb = new StringBuilder();
+            sb.AppendLine($@"
+            <!DOCTYPE html>
+            <html lang='pt-BR'>
+              <body style='margin:0;padding:24px;background:#fafafa;
+                           font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;color:#111'>
+                <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'>
+                  <tr><td align='center'>
+                    <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'
+                           style='max-width:720px;background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden'>
+                      <tr>
+                        <td style='padding:20px 24px;background:#fff3e9;border-bottom:1px solid #ffe3cf'>
+                          <h2 style='margin:0;color:#f46c20'>Bem-vindo(a){nome} ao Dose em Dia</h2>
+                        </td>
+                      </tr>
+                      <tr><td style='padding:20px 24px'>
+                        <p style='margin:0 0 12px'>
+                          Para facilitar sua organização, analisamos seu perfil e listamos as vacinas que ainda não constam no seu cadastro, mas são elegíveis para você:
+                        </p>");
+
+            if (resumo.VacinasFaltantes.Count == 0)
+            {
+                sb.AppendLine("<p style='margin:8px 0'>Você já possui registros para todas as vacinas elegíveis neste momento. 🎉</p>");
+            }
+            else
+            {
+                sb.AppendLine(@"
+                        <table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='border-collapse:collapse;margin-top:8px'>
+                          <thead>
+                            <tr>
+                              <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Vacina</th>
+                              <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Esquema/Intervalo</th>
+                            </tr>
+                          </thead>
+                          <tbody>");
+
+                foreach (var v in resumo.VacinasFaltantes)
+                {
+                    sb.AppendLine($@"
+                            <tr>
+                              <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(v.Nome)}</td>
+                              <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(v.Intervalo)}</td>
+                            </tr>");
+                }
+
+                sb.AppendLine(@"</tbody></table>");
+            }
+
+            sb.AppendLine(@"
+                        <div style='height:16px'></div>
+                        <p style='font-size:13px;color:#555;margin:0'>
+                          Dica: mantenha seu cartão de vacinação atualizado. Em caso de dúvidas, procure uma unidade de saúde.
+                        </p>
+                        <div style='height:8px'></div>
+                        <p style='font-size:13px;color:#555;margin:0'>Este é um e-mail automático. Não responda por este canal.</p>
+                      </td></tr>
+                    </table>
+                  </td></tr>
+                </table>
+              </body>
+            </html>");
+
+            await EnviarEmailAsync(usuario.Email, "Boas-vindas — suas próximas vacinas", sb.ToString(), ct);
         }
 
         private static string StripHtml(string html)
@@ -504,5 +589,16 @@ namespace DoseEmDia.Helpers
             string body = await resp.Body.ReadAsStringAsync();
             throw new EmailException($"{contextMessage}. Status: {(int)resp.StatusCode}. Detalhes: {body}");
         }
+        private static int CalcularIdadeEmAnos(DateTime dataNascimento, DateTime? dataReferencia = null)
+        {
+            var hoje = (dataReferencia ?? DateTime.Today).Date;
+            var idade = hoje.Year - dataNascimento.Year;
+
+            if (dataNascimento.Date > hoje.AddYears(-idade))
+                idade--;
+
+            return Math.Max(idade, 0);
+        }
+
     }
 }
