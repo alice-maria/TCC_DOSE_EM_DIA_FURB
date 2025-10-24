@@ -473,7 +473,6 @@ namespace DoseEmDia.Helpers
             var svc = new DoseEmDia.Controllers.VacinaService(_db);
             var resumo = await svc.ObterResumoVacinasUsuarioAsync(usuario.IdUser, idade, usuario.Sexo, ct);
 
-            string nome = string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}";
             var sb = new StringBuilder();
             sb.AppendLine($@"
             <!DOCTYPE html>
@@ -486,7 +485,7 @@ namespace DoseEmDia.Helpers
                            style='max-width:720px;background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden'>
                       <tr>
                         <td style='padding:20px 24px;background:#fff3e9;border-bottom:1px solid #ffe3cf'>
-                          <h2 style='margin:0;color:#f46c20'>Bem-vindo(a){nome} ao Dose em Dia</h2>
+                          <h2 style='margin:0;color:#f46c20'>Bem-vindo(a) ao Dose em Dia</h2>
                         </td>
                       </tr>
                       <tr><td style='padding:20px 24px'>
@@ -496,7 +495,7 @@ namespace DoseEmDia.Helpers
 
             if (resumo.VacinasFaltantes.Count == 0)
             {
-                sb.AppendLine("<p style='margin:8px 0'>Você já possui registros para todas as vacinas elegíveis neste momento. 🎉</p>");
+                sb.AppendLine("<p style='margin:8px 0'>Você já possui registros para todas as vacinas elegíveis neste momento.</p>");
             }
             else
             {
@@ -523,10 +522,6 @@ namespace DoseEmDia.Helpers
             }
 
             sb.AppendLine(@"
-                        <div style='height:16px'></div>
-                        <p style='font-size:13px;color:#555;margin:0'>
-                          Dica: mantenha seu cartão de vacinação atualizado. Em caso de dúvidas, procure uma unidade de saúde.
-                        </p>
                         <div style='height:8px'></div>
                         <p style='font-size:13px;color:#555;margin:0'>Este é um e-mail automático. Não responda por este canal.</p>
                       </td></tr>
@@ -537,6 +532,29 @@ namespace DoseEmDia.Helpers
             </html>");
 
             await EnviarEmailAsync(usuario.Email, "Boas-vindas — suas próximas vacinas", sb.ToString(), ct);
+
+            var nomes = resumo.VacinasFaltantes.Select(v => v.Nome).Distinct().ToList();
+            var listaCurta = string.Join(", ", nomes.Take(5));
+            var sufixo = nomes.Count > 5 ? "..." : string.Empty;
+
+            var mensagemCurta = nomes.Count == 0
+                ? "Sem pendências: você já possui registros para todas as vacinas elegíveis."
+                : $"Você tem {nomes.Count} vacina(s) elegível(eis) sem registro: {listaCurta}{sufixo}.";
+
+            try
+            {
+                _db.Notificacao.Add(new Notificacao
+                {
+                    UsuarioId = usuario.IdUser,
+                    Tipo = TipoNotificacao.AvisoGeral,
+                    Titulo = "Suas próximas vacinas",
+                    Mensagem = mensagemCurta,
+                    DataEnvio = DateTime.UtcNow,
+                    EmailEnviado = true
+                });
+                await _db.SaveChangesAsync(ct);
+            }
+            catch { /* não interrompe o fluxo se falhar o log */ }
         }
 
         private static string StripHtml(string html)
