@@ -139,7 +139,7 @@ namespace DoseEmDia.Controllers
                 if (!maxPorNome.ContainsKey(esquemaBCG.Nome)) maxPorNome[esquemaBCG.Nome] = 1;
                 if (!countPorNome.ContainsKey(esquemaBCG.Nome)) countPorNome[esquemaBCG.Nome] = 0;
 
-                var dataAplicacaoBCG = nascimento.Date;
+                var dataAplicacaoBCG = nascimento;
 
                 lista.Add(new Vacina
                 {
