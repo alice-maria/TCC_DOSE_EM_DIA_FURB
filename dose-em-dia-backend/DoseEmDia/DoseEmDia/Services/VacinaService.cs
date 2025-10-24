@@ -62,7 +62,7 @@ namespace DoseEmDia.Controllers
             var dataNasc = usuario.DataNascimento == default
                 ? DateTime.Today
                 : usuario.DataNascimento;
-            var sexo = usuario.Sexo; 
+            var sexo = usuario.Sexo;
             var idade = CalcularIdadeEmAnos(dataNasc);
 
             return await ObterResumoVacinasUsuarioAsync(usuarioId, idade, sexo, ct);
@@ -79,7 +79,7 @@ namespace DoseEmDia.Controllers
             var nomesJaTem = new HashSet<string>(doUsuario, StringComparer.OrdinalIgnoreCase);
 
             var elegiveis = ElegiveisPorPerfil(idade, sexo)
-                .GroupBy(v => v.Nome, StringComparer.OrdinalIgnoreCase) 
+                .GroupBy(v => v.Nome, StringComparer.OrdinalIgnoreCase)
                 .Select(g => g.First())
                 .Select(v => new VacinaElegivel(v.Nome, v.IdadeMinima, v.IdadeMaxima, v.Sexo, v.Intervalo, v.NumeroDoses))
                 .OrderBy(v => v.Nome)
@@ -109,21 +109,20 @@ namespace DoseEmDia.Controllers
             var nascimento = hoje.AddYears(-idadeAtual).Date;
             var rand = new Random(unchecked((int)DateTime.Now.Ticks));
 
-            var elegiveis = _tabelaVacinas
+            var baseElegiveis = _tabelaVacinas
                 .Where(e =>
                     idadeAtual >= e.IdadeMinima &&
                     (!e.IdadeMaxima.HasValue || idadeAtual <= e.IdadeMaxima.Value) &&
                     (string.IsNullOrWhiteSpace(e.Sexo) || string.Equals(e.Sexo, sexo, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            if (!elegiveis.Any())
-                elegiveis = _tabelaVacinas.ToList();
+            if (!baseElegiveis.Any())
+                baseElegiveis = _tabelaVacinas.ToList();
 
-            var maxPorNome = elegiveis
-                .GroupBy(e => e.Nome, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+            var elegiveis = DistintosPorNomeAjusteEtario(baseElegiveis, idadeAtual, sexo).ToList();
 
-            var countPorNome = maxPorNome.Keys.ToDictionary(k => k, _ => 0, StringComparer.OrdinalIgnoreCase);
+            var maxPorNome = elegiveis.ToDictionary(e => e.Nome, _ => 1, StringComparer.OrdinalIgnoreCase);
+            var countPorNome = elegiveis.ToDictionary(e => e.Nome, _ => 0, StringComparer.OrdinalIgnoreCase);
 
             var maxPossivel = maxPorNome.Values.Sum();
             var alvoTotal = Math.Min(TOTAL, maxPossivel);
@@ -151,7 +150,7 @@ namespace DoseEmDia.Controllers
                     DataAplicacao = dataAplicacaoBCG,
                     ValidadeMeses = esquemaBCG.ValidadeMeses,
                     Fabricante = esquemaBCG.Fabricante,
-                    Status = StatusVacina.Aplicada 
+                    Status = StatusVacina.Aplicada
                 });
 
                 countPorNome[esquemaBCG.Nome] = Math.Min(countPorNome[esquemaBCG.Nome] + 1, maxPorNome[esquemaBCG.Nome]);
@@ -173,6 +172,7 @@ namespace DoseEmDia.Controllers
 
                     var candidatos = elegiveis
                         .Where(e => countPorNome.TryGetValue(e.Nome, out var cnt) ? cnt < maxPorNome[e.Nome] : true)
+                        .Where(e => !lista.Any(v => v.Nome.Equals(e.Nome, StringComparison.OrdinalIgnoreCase)))
                         .ToList();
                     if (candidatos.Count == 0) break;
 
@@ -183,7 +183,6 @@ namespace DoseEmDia.Controllers
                     if (!countPorNome.ContainsKey(vacina.Nome)) countPorNome[vacina.Nome] = 0;
                     if (!maxPorNome.ContainsKey(vacina.Nome)) maxPorNome[vacina.Nome] = 1;
 
-                    // Evitar duplicar BCG por segurança
                     if (vacina.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase) &&
                         lista.Any(v => v.Nome.Equals("BCG", StringComparison.OrdinalIgnoreCase)))
                     {
@@ -360,9 +359,23 @@ namespace DoseEmDia.Controllers
                     (string.IsNullOrWhiteSpace(v.Sexo) || string.Equals(v.Sexo, sexo, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            return lista.Any() ? lista : _tabelaVacinas; 
+            return lista.Any() ? lista : _tabelaVacinas;
         }
 
+        private static IEnumerable<EsquemaVacinal> DistintosPorNomeAjusteEtario(IEnumerable<EsquemaVacinal> origem, int idadeAtual, string? sexo)
+        {
+            return origem
+                .GroupBy(e => e.Nome, StringComparer.OrdinalIgnoreCase)
+                .Select(g =>
+                    g.OrderByDescending(e =>
+                            (!string.IsNullOrWhiteSpace(e.Sexo) &&
+                             !string.IsNullOrWhiteSpace(sexo) &&
+                             e.Sexo.Equals(sexo, StringComparison.OrdinalIgnoreCase)))
+                     .ThenByDescending(e => e.IdadeMinima <= idadeAtual ? e.IdadeMinima : -1)
+                     .ThenByDescending(e => e.NumeroDoses)
+                     .First()
+                );
+        }
 
         private readonly List<EsquemaVacinal> _tabelaVacinas = new()
         {
