@@ -169,9 +169,11 @@ export default {
 .acessibilidade-menu {
   position: fixed;
   right: 56px;
-  bottom: 405px;
   top: auto;
-
+  bottom: auto;
+  transform: translateY(-50%); 
+  margin-top: -40px; 
+  
   display: flex;
   flex-direction: column;
   padding: 24px;
@@ -181,7 +183,7 @@ export default {
   border: 1px solid var(--acc-border);
   border-radius: 18px;
   box-shadow: var(--acc-shadow);
-  z-index: 10000;
+  z-index: 10050;
   gap: 0;
 }
 
