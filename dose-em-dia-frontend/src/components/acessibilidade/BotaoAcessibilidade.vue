@@ -128,14 +128,17 @@ export default {
 .acessibilidade-container {
   position: fixed;
   right: 12px;
-  bottom: 405px;
+  bottom: 405px; 
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   z-index: 9999;
+  contain: layout paint;
 }
 
 .acessibilidade-botao {
+  box-sizing: border-box;
+  line-height: 0;          
   width: 40px;
   height: 40px;
   display: flex;
@@ -150,6 +153,12 @@ export default {
   z-index: 10002;
 }
 
+.contraste-alto .acessibilidade-botao {
+  border-width: 0 !important;
+  padding: 0 !important;
+  outline: none !important;
+}
+
 .icone {
   width: 28px !important;
   height: 28px !important;
@@ -159,9 +168,11 @@ export default {
 }
 
 .acessibilidade-menu {
-  position: absolute;
+  position: fixed;
   right: 56px;
-  top: 0;
+  bottom: 405px;
+  top: auto;
+
   display: flex;
   flex-direction: column;
   padding: 24px;
@@ -173,6 +184,12 @@ export default {
   box-shadow: var(--acc-shadow);
   z-index: 10000;
   gap: 0;
+}
+
+.contraste-alto .acessibilidade-menu button {
+  border: none !important;
+  padding: 22px 18px !important;
+  line-height: 1.2 !important;
 }
 
 .acessibilidade-menu button {
@@ -258,6 +275,7 @@ export default {
   }
 
   .acessibilidade-menu {
+    position: fixed;
     bottom: calc(56px + env(safe-area-inset-bottom));
     right: 0;
     top: auto;
@@ -270,7 +288,7 @@ export default {
   }
 
   .acessibilidade-menu button {
-    padding: 12px 10px;
+    padding: 12px 10px !important; 
     font-size: 16px;
     border-radius: 10px;
   }
