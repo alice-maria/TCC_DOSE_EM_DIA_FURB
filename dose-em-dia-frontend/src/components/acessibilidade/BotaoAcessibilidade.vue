@@ -133,7 +133,6 @@ export default {
   flex-direction: column;
   align-items: flex-end;
   z-index: 9999;
-  contain: layout paint;
 }
 
 .acessibilidade-botao {
