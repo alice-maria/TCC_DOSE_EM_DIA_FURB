@@ -96,6 +96,7 @@ namespace DoseEmDia.Services.Geo
                 "Centro de imunização",
                 "Posto de vacinação",
                 "UBS",
+                "Unidade de Saúde",
             };
 
             var resultados = new List<PostoMaisProximo>();
