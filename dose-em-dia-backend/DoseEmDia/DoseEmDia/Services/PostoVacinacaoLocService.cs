@@ -97,6 +97,8 @@ namespace DoseEmDia.Services.Geo
                 "Posto de vacinação",
                 "UBS",
                 "Unidade de Saúde",
+                "ESF",
+                "Estratégia de Saúde da Família",
             };
 
             var resultados = new List<PostoMaisProximo>();
