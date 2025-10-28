@@ -227,7 +227,7 @@ export default {
       submenuVacinas: [
         { label: 'Minha caderneta digital', acao: 'irParaHome' },
         { label: 'Quais vacinas estão atrasadas?', acao: 'listarAtrasadas' },
-        { label: 'Quais vacinas estão para vencer?', acao: 'listarAVencer' },
+        { label: 'Quais vacinas estão para atrasar?', acao: 'listarAVencer' },
         { label: 'Quais vacinas estão em dia?', acao: 'listarEmDia' }
       ],
       submenuConta: [

@@ -87,7 +87,18 @@ namespace DoseEmDia.Services.Geo
             var chaveApi = ObterChaveApi();
             var coordenadaBase = $"{lat.ToString(CultureInfo.InvariantCulture)},{lng.ToString(CultureInfo.InvariantCulture)}";
 
-            var termos = new[] { "Unidade Básica de Saúde", "UBS", "Posto de Saúde", "Unidade de Saúde", "Clínica" };
+            var termos = new[]
+            {
+                "Ambulatório",
+                "Posto de Saúde",
+                "AG",
+                "Ambulatório Geral",
+                "Unidade Básica de Saúde",
+                "Centro de imunização",
+                "Posto de vacinação",
+                "UBS",
+            };
+
             var resultados = new List<PostoMaisProximo>();
 
             foreach (var termo in termos)
@@ -100,7 +111,7 @@ namespace DoseEmDia.Services.Geo
                 resultados.AddRange(await BuscarPaginaAsync(url, ct));
             }
 
-            var categorias = "health-care.clinic,health-care.hospital";
+            var categorias = "health-care.clinic,health-care.hospital,health-care.pharmacy";
             {
                 var url =
                     "https://discover.search.hereapi.com/v1/browse" +
