@@ -8,12 +8,12 @@ namespace DoseEmDia.Api.Controllers
 {
     [ApiController]
     [Route("api/localizacao")]
-    public class ControladorPostoVacinacao : ControllerBase
+    public class PostoVacinacaoLocController : ControllerBase
     {
         private readonly PostoVacinacaoLocService _servico;
         private readonly ApplicationDbContext _db;
 
-        public ControladorPostoVacinacao(PostoVacinacaoLocService servico, ApplicationDbContext db)
+        public PostoVacinacaoLocController(PostoVacinacaoLocService servico, ApplicationDbContext db)
         {
             _servico = servico ?? throw new ArgumentNullException(nameof(servico));
             _db = db ?? throw new ArgumentNullException(nameof(db));

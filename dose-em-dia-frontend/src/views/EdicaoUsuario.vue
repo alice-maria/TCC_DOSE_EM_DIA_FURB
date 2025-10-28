@@ -305,6 +305,17 @@ export default {
     },
 
     async salvar() {
+      const trim = (v) => (v ?? "").toString().trim();
+      const soDigitos = (v) => trim(v).replace(/\D/g, "");
+
+      const isValidNome = (v) => trim(v).length >= 2;
+      const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trim(v));
+      const isValidTelefone = (v) => {
+        const d = soDigitos(v);
+        return d.length === 10 || d.length === 11;
+      };
+      const isValidCEP = (v) => soDigitos(v).length === 8;
+
       try {
         const id = Number(this.usuario?.idUser);
         if (!Number.isInteger(id)) {
@@ -312,21 +323,36 @@ export default {
           this.mostrarErro = true;
           return;
         }
-
-        const trim = (v) => (v ?? "").toString().trim();
-
         const payload = {};
-        if (trim(this.form.nome) && trim(this.form.nome) !== trim(this.usuario?.nome))
-          payload.nome = trim(this.form.nome);
+        const avisos = []; 
 
-        if (trim(this.form.email).toLowerCase() !== trim(this.usuario?.email).toLowerCase())
-          payload.email = trim(this.form.email);
+        if (trim(this.form.nome) !== trim(this.usuario?.nome)) {
+          if (isValidNome(this.form.nome)) {
+            payload.nome = trim(this.form.nome);
+          } else {
+            avisos.push("Nome não aplicado (mínimo 2 caracteres).");
+          }
+        }
 
-        if (trim(this.form.telefone) !== trim(this.usuario?.telefone))
-          payload.telefone = trim(this.form.telefone);
+        if (trim(this.form.email).toLowerCase() !== trim(this.usuario?.email).toLowerCase()) {
+          if (isValidEmail(this.form.email)) {
+            payload.email = trim(this.form.email);
+          } else {
+            avisos.push("E-mail não aplicado (formato inválido).");
+          }
+        }
 
-        if (trim(this.form.sexo) !== trim(this.usuario?.sexo))
+        if (soDigitos(this.form.telefone) !== soDigitos(this.usuario?.telefone)) {
+          if (isValidTelefone(this.form.telefone)) {
+            payload.telefone = soDigitos(this.form.telefone);
+          } else {
+            avisos.push("Telefone não aplicado (use 10 ou 11 dígitos).");
+          }
+        }
+
+        if (trim(this.form.sexo) !== trim(this.usuario?.sexo)) {
           payload.sexo = trim(this.form.sexo);
+        }
 
         const origEnd = {
           cep: this.usuario?.endereco?.cep?.codigo || "",
@@ -343,63 +369,50 @@ export default {
           bairro: trim(this.form.endereco.bairro)
         };
 
-        const endMudou =
-          (formEnd.cep && formEnd.cep !== origEnd.cep) ||
-          (formEnd.logradouro && formEnd.logradouro !== origEnd.logradouro) ||
-          (formEnd.numero && formEnd.numero !== origEnd.numero) ||
-          (formEnd.bairro && formEnd.bairro !== origEnd.bairro);
+        const origCep8 = soDigitos(origEnd.cep);
+        const formCep8 = soDigitos(formEnd.cep);
+
+        const cepMudou = formEnd.cep !== "" && formCep8 !== origCep8;
+        const logMudou = formEnd.logradouro !== "" && formEnd.logradouro !== origEnd.logradouro;
+        const numMudou = formEnd.numero !== "" && String(formEnd.numero) !== String(origEnd.numero);
+        const baiMudou = formEnd.bairro !== "" && formEnd.bairro !== origEnd.bairro;
+
+        const endMudou = cepMudou || logMudou || numMudou || baiMudou;
 
         if (endMudou) {
-          const cep8 = (formEnd.cep || origEnd.cep || "").replace(/\D/g, "");
-
-          if (!origEnd.existe) {
-            if (!cep8 || cep8.length !== 8) {
-              this.erro = "Para criar endereço, informe um CEP válido (8 dígitos).";
-              this.mostrarErro = true;
-              return;
-            }
-            if (!formEnd.numero) {
-              this.erro = "Para criar endereço, informe o Número.";
-              this.mostrarErro = true;
-              return;
-            }
-          } else if (formEnd.cep && cep8.length !== 8) {
-            this.erro = "CEP inválido. Use 8 dígitos.";
-            this.mostrarErro = true;
-            return;
-          }
-
           const endPayload = {};
 
-          if (cep8) endPayload.cep = cep8;
-          if (formEnd.logradouro && formEnd.logradouro !== origEnd.logradouro)
-            endPayload.logradouro = formEnd.logradouro;
-
-          if (formEnd.numero && String(formEnd.numero) !== String(origEnd.numero)) {
-            const numeroStr = String(formEnd.numero).trim();
-            if (!numeroStr) {
-              this.erro = "Número inválido.";
-              this.mostrarErro = true;
-              return;
-            }
-            endPayload.numero = numeroStr;
-          }
-
-          if (formEnd.bairro && formEnd.bairro !== origEnd.bairro)
-            endPayload.bairro = formEnd.bairro;
-
           if (!origEnd.existe) {
-            if (!endPayload.logradouro && origEnd.logradouro) endPayload.logradouro = origEnd.logradouro;
-            if (endPayload.numero == null && origEnd.numero) endPayload.numero = String(origEnd.numero);
-          }
+            if (!isValidCEP(formEnd.cep) || !formEnd.numero) {
+              avisos.push("Endereço não criado (CEP 8 dígitos e Número são obrigatórios).");
+            } else {
+              endPayload.cep = formCep8;
+              endPayload.numero = String(formEnd.numero);
+              if (logMudou) endPayload.logradouro = formEnd.logradouro;
+              if (baiMudou) endPayload.bairro = formEnd.bairro;
+              payload.endereco = endPayload;
+            }
+          } else {
+            if (cepMudou) {
+              if (isValidCEP(formEnd.cep)) endPayload.cep = formCep8;
+              else avisos.push("CEP não aplicado (incompleto).");
+            }
+            if (logMudou) endPayload.logradouro = formEnd.logradouro;
+            if (numMudou) {
+              const numeroStr = String(formEnd.numero).trim();
+              if (numeroStr) endPayload.numero = numeroStr;
+              else avisos.push("Número não aplicado (inválido).");
+            }
+            if (baiMudou) endPayload.bairro = formEnd.bairro;
 
-          if (Object.keys(endPayload).length > 0) {
-            payload.endereco = endPayload; 
+            if (Object.keys(endPayload).length > 0) {
+              payload.endereco = endPayload;
+            }
           }
         }
 
         if (Object.keys(payload).length === 0) {
-          this.erro = "Nenhuma alteração para salvar.";
+          this.erro = avisos.length ? avisos.join(" ") : "Nenhuma alteração válida para salvar.";
           this.mostrarErro = true;
           return;
         }
@@ -715,7 +728,7 @@ export default {
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
-  text-transform: none;   
+  text-transform: none;
   transition: 0.3s ease;
 }
 </style>
