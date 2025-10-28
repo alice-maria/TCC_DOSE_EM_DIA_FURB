@@ -111,7 +111,7 @@ namespace DoseEmDia.Services.Geo
                 resultados.AddRange(await BuscarPaginaAsync(url, ct));
             }
 
-            var categorias = "health-care.clinic,health-care.hospital,health-care.pharmacy";
+            var categorias = "health-care.clinic,health-care.hospital";
             {
                 var url =
                     "https://discover.search.hereapi.com/v1/browse" +
