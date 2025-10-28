@@ -91,7 +91,6 @@ namespace DoseEmDia.Services.Geo
             {
                 "Ambulatório",
                 "Posto de Saúde",
-                "AG",
                 "Ambulatório Geral",
                 "Unidade Básica de Saúde",
                 "Centro de imunização",
