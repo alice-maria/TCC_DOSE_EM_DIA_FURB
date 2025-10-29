@@ -38,92 +38,6 @@ public class UsuarioService
             .FirstOrDefaultAsync(u => u.CPF == cpf);
     }
 
-    private static string SomenteDigitos(string? s)
-        => new string((s ?? string.Empty).Where(char.IsDigit).ToArray());
-
-    private static string NormalizaCep(string? cep)
-    {
-        var cod = SomenteDigitos(cep);
-        if (cod.Length != 8) throw new ArgumentException("CEP inválido (esperado 8 dígitos).");
-        return cod;
-    }
-
-    private async Task<Cep> EnsureCepAsync(string cepCodigo, Cidade cidade, string? bairro, CancellationToken ct) 
-    {
-        var tracked = _context.ChangeTracker.Entries<Cep>()
-            .FirstOrDefault(e => e.Entity.Codigo == cepCodigo)?.Entity;
-        if (tracked is not null)
-        {
-            if (cidade is not null && tracked.CidadeId != cidade.IdCidade && cidade.IdCidade != 0)
-                tracked.CidadeId = cidade.IdCidade;
-            if (!string.IsNullOrWhiteSpace(bairro) && !string.Equals(tracked.Bairro, bairro, StringComparison.Ordinal))
-                tracked.Bairro = bairro;
-            return tracked;
-        }
-
-        var existente = await _context.Cep.FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
-        if (existente is not null)
-        {
-            if (cidade is not null && existente.CidadeId != cidade.IdCidade && cidade.IdCidade != 0)
-                existente.CidadeId = cidade.IdCidade;
-            if (!string.IsNullOrWhiteSpace(bairro) && !string.Equals(existente.Bairro, bairro, StringComparison.Ordinal))
-                existente.Bairro = bairro;
-            return existente;
-        }
-
-        var novo = new Cep
-        {
-            Codigo = cepCodigo,
-            Bairro = string.IsNullOrWhiteSpace(bairro) ? null : bairro,
-            Cidade = cidade
-        };
-        _context.Cep.Add(novo);
-        return novo;
-    }
-
-    private static readonly Dictionary<string, string> _ufParaNome = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["AC"] = "Acre",
-        ["AL"] = "Alagoas",
-        ["AP"] = "Amapá",
-        ["AM"] = "Amazonas",
-        ["BA"] = "Bahia",
-        ["CE"] = "Ceará",
-        ["DF"] = "Distrito Federal",
-        ["ES"] = "Espírito Santo",
-        ["GO"] = "Goiás",
-        ["MA"] = "Maranhão",
-        ["MT"] = "Mato Grosso",
-        ["MS"] = "Mato Grosso do Sul",
-        ["MG"] = "Minas Gerais",
-        ["PA"] = "Pará",
-        ["PB"] = "Paraíba",
-        ["PR"] = "Paraná",
-        ["PE"] = "Pernambuco",
-        ["PI"] = "Piauí",
-        ["RJ"] = "Rio de Janeiro",
-        ["RN"] = "Rio Grande do Norte",
-        ["RS"] = "Rio Grande do Sul",
-        ["RO"] = "Rondônia",
-        ["RR"] = "Roraima",
-        ["SC"] = "Santa Catarina",
-        ["SP"] = "São Paulo",
-        ["SE"] = "Sergipe",
-        ["TO"] = "Tocantins"
-    };
-
-    private static (string Uf, string NomeExtenso) ResolverEstado(string estadoUf)
-    {
-        if (string.IsNullOrWhiteSpace(estadoUf))
-            throw new ArgumentException("UF é obrigatória.", nameof(estadoUf));
-
-        var uf = estadoUf.Trim().ToUpperInvariant();
-        if (!_ufParaNome.TryGetValue(uf, out var nomeExtenso))
-            throw new ArgumentException($"UF inválida: \"{estadoUf}\".", nameof(estadoUf));
-
-        return (uf, nomeExtenso);
-    }
-
     public async Task<Usuario> CriarUsuario(CriarUsuarioRequest dto, CancellationToken ct = default)
     {
         if (dto is null) 
@@ -557,13 +471,13 @@ public class UsuarioService
 
     private async Task<Endereco> CriarEnderecoAsync(string paisNome, string ufEstado, string estadoNomeExtenso, string cidadeNome, string cepCodigo, string logradouro, string numero, string? bairro, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(paisNome)) 
+        if (string.IsNullOrWhiteSpace(paisNome))
             throw new ArgumentException("País é obrigatório.", nameof(paisNome));
-        if (string.IsNullOrWhiteSpace(cidadeNome)) 
+        if (string.IsNullOrWhiteSpace(cidadeNome))
             throw new ArgumentException("Cidade é obrigatória.", nameof(cidadeNome));
-        if (string.IsNullOrWhiteSpace(cepCodigo)) 
+        if (string.IsNullOrWhiteSpace(cepCodigo))
             throw new ArgumentException("CEP é obrigatório.", nameof(cepCodigo));
-        if (string.IsNullOrWhiteSpace(numero)) 
+        if (string.IsNullOrWhiteSpace(numero))
             throw new ArgumentException("Número é obrigatório.", nameof(numero));
 
         var pais = await _context.Pais.FirstOrDefaultAsync(p => EF.Functions.ILike(p.Nome, paisNome), ct);
@@ -611,7 +525,94 @@ public class UsuarioService
         _context.Endereco.Add(end);
         return end;
     }
-    private async Task<long?> ResolverCidadeIdAsync(AtualizarEndereco req, long? cidadeFallbackId, CancellationToken ct)
+
+    private static string SomenteDigitos(string? s)
+    => new string((s ?? string.Empty).Where(char.IsDigit).ToArray());
+
+    private static string NormalizaCep(string? cep)
+    {
+        var cod = SomenteDigitos(cep);
+        if (cod.Length != 8) throw new ArgumentException("CEP inválido (esperado 8 dígitos).");
+        return cod;
+    }
+
+    private async Task<Cep> EnsureCepAsync(string cepCodigo, Cidade cidade, string? bairro, CancellationToken ct)
+    {
+        var tracked = _context.ChangeTracker.Entries<Cep>()
+            .FirstOrDefault(e => e.Entity.Codigo == cepCodigo)?.Entity;
+        if (tracked is not null)
+        {
+            if (cidade is not null && tracked.CidadeId != cidade.IdCidade && cidade.IdCidade != 0)
+                tracked.CidadeId = cidade.IdCidade;
+            if (!string.IsNullOrWhiteSpace(bairro) && !string.Equals(tracked.Bairro, bairro, StringComparison.Ordinal))
+                tracked.Bairro = bairro;
+            return tracked;
+        }
+
+        var existente = await _context.Cep.FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
+        if (existente is not null)
+        {
+            if (cidade is not null && existente.CidadeId != cidade.IdCidade && cidade.IdCidade != 0)
+                existente.CidadeId = cidade.IdCidade;
+            if (!string.IsNullOrWhiteSpace(bairro) && !string.Equals(existente.Bairro, bairro, StringComparison.Ordinal))
+                existente.Bairro = bairro;
+            return existente;
+        }
+
+        var novo = new Cep
+        {
+            Codigo = cepCodigo,
+            Bairro = string.IsNullOrWhiteSpace(bairro) ? null : bairro,
+            Cidade = cidade
+        };
+        _context.Cep.Add(novo);
+        return novo;
+    }
+
+    private static readonly Dictionary<string, string> _ufParaNome = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["AC"] = "Acre",
+        ["AL"] = "Alagoas",
+        ["AP"] = "Amapá",
+        ["AM"] = "Amazonas",
+        ["BA"] = "Bahia",
+        ["CE"] = "Ceará",
+        ["DF"] = "Distrito Federal",
+        ["ES"] = "Espírito Santo",
+        ["GO"] = "Goiás",
+        ["MA"] = "Maranhão",
+        ["MT"] = "Mato Grosso",
+        ["MS"] = "Mato Grosso do Sul",
+        ["MG"] = "Minas Gerais",
+        ["PA"] = "Pará",
+        ["PB"] = "Paraíba",
+        ["PR"] = "Paraná",
+        ["PE"] = "Pernambuco",
+        ["PI"] = "Piauí",
+        ["RJ"] = "Rio de Janeiro",
+        ["RN"] = "Rio Grande do Norte",
+        ["RS"] = "Rio Grande do Sul",
+        ["RO"] = "Rondônia",
+        ["RR"] = "Roraima",
+        ["SC"] = "Santa Catarina",
+        ["SP"] = "São Paulo",
+        ["SE"] = "Sergipe",
+        ["TO"] = "Tocantins"
+    };
+
+    private static (string Uf, string NomeExtenso) ResolverEstado(string estadoUf)
+    {
+        if (string.IsNullOrWhiteSpace(estadoUf))
+            throw new ArgumentException("UF é obrigatória.", nameof(estadoUf));
+
+        var uf = estadoUf.Trim().ToUpperInvariant();
+        if (!_ufParaNome.TryGetValue(uf, out var nomeExtenso))
+            throw new ArgumentException($"UF inválida: \"{estadoUf}\".", nameof(estadoUf));
+
+        return (uf, nomeExtenso);
+    }
+
+    private async Task<long?> ResolverCidadeIdAsync(AtualizarEndereco req, long? cidadeId, CancellationToken ct)
     {
         if (req.CidadeId is long cidReq && cidReq > 0)
         {
@@ -632,7 +633,7 @@ public class UsuarioService
             throw new ArgumentException("Cidade/UF informados não encontrados.");
         }
 
-        if (cidadeFallbackId is long fb && fb > 0L) return fb;
+        if (cidadeId is long fb && fb > 0L) return fb;
 
         return null;
     }

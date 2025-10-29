@@ -68,7 +68,7 @@ namespace DoseEmDia.Controllers
             return await ObterResumoVacinasUsuarioAsync(usuarioId, idade, sexo, ct);
         }
 
-        public async Task<ResumoVacinasUsuario> ObterResumoVacinasUsuarioAsync(int usuarioId, int idade, string? sexo, CancellationToken ct = default)
+        private async Task<ResumoVacinasUsuario> ObterResumoVacinasUsuarioAsync(int usuarioId, int idade, string? sexo, CancellationToken ct = default)
         {
             var doUsuario = await _context.Vacina
                 .AsNoTracking()

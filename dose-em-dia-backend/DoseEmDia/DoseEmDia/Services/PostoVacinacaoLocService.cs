@@ -89,16 +89,7 @@ namespace DoseEmDia.Services.Geo
 
             var termos = new[]
             {
-                "Ambulatório",
-                "Posto de Saúde",
-                "Ambulatório Geral",
-                "Unidade Básica de Saúde",
-                "Centro de imunização",
-                "Posto de vacinação",
-                "UBS",
-                "Unidade de Saúde",
-                "ESF",
-                "Estratégia de Saúde da Família",
+                "Ambulatório", "Posto de Saúde", "Ambulatório Geral", "Unidade Básica de Saúde", "Centro de imunização", "Posto de vacinação", "UBS", "Unidade de Saúde", "ESF", "Estratégia de Saúde da Família"
             };
 
             var resultados = new List<PostoMaisProximo>();

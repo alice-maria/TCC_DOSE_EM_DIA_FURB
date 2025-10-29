@@ -380,74 +380,6 @@ namespace DoseEmDia.Helpers
             catch { /* não interrompe o fluxo se falhar o log */ }
         }
 
-        private static string MontarEmailTabela(
-            string tituloTopo,
-            string introducao,
-            string tituloSecao,
-            IEnumerable<(string Nome, DateTime Aplicacao, int Lote)> itens)
-        {
-            string MontarSecao()
-            {
-                var sb = new StringBuilder();
-                sb.AppendLine($@"
-                  <h3 style='margin:16px 0 8px;color:#d35400'>{WebUtility.HtmlEncode(tituloSecao)}</h3>
-                  <table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='border-collapse:collapse'>
-                    <thead>
-                      <tr>
-                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Vacina</th>
-                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Data aplicação</th>
-                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Lote</th>
-                      </tr>
-                    </thead>
-                    <tbody>");
-                foreach (var it in itens)
-                {
-                    sb.AppendLine($@"
-                      <tr>
-                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(it.Nome)}</td>
-                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{it.Aplicacao:dd/MM/yyyy}</td>
-                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(it.Lote.ToString())}</td>
-                      </tr>");
-                }
-                sb.AppendLine("</tbody></table>");
-                return sb.ToString();
-            }
-
-            var corpoHtml = $@"
-            <!DOCTYPE html>
-            <html lang='pt-BR'>
-              <body style='margin:0;padding:24px;background:#fafafa;
-                           font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;color:#111'>
-                <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'>
-                  <tr><td align='center'>
-                    <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'
-                           style='max-width:720px;background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden'>
-                      <tr>
-                        <td style='padding:20px 24px;background:#fff3e9;border-bottom:1px solid #ffe3cf'>
-                          <h2 style='margin:0;color:#f46c20'>{WebUtility.HtmlEncode(tituloTopo)}</h2>
-                        </td>
-                      </tr>
-
-                      <tr><td style='padding:20px 24px'>
-                        <p style='margin:0 0 12px'>{introducao}</p>
-                        {MontarSecao()}
-                        <div style='height:16px'></div>
-                        <p style='font-size:13px;color:#555;margin:0'>
-                          Mantenha seu cartão de vacinação em dia. Em caso de dúvidas, procure uma unidade de saúde.
-                        </p>
-                        <div style='height:8px'></div>
-                        <p style='font-size:13px;color:#555;margin:0'>
-                          Este é um e-mail automático. Não responda por este canal.
-                        </p>
-                      </td></tr>
-                    </table>
-                  </td></tr>
-                </table>
-              </body>
-            </html>";
-
-            return corpoHtml;
-        }
         public async Task EnviarResumoVacinasPorStatusAsync(int usuarioId, CancellationToken ct = default)
         {
             await EnviarVacinasAtrasadasAsync(usuarioId, ct);
@@ -467,11 +399,8 @@ namespace DoseEmDia.Helpers
                 throw new InvalidOperationException("Usuário não encontrado ou sem e-mail cadastrado.");
             if (!usuario.ReceberNotificacoes) return;
 
-            var dataNasc = usuario.DataNascimento == default ? DateTime.Today : usuario.DataNascimento;
-            var idade = CalcularIdadeEmAnos(dataNasc);
-
             var svc = new DoseEmDia.Controllers.VacinaService(_db);
-            var resumo = await svc.ObterResumoVacinasUsuarioAsync(usuario.IdUser, idade, usuario.Sexo, ct);
+            var resumo = await svc.ObterResumoVacinasUsuarioAsync(usuario.IdUser, ct);
 
             var sb = new StringBuilder();
             sb.AppendLine($@"
@@ -557,6 +486,70 @@ namespace DoseEmDia.Helpers
             catch { /* não interrompe o fluxo se falhar o log */ }
         }
 
+        private static string MontarEmailTabela(string tituloTopo, string introducao, string tituloSecao, IEnumerable<(string Nome, DateTime Aplicacao, int Lote)> itens)
+        {
+            string MontarSecao()
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine($@"
+                  <h3 style='margin:16px 0 8px;color:#d35400'>{WebUtility.HtmlEncode(tituloSecao)}</h3>
+                  <table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='border-collapse:collapse'>
+                    <thead>
+                      <tr>
+                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Vacina</th>
+                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Data aplicação</th>
+                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Lote</th>
+                      </tr>
+                    </thead>
+                    <tbody>");
+                foreach (var it in itens)
+                {
+                    sb.AppendLine($@"
+                      <tr>
+                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(it.Nome)}</td>
+                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{it.Aplicacao:dd/MM/yyyy}</td>
+                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(it.Lote.ToString())}</td>
+                      </tr>");
+                }
+                sb.AppendLine("</tbody></table>");
+                return sb.ToString();
+            }
+
+            var corpoHtml = $@"
+            <!DOCTYPE html>
+            <html lang='pt-BR'>
+              <body style='margin:0;padding:24px;background:#fafafa;
+                           font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;color:#111'>
+                <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'>
+                  <tr><td align='center'>
+                    <table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'
+                           style='max-width:720px;background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden'>
+                      <tr>
+                        <td style='padding:20px 24px;background:#fff3e9;border-bottom:1px solid #ffe3cf'>
+                          <h2 style='margin:0;color:#f46c20'>{WebUtility.HtmlEncode(tituloTopo)}</h2>
+                        </td>
+                      </tr>
+
+                      <tr><td style='padding:20px 24px'>
+                        <p style='margin:0 0 12px'>{introducao}</p>
+                        {MontarSecao()}
+                        <div style='height:16px'></div>
+                        <p style='font-size:13px;color:#555;margin:0'>
+                          Mantenha seu cartão de vacinação em dia. Em caso de dúvidas, procure uma unidade de saúde.
+                        </p>
+                        <div style='height:8px'></div>
+                        <p style='font-size:13px;color:#555;margin:0'>
+                          Este é um e-mail automático. Não responda por este canal.
+                        </p>
+                      </td></tr>
+                    </table>
+                  </td></tr>
+                </table>
+              </body>
+            </html>";
+
+            return corpoHtml;
+        }
         private static string StripHtml(string html)
         {
             if (string.IsNullOrEmpty(html)) return string.Empty;
@@ -606,16 +599,6 @@ namespace DoseEmDia.Helpers
 
             string body = await resp.Body.ReadAsStringAsync();
             throw new EmailException($"{contextMessage}. Status: {(int)resp.StatusCode}. Detalhes: {body}");
-        }
-        private static int CalcularIdadeEmAnos(DateTime dataNascimento, DateTime? dataReferencia = null)
-        {
-            var hoje = (dataReferencia ?? DateTime.Today).Date;
-            var idade = hoje.Year - dataNascimento.Year;
-
-            if (dataNascimento.Date > hoje.AddYears(-idade))
-                idade--;
-
-            return Math.Max(idade, 0);
         }
 
     }
