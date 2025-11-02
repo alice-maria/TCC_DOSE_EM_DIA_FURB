@@ -426,14 +426,25 @@ export default {
             if (baiMudou) endPayload.bairro = formEnd.bairro;
 
             if (cidMudou) {
-              if (isValidCidade(formEnd.cidade)) endPayload.cidade = formEnd.cidade;
-              else avisos.push("Cidade não aplicada (mínimo 2 caracteres).");
+              if (formEnd.cidade === "") {
+                avisos.push("Cidade vazia não será aplicada.");
+              } else if (isValidCidade(formEnd.cidade)) {
+                endPayload.cidade = formEnd.cidade;
+              } else {
+                avisos.push("Cidade não aplicada (mínimo 1 caractere).");
+              }
             }
 
             if (ufMudou) {
-              if (isValidUF(formEnd.estado)) endPayload.estado = formEnd.estado.toUpperCase();
-              else avisos.push("UF não aplicada (use sigla, ex.: SC).");
+              if (formEnd.estado === "") {
+                avisos.push("UF vazia não será aplicada.");
+              } else if (isValidUF(formEnd.estado)) {
+                endPayload.estado = formEnd.estado.toUpperCase();
+              } else {
+                avisos.push("UF não aplicada (use sigla, ex.: SC).");
+              }
             }
+
 
             if (Object.keys(endPayload).length > 0) {
               payload.endereco = endPayload;
@@ -541,21 +552,13 @@ export default {
       return log || "";
     },
     bairroView() {
-      return this.form.endereco.bairro
-        || this.usuario?.endereco?.cep?.bairro
-        || this.usuario?.endereco?.bairro
+      return this.form.endereco.bairro || this.usuario?.endereco?.cep?.bairro || this.usuario?.endereco?.bairro
     },
     cidadeView() {
-      return this.form?.endereco?.cidade
-        || this.usuario?.endereco?.cep?.cidade?.nome
-        || this.usuario?.endereco?.cidade
-        || "";
+      return this.form?.endereco?.cidade || this.usuario?.endereco?.cep?.cidade?.nome || this.usuario?.endereco?.cidade || "";
     },
     estadoView() {
-      return this.form?.endereco?.estado
-        || this.usuario?.endereco?.cep?.cidade?.estado?.uf
-        || this.usuario?.endereco?.estado
-        || "";
+      return this.form?.endereco?.estado || this.usuario?.endereco?.cep?.cidade?.estado?.uf|| this.usuario?.endereco?.estado || "";
     },
     paisView() {
       return this.usuario?.endereco?.cep?.cidade?.estado?.pais?.nome || "";
