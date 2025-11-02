@@ -46,19 +46,32 @@ export default {
       nomeUsuario: localStorage.getItem('usuarioNome') || 'Usuário',
       menuAberto: false,
       dialogSair: false,
+      _handlerNome: null
     };
   },
+  mounted() {
+    this._handlerNome = (e) => {
+      const novo = e?.detail?.nome ?? localStorage.getItem('usuarioNome');
+      if (novo && novo !== this.nomeUsuario) this.nomeUsuario = novo;
+    };
+    window.addEventListener('usuario:nome-atualizado', this._handlerNome);
+  },
+  beforeUnmount() {
+    window.removeEventListener('usuario:nome-atualizado', this._handlerNome);
+  },
   methods: {
+    sincronizarDoStorage() {
+      this.nomeUsuario = localStorage.getItem('usuarioNome') || 'Usuário';
+    },
     navegarEditarPerfil() {
       this.menuAberto = false;
       this.$router.push('/editar-perfil');
     },
     abrirDialogSair() {
-      this.menuAberto = false;        
+      this.menuAberto = false;
       this.dialogSair = true;
     },
     confirmarSaida() {
-      // limpeza do estado local
       localStorage.removeItem('token');
       localStorage.removeItem('usuarioNome');
       localStorage.removeItem('usuarioCpf');
