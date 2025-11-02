@@ -305,7 +305,6 @@ export default {
     },
 
     async salvar() {
-      // ---------- Normalização preventiva ----------
       this.form.endereco = {
         cep: this.form.endereco?.cep ?? "",
         logradouro: this.form.endereco?.logradouro ?? "",
@@ -367,7 +366,6 @@ export default {
           payload.sexo = trim(this.form.sexo);
         }
 
-        // ---------- Endereço: incluir cidade/estado na comparação ----------
         const origEnd = {
           cep: this.usuario?.endereco?.cep?.codigo || "",
           logradouro: this.usuario?.endereco?.logradouro || "",
@@ -403,7 +401,6 @@ export default {
           const endPayload = {};
 
           if (!origEnd.existe) {
-            // criação
             if (!isValidCEP(formEnd.cep) || !formEnd.numero) {
               avisos.push("Endereço não criado (CEP 8 dígitos e Número são obrigatórios).");
             } else {
@@ -416,7 +413,6 @@ export default {
               payload.endereco = endPayload;
             }
           } else {
-            // atualização
             if (cepMudou) {
               if (isValidCEP(formEnd.cep)) endPayload.cep = formCep8;
               else avisos.push("CEP não aplicado (incompleto).");
@@ -550,10 +546,16 @@ export default {
         || this.usuario?.endereco?.bairro
     },
     cidadeView() {
-      return this.usuario?.endereco?.cep?.cidade?.nome || "";
+      return this.form?.endereco?.cidade
+        || this.usuario?.endereco?.cep?.cidade?.nome
+        || this.usuario?.endereco?.cidade
+        || "";
     },
     estadoView() {
-      return this.usuario?.endereco?.cep?.cidade?.estado?.uf || "";
+      return this.form?.endereco?.estado
+        || this.usuario?.endereco?.cep?.cidade?.estado?.uf
+        || this.usuario?.endereco?.estado
+        || "";
     },
     paisView() {
       return this.usuario?.endereco?.cep?.cidade?.estado?.pais?.nome || "";
@@ -747,20 +749,23 @@ export default {
   margin-top: 16px;
 }
 
+.btn-popupok {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
 .btn-popupok button {
-  background-color: #ffffff !important;
-  color: #f97316 !important;
-  border: 2px solid #f97316;
+  background-color: #fff !important;
+  color: #ff6600 !important;
+  border: none;
   padding: 10px 30px;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   text-transform: none;
   transition: 0.3s ease;
-}
-
-.btn-popupok button:hover {
-  background-color: #f97316 !important;
-  color: #ffffff !important;
 }
 </style>
