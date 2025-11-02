@@ -305,6 +305,16 @@ export default {
     },
 
     async salvar() {
+      // ---------- Normalização preventiva ----------
+      this.form.endereco = {
+        cep: this.form.endereco?.cep ?? "",
+        logradouro: this.form.endereco?.logradouro ?? "",
+        numero: this.form.endereco?.numero ?? "",
+        bairro: this.form.endereco?.bairro ?? "",
+        cidade: this.form.endereco?.cidade ?? "",
+        estado: this.form.endereco?.estado ?? ""
+      };
+
       const trim = (v) => (v ?? "").toString().trim();
       const soDigitos = (v) => trim(v).replace(/\D/g, "");
 
@@ -315,6 +325,8 @@ export default {
         return d.length === 10 || d.length === 11;
       };
       const isValidCEP = (v) => soDigitos(v).length === 8;
+      const isValidCidade = (v) => trim(v).length >= 2;
+      const isValidUF = (v) => /^[A-Z]{2}$/i.test(trim(v));
 
       try {
         const id = Number(this.usuario?.idUser);
@@ -323,8 +335,9 @@ export default {
           this.mostrarErro = true;
           return;
         }
+
         const payload = {};
-        const avisos = []; 
+        const avisos = [];
 
         if (trim(this.form.nome) !== trim(this.usuario?.nome)) {
           if (isValidNome(this.form.nome)) {
@@ -354,11 +367,14 @@ export default {
           payload.sexo = trim(this.form.sexo);
         }
 
+        // ---------- Endereço: incluir cidade/estado na comparação ----------
         const origEnd = {
           cep: this.usuario?.endereco?.cep?.codigo || "",
           logradouro: this.usuario?.endereco?.logradouro || "",
           numero: this.usuario?.endereco?.numero || "",
           bairro: this.usuario?.endereco?.cep?.bairro || this.usuario?.endereco?.bairro || "",
+          cidade: this.usuario?.endereco?.cep?.cidade?.nome || this.usuario?.endereco?.cidade || "",
+          estado: this.usuario?.endereco?.cep?.cidade?.estado?.uf || this.usuario?.endereco?.estado || "",
           existe: !!this.usuario?.endereco
         };
 
@@ -366,7 +382,9 @@ export default {
           cep: trim(this.form.endereco.cep),
           logradouro: trim(this.form.endereco.logradouro),
           numero: trim(this.form.endereco.numero),
-          bairro: trim(this.form.endereco.bairro)
+          bairro: trim(this.form.endereco.bairro),
+          cidade: trim(this.form.endereco.cidade),
+          estado: trim(this.form.endereco.estado)
         };
 
         const origCep8 = soDigitos(origEnd.cep);
@@ -376,13 +394,16 @@ export default {
         const logMudou = formEnd.logradouro !== "" && formEnd.logradouro !== origEnd.logradouro;
         const numMudou = formEnd.numero !== "" && String(formEnd.numero) !== String(origEnd.numero);
         const baiMudou = formEnd.bairro !== "" && formEnd.bairro !== origEnd.bairro;
+        const cidMudou = formEnd.cidade !== "" && formEnd.cidade !== origEnd.cidade;
+        const ufMudou = formEnd.estado !== "" && formEnd.estado.toUpperCase() !== String(origEnd.estado || "").toUpperCase();
 
-        const endMudou = cepMudou || logMudou || numMudou || baiMudou;
+        const endMudou = cepMudou || logMudou || numMudou || baiMudou || cidMudou || ufMudou;
 
         if (endMudou) {
           const endPayload = {};
 
           if (!origEnd.existe) {
+            // criação
             if (!isValidCEP(formEnd.cep) || !formEnd.numero) {
               avisos.push("Endereço não criado (CEP 8 dígitos e Número são obrigatórios).");
             } else {
@@ -390,9 +411,12 @@ export default {
               endPayload.numero = String(formEnd.numero);
               if (logMudou) endPayload.logradouro = formEnd.logradouro;
               if (baiMudou) endPayload.bairro = formEnd.bairro;
+              if (cidMudou && isValidCidade(formEnd.cidade)) endPayload.cidade = formEnd.cidade;
+              if (ufMudou && isValidUF(formEnd.estado)) endPayload.estado = formEnd.estado.toUpperCase();
               payload.endereco = endPayload;
             }
           } else {
+            // atualização
             if (cepMudou) {
               if (isValidCEP(formEnd.cep)) endPayload.cep = formCep8;
               else avisos.push("CEP não aplicado (incompleto).");
@@ -404,6 +428,16 @@ export default {
               else avisos.push("Número não aplicado (inválido).");
             }
             if (baiMudou) endPayload.bairro = formEnd.bairro;
+
+            if (cidMudou) {
+              if (isValidCidade(formEnd.cidade)) endPayload.cidade = formEnd.cidade;
+              else avisos.push("Cidade não aplicada (mínimo 2 caracteres).");
+            }
+
+            if (ufMudou) {
+              if (isValidUF(formEnd.estado)) endPayload.estado = formEnd.estado.toUpperCase();
+              else avisos.push("UF não aplicada (use sigla, ex.: SC).");
+            }
 
             if (Object.keys(endPayload).length > 0) {
               payload.endereco = endPayload;
@@ -436,6 +470,7 @@ export default {
         this.mostrarErro = true;
       }
     },
+
     cancelar() {
       this.editando = false;
       this.carregarUsuario();
@@ -712,23 +747,20 @@ export default {
   margin-top: 16px;
 }
 
-.btn-popupok {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  width: 100%;
-}
-
 .btn-popupok button {
-  background-color: #ff6600 !important;
-  color: #fff !important;
-  border: none;
+  background-color: #ffffff !important;
+  color: #f97316 !important;
+  border: 2px solid #f97316;
   padding: 10px 30px;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   text-transform: none;
   transition: 0.3s ease;
+}
+
+.btn-popupok button:hover {
+  background-color: #f97316 !important;
+  color: #ffffff !important;
 }
 </style>
