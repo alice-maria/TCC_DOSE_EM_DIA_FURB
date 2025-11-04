@@ -40,23 +40,23 @@ public class UsuarioService
 
     public async Task<Usuario> CriarUsuario(CriarUsuarioRequest dto, CancellationToken ct = default)
     {
-        if (dto is null) 
+        if (dto is null)
             throw new ArgumentNullException(nameof(dto));
-        if (string.IsNullOrWhiteSpace(dto.Email)) 
+        if (string.IsNullOrWhiteSpace(dto.Email))
             throw new ArgumentException("E-mail é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Senha)) 
+        if (string.IsNullOrWhiteSpace(dto.Senha))
             throw new ArgumentException("Senha é obrigatória.");
-        if (string.IsNullOrWhiteSpace(dto.Pais)) 
+        if (string.IsNullOrWhiteSpace(dto.Pais))
             throw new ArgumentException("País é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Uf)) 
+        if (string.IsNullOrWhiteSpace(dto.Uf))
             throw new ArgumentException("UF é obrigatória.");
-        if (string.IsNullOrWhiteSpace(dto.Cidade)) 
+        if (string.IsNullOrWhiteSpace(dto.Cidade))
             throw new ArgumentException("Cidade é obrigatória.");
-        if (string.IsNullOrWhiteSpace(dto.Cep)) 
+        if (string.IsNullOrWhiteSpace(dto.Cep))
             throw new ArgumentException("CEP é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Logradouro)) 
+        if (string.IsNullOrWhiteSpace(dto.Logradouro))
             throw new ArgumentException("Logradouro é obrigatório.");
-        if (string.IsNullOrWhiteSpace(dto.Numero)) 
+        if (string.IsNullOrWhiteSpace(dto.Numero))
             throw new ArgumentException("Número é obrigatório.");
 
         var nome = dto.Nome?.Trim();
@@ -117,7 +117,7 @@ public class UsuarioService
 
                 try
                 {
-                    if (usuario.ReceberNotificacoes) 
+                    if (usuario.ReceberNotificacoes)
                     {
                         await _envioEmail.EnviarVacinasAtrasadasAsync(usuario.IdUser, ct);
                         await _envioEmail.EnviarVacinasAVencerAsync(usuario.IdUser, ct);
@@ -307,7 +307,6 @@ public class UsuarioService
             if (usuario is null)
                 throw new UsuarioException.UsuarioNaoEncontradoException(id);
 
-            // ---------- Campos básicos ----------
             if (!string.IsNullOrWhiteSpace(request.Nome))
                 usuario.Nome = request.Nome.Trim();
 
@@ -387,7 +386,6 @@ public class UsuarioService
                     }
                     else
                     {
-                        // Atualização parcial do endereço existente
                         var end = usuario.Endereco;
 
                         if (!string.IsNullOrWhiteSpace(req.CEP))
@@ -409,16 +407,50 @@ public class UsuarioService
                                 };
                                 _context.Cep.Add(cep);
                             }
-                            else if (!string.IsNullOrWhiteSpace(req.Bairro))
+                            else
                             {
-                                cep.Bairro = req.Bairro!.Trim();
+                                if (!string.IsNullOrWhiteSpace(req.Bairro))
+                                    cep.Bairro = req.Bairro!.Trim();
+
+                                var querAtualizarCidadeUfAoTrocarCep =
+                                    (req.CidadeId is not null && req.CidadeId > 0) ||
+                                    (!string.IsNullOrWhiteSpace(req.CidadeNome) && !string.IsNullOrWhiteSpace(req.Uf));
+
+                                if (querAtualizarCidadeUfAoTrocarCep)
+                                {
+                                    var novoCidadeId = await ResolverCidadeIdAsync(req, cep.CidadeId, ct)
+                                        ?? throw new ArgumentException("Cidade/UF informados não encontrados.");
+                                    if (cep.CidadeId != novoCidadeId)
+                                        cep.CidadeId = novoCidadeId;
+                                }
                             }
 
                             end.Cep = cep;
                         }
-                        else if (!string.IsNullOrWhiteSpace(req.Bairro))
+                        else
                         {
-                            end.Cep.Bairro = req.Bairro!.Trim();
+                            if (!string.IsNullOrWhiteSpace(req.Bairro))
+                            {
+                                if (end.Cep is null)
+                                    throw new InvalidOperationException("Endereço do usuário não possui CEP associado.");
+                                end.Cep.Bairro = req.Bairro!.Trim();
+                            }
+
+                            var querAtualizarCidadeUf =
+                                (req.CidadeId is not null && req.CidadeId > 0) ||
+                                (!string.IsNullOrWhiteSpace(req.CidadeNome) && !string.IsNullOrWhiteSpace(req.Uf));
+
+                            if (querAtualizarCidadeUf)
+                            {
+                                var novoCidadeId = await ResolverCidadeIdAsync(req, end.Cep?.CidadeId, ct)
+                                    ?? throw new ArgumentException("Cidade/UF informados não encontrados.");
+
+                                if (end.Cep is null)
+                                    throw new InvalidOperationException("Endereço do usuário não possui CEP associado.");
+
+                                if (end.Cep.CidadeId != novoCidadeId)
+                                    end.Cep.CidadeId = novoCidadeId;
+                            }
                         }
 
                         if (!string.IsNullOrWhiteSpace(req.Logradouro))
@@ -626,8 +658,8 @@ public class UsuarioService
             var cid = await _context.Cidade
                 .Where(c => EF.Functions.ILike(c.Nome, req.CidadeNome!.Trim()))
                 .Where(c => c.Estado.Uf == req.Uf!.Trim().ToUpperInvariant())
-                .Select(c => c.IdCidade)               
-                .FirstOrDefaultAsync(ct);              
+                .Select(c => c.IdCidade)
+                .FirstOrDefaultAsync(ct);
 
             if (cid > 0L) return cid;
             throw new ArgumentException("Cidade/UF informados não encontrados.");

@@ -339,27 +339,18 @@ export default {
         const avisos = [];
 
         if (trim(this.form.nome) !== trim(this.usuario?.nome)) {
-          if (isValidNome(this.form.nome)) {
-            payload.nome = trim(this.form.nome);
-          } else {
-            avisos.push("Nome não aplicado (mínimo 2 caracteres).");
-          }
+          if (isValidNome(this.form.nome)) payload.nome = trim(this.form.nome);
+          else avisos.push("Nome não aplicado (mínimo 2 caracteres).");
         }
 
         if (trim(this.form.email).toLowerCase() !== trim(this.usuario?.email).toLowerCase()) {
-          if (isValidEmail(this.form.email)) {
-            payload.email = trim(this.form.email);
-          } else {
-            avisos.push("E-mail não aplicado (formato inválido).");
-          }
+          if (isValidEmail(this.form.email)) payload.email = trim(this.form.email);
+          else avisos.push("E-mail não aplicado (formato inválido).");
         }
 
         if (soDigitos(this.form.telefone) !== soDigitos(this.usuario?.telefone)) {
-          if (isValidTelefone(this.form.telefone)) {
-            payload.telefone = soDigitos(this.form.telefone);
-          } else {
-            avisos.push("Telefone não aplicado (use 10 ou 11 dígitos).");
-          }
+          if (isValidTelefone(this.form.telefone)) payload.telefone = soDigitos(this.form.telefone);
+          else avisos.push("Telefone não aplicado (use 10 ou 11 dígitos).");
         }
 
         if (trim(this.form.sexo) !== trim(this.usuario?.sexo)) {
@@ -398,57 +389,24 @@ export default {
         const endMudou = cepMudou || logMudou || numMudou || baiMudou || cidMudou || ufMudou;
 
         if (endMudou) {
-          const endPayload = {};
+          const cepParaEnviar = isValidCEP(formEnd.cep) ? formCep8 : origCep8;
+          const cidadeParaEnviar = isValidCidade(formEnd.cidade) ? formEnd.cidade : origEnd.cidade;
+          const ufParaEnviar = isValidUF(formEnd.estado) ? formEnd.estado.toUpperCase() : String(origEnd.estado || "").toUpperCase();
 
-          if (!origEnd.existe) {
-            if (!isValidCEP(formEnd.cep) || !formEnd.numero) {
-              avisos.push("Endereço não criado (CEP 8 dígitos e Número são obrigatórios).");
-            } else {
-              endPayload.cep = formCep8;
-              endPayload.numero = String(formEnd.numero);
-              if (logMudou) endPayload.logradouro = formEnd.logradouro;
-              if (baiMudou) endPayload.bairro = formEnd.bairro;
-              if (cidMudou && isValidCidade(formEnd.cidade)) endPayload.cidade = formEnd.cidade;
-              if (ufMudou && isValidUF(formEnd.estado)) endPayload.estado = formEnd.estado.toUpperCase();
-              payload.endereco = endPayload;
-            }
-          } else {
-            if (cepMudou) {
-              if (isValidCEP(formEnd.cep)) endPayload.cep = formCep8;
-              else avisos.push("CEP não aplicado (incompleto).");
-            }
-            if (logMudou) endPayload.logradouro = formEnd.logradouro;
-            if (numMudou) {
-              const numeroStr = String(formEnd.numero).trim();
-              if (numeroStr) endPayload.numero = numeroStr;
-              else avisos.push("Número não aplicado (inválido).");
-            }
-            if (baiMudou) endPayload.bairro = formEnd.bairro;
+          const endPayload = {
+            cep: cepParaEnviar,
+            logradouro: formEnd.logradouro || origEnd.logradouro || "",
+            numero: String(formEnd.numero || origEnd.numero || "").trim(),
+            bairro: formEnd.bairro || origEnd.bairro || "",
+            cidade: cidadeParaEnviar || "",
+            estado: ufParaEnviar || ""
+          };
 
-            if (cidMudou) {
-              if (formEnd.cidade === "") {
-                avisos.push("Cidade vazia não será aplicada.");
-              } else if (isValidCidade(formEnd.cidade)) {
-                endPayload.cidade = formEnd.cidade;
-              } else {
-                avisos.push("Cidade não aplicada (mínimo 1 caractere).");
-              }
-            }
+          if (!isValidCEP(endPayload.cep)) avisos.push("CEP inválido (use 8 dígitos).");
+          if (!endPayload.numero) avisos.push("Número do endereço não informado.");
 
-            if (ufMudou) {
-              if (formEnd.estado === "") {
-                avisos.push("UF vazia não será aplicada.");
-              } else if (isValidUF(formEnd.estado)) {
-                endPayload.estado = formEnd.estado.toUpperCase();
-              } else {
-                avisos.push("UF não aplicada (use sigla, ex.: SC).");
-              }
-            }
-
-
-            if (Object.keys(endPayload).length > 0) {
-              payload.endereco = endPayload;
-            }
+          if (avisos.length === 0) {
+            payload.endereco = endPayload;
           }
         }
 
@@ -558,7 +516,7 @@ export default {
       return this.form?.endereco?.cidade || this.usuario?.endereco?.cep?.cidade?.nome || this.usuario?.endereco?.cidade || "";
     },
     estadoView() {
-      return this.form?.endereco?.estado || this.usuario?.endereco?.cep?.cidade?.estado?.uf|| this.usuario?.endereco?.estado || "";
+      return this.form?.endereco?.estado || this.usuario?.endereco?.cep?.cidade?.estado?.uf || this.usuario?.endereco?.estado || "";
     },
     paisView() {
       return this.usuario?.endereco?.cep?.cidade?.estado?.pais?.nome || "";
