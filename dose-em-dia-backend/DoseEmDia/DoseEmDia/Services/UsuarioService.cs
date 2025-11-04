@@ -307,7 +307,6 @@ public class UsuarioService
             if (usuario is null)
                 throw new UsuarioException.UsuarioNaoEncontradoException(id);
 
-            // ---------- Campos básicos ----------
             if (!string.IsNullOrWhiteSpace(request.Nome))
                 usuario.Nome = request.Nome.Trim();
 
@@ -387,7 +386,6 @@ public class UsuarioService
                     }
                     else
                     {
-                        // Atualização parcial do endereço existente
                         var end = usuario.Endereco;
 
                         if (!string.IsNullOrWhiteSpace(req.CEP))
