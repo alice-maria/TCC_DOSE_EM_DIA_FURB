@@ -374,6 +374,7 @@ public class UsuarioService
                         else if (!string.IsNullOrWhiteSpace(req.Bairro))
                         {
                             cep.Bairro = req.Bairro!.Trim();
+                            _context.Entry(cep).Property(x => x.Bairro!).IsModified = true; 
                         }
 
                         usuario.Endereco = new Endereco
@@ -410,7 +411,10 @@ public class UsuarioService
                             else
                             {
                                 if (!string.IsNullOrWhiteSpace(req.Bairro))
+                                {
                                     cep.Bairro = req.Bairro!.Trim();
+                                    _context.Entry(cep).Property(x => x.Bairro!).IsModified = true; 
+                                }
 
                                 var querAtualizarCidadeUfAoTrocarCep =
                                     (req.CidadeId is not null && req.CidadeId > 0) ||
@@ -421,7 +425,10 @@ public class UsuarioService
                                     var novoCidadeId = await ResolverCidadeIdAsync(req, cep.CidadeId, ct)
                                         ?? throw new ArgumentException("Cidade/UF informados não encontrados.");
                                     if (cep.CidadeId != novoCidadeId)
+                                    {
                                         cep.CidadeId = novoCidadeId;
+                                        _context.Entry(cep).Property(x => x.CidadeId).IsModified = true;
+                                    }
                                 }
                             }
 
@@ -434,6 +441,7 @@ public class UsuarioService
                                 if (end.Cep is null)
                                     throw new InvalidOperationException("Endereço do usuário não possui CEP associado.");
                                 end.Cep.Bairro = req.Bairro!.Trim();
+                                _context.Entry(end.Cep).Property(x => x.Bairro!).IsModified = true; 
                             }
 
                             var querAtualizarCidadeUf =
@@ -449,7 +457,10 @@ public class UsuarioService
                                     throw new InvalidOperationException("Endereço do usuário não possui CEP associado.");
 
                                 if (end.Cep.CidadeId != novoCidadeId)
+                                {
                                     end.Cep.CidadeId = novoCidadeId;
+                                    _context.Entry(end.Cep).Property(x => x.CidadeId).IsModified = true; 
+                                }
                             }
                         }
 

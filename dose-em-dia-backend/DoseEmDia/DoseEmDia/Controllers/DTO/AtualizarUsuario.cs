@@ -1,4 +1,6 @@
-﻿namespace DoseEmDia.Controllers.DTO
+﻿using System.Text.Json.Serialization;
+
+namespace DoseEmDia.Controllers.DTO
 {
 #nullable enable
     public sealed class AtualizarUsuario
@@ -13,14 +15,22 @@
 
     public sealed class AtualizarEndereco
     {
-        public string? CEP { get; set; }          
+        public string? CEP { get; set; }
         public string? Logradouro { get; set; }
-        public string? Numero { get; set; }       
+        public string? Numero { get; set; }
         public string? Bairro { get; set; }
 
-        public long? CidadeId { get; set; }        
-        public string? CidadeNome { get; set; }   
-        public string? Uf { get; set; }           
+        public long? CidadeId { get; set; }
+
+        [JsonPropertyName("CidadeNome")]
+        public string? CidadeNome { get; set; }
+        [JsonPropertyName("cidade")]
+        public string? CidadeNomeAlias { get => CidadeNome; set => CidadeNome = value; }
+
+        [JsonPropertyName("Uf")]
+        public string? Uf { get; set; }
+        [JsonPropertyName("estado")]
+        public string? UfAlias { get => Uf; set => Uf = value; }
     }
 #nullable restore
 }

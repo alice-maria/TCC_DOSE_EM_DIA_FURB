@@ -128,7 +128,7 @@ export default {
 .acessibilidade-container {
   position: fixed;
   right: 12px;
-  bottom: 405px; 
+  bottom: 420px; 
   display: flex;
   flex-direction: column;
   align-items: flex-end;
