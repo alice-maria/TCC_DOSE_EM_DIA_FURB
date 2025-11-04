@@ -46,18 +46,18 @@ export default {
       nomeUsuario: localStorage.getItem('usuarioNome') || 'Usuário',
       menuAberto: false,
       dialogSair: false,
-      _handlerNome: null
+      handlerNome: null
     };
   },
   mounted() {
-    this._handlerNome = (e) => {
+    this.handlerNome = (e) => {
       const novo = e?.detail?.nome ?? localStorage.getItem('usuarioNome');
       if (novo && novo !== this.nomeUsuario) this.nomeUsuario = novo;
     };
-    window.addEventListener('usuario:nome-atualizado', this._handlerNome);
+    window.addEventListener('usuario:nome-atualizado', this.handlerNome);
   },
   beforeUnmount() {
-    window.removeEventListener('usuario:nome-atualizado', this._handlerNome);
+    window.removeEventListener('usuario:nome-atualizado', this.handlerNome);
   },
   methods: {
     sincronizarDoStorage() {
