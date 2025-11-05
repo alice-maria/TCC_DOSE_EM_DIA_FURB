@@ -391,31 +391,63 @@ public class UsuarioService
                         if (!string.IsNullOrWhiteSpace(req.CEP))
                         {
                             var cepCodigo = NormalizaCep(req.CEP!);
-                            var cep = await _context.Cep.AsTracking()
-                                .FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
+
+                            Cidade? cidadeAlvo = null;
+                            var solicitouCidade =
+                                (req.CidadeId is long && req.CidadeId > 0) ||
+                                (!string.IsNullOrWhiteSpace(req.CidadeNome) && !string.IsNullOrWhiteSpace(req.Uf));
+
+                            if (solicitouCidade)
+                            {
+                                if (req.CidadeId is long cid && cid > 0)
+                                {
+                                    cidadeAlvo = await _context.Cidade.FirstOrDefaultAsync(c => c.IdCidade == cid, ct)
+                                        ?? throw new ArgumentException("CidadeId informado não existe.");
+                                }
+                                else
+                                {
+                                    cidadeAlvo = await EnsureCidadeAsync(req.CidadeNome!.Trim(), req.Uf!.Trim(), ct);
+                                }
+                            }
+
+                            var cep = await _context.Cep.AsTracking().FirstOrDefaultAsync(c => c.Codigo == cepCodigo, ct);
 
                             if (cep is null)
                             {
-                                var cidadeId = await ResolverCidadeIdAsync(req, end.Cep?.CidadeId, ct)
-                                    ?? throw new ArgumentException("Não foi possível associar o novo CEP a uma cidade. Informe CidadeId ou Cidade/UF.");
+                                if (cidadeAlvo is null)
+                                {
+                                    if (end.Cep?.Cidade is null && end.Cep?.CidadeId is null)
+                                        throw new ArgumentException("Para cadastrar CEP novo, informe Cidade/UF.");
+                                    cidadeAlvo = end.Cep?.Cidade ??
+                                        await _context.Cidade.FirstOrDefaultAsync(c => c.IdCidade == end.Cep!.CidadeId, ct)
+                                        ?? throw new ArgumentException("Cidade do endereço atual não encontrada para associar o novo CEP.");
+                                }
 
                                 cep = new Cep
                                 {
                                     Codigo = cepCodigo,
                                     Bairro = req.Bairro?.Trim(),
-                                    CidadeId = cidadeId
+                                    Cidade = cidadeAlvo 
                                 };
                                 _context.Cep.Add(cep);
                             }
-                            else if (!string.IsNullOrWhiteSpace(req.Bairro))
+                            else
                             {
-                                cep.Bairro = req.Bairro!.Trim();
+                                if (cidadeAlvo is not null && cep.CidadeId != cidadeAlvo.IdCidade && cidadeAlvo.IdCidade != 0)
+                                    cep.CidadeId = cidadeAlvo.IdCidade;
+
+                                if (!string.IsNullOrWhiteSpace(req.Bairro))
+                                    cep.Bairro = req.Bairro!.Trim();
+
+                                _context.Cep.Update(cep);
                             }
 
                             end.Cep = cep;
                         }
                         else if (!string.IsNullOrWhiteSpace(req.Bairro))
                         {
+                            if (end.Cep is null)
+                                throw new InvalidOperationException("Endereço existente sem CEP associado.");
                             end.Cep.Bairro = req.Bairro!.Trim();
                         }
 
@@ -565,6 +597,48 @@ public class UsuarioService
         };
         _context.Cep.Add(novo);
         return novo;
+    }
+    private async Task<Cidade> EnsureCidadeAsync(string cidadeNome, string uf, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(cidadeNome))
+            throw new ArgumentException("Cidade é obrigatória.", nameof(cidadeNome));
+        if (string.IsNullOrWhiteSpace(uf))
+            throw new ArgumentException("UF é obrigatória.", nameof(uf));
+
+        var (ufNorm, nomeExtenso) = ResolverEstado(uf);
+
+        var pais = await _context.Pais.FirstOrDefaultAsync(p => EF.Functions.ILike(p.Nome, "Brasil"), ct);
+        if (pais is null)
+        {
+            pais = new Pais { Nome = "Brasil" };
+            _context.Pais.Add(pais);
+        }
+
+        var estado = await _context.Estado
+            .FirstOrDefaultAsync(e => e.PaisId == pais.IdPais && e.Uf == ufNorm, ct);
+
+        if (estado is null)
+        {
+            estado = new Estado { Pais = pais, Uf = ufNorm, Nome = nomeExtenso };
+            _context.Estado.Add(estado);
+        }
+        else
+        {
+            if (!string.Equals(estado.Nome, nomeExtenso, StringComparison.Ordinal))
+                estado.Nome = nomeExtenso;
+        }
+
+        var cidNome = cidadeNome.Trim();
+        var cidade = await _context.Cidade
+            .FirstOrDefaultAsync(c => c.EstadoId == estado.IdEstado && EF.Functions.ILike(c.Nome, cidNome), ct);
+
+        if (cidade is null)
+        {
+            cidade = new Cidade { Estado = estado, Nome = cidNome };
+            _context.Cidade.Add(cidade);
+        }
+
+        return cidade; 
     }
 
     private static readonly Dictionary<string, string> _ufParaNome = new(StringComparer.OrdinalIgnoreCase)
