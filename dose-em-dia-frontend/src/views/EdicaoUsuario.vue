@@ -391,15 +391,17 @@ export default {
         if (endMudou) {
           const cepParaEnviar = isValidCEP(formEnd.cep) ? formCep8 : origCep8;
           const cidadeParaEnviar = isValidCidade(formEnd.cidade) ? formEnd.cidade : origEnd.cidade;
-          const ufParaEnviar = isValidUF(formEnd.estado) ? formEnd.estado.toUpperCase() : String(origEnd.estado || "").toUpperCase();
+          const ufParaEnviar = isValidUF(formEnd.estado)
+            ? formEnd.estado.toUpperCase()
+            : String(origEnd.estado || "").toUpperCase();
 
           const endPayload = {
             cep: cepParaEnviar,
             logradouro: formEnd.logradouro || origEnd.logradouro || "",
             numero: String(formEnd.numero || origEnd.numero || "").trim(),
             bairro: formEnd.bairro || origEnd.bairro || "",
-            cidade: cidadeParaEnviar || "",
-            estado: ufParaEnviar || ""
+            cidadeNome: cidadeParaEnviar || "",
+            uf: (ufParaEnviar || "").toUpperCase()
           };
 
           if (!isValidCEP(endPayload.cep)) avisos.push("CEP inválido (use 8 dígitos).");
