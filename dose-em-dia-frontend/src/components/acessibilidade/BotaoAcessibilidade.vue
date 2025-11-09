@@ -1,13 +1,11 @@
 <template>
   <div class="acessibilidade-container" :class="{ 'menu-aberto': menuAberto }">
     <div class="acessibilidade-wrap">
-      <button class="acessibilidade-botao" @click="onAcessClick" @keydown.esc.prevent="fecharMenu" ref="btnAcess"
-        aria-label="Acessibilidade" aria-haspopup="menu" :aria-expanded="menuAberto ? 'true' : 'false'"
-        :aria-controls="'menu-acessibilidade'" type="button">
-        <img :src="iconeAcess" class="icone" />
+      <button class="acessibilidade-botao" @click="onAcessClick">
+        <img :src="iconeAcess" alt="Acessibilidade" class="icone" />
       </button>
 
-      <div class="acessibilidade-tooltip" role="status" aria-live="polite">
+      <div class="acessibilidade-tooltip" role="tooltip">
         <div class="tooltip-body">
           Ative recursos de acessibilidade: contraste alto, aumento de fonte,
           fonte para dislexia, e ajustes de espaçamento.
@@ -15,31 +13,31 @@
       </div>
     </div>
 
-    <div v-if="menuAberto" id="menu-acessibilidade" class="acessibilidade-menu" role="menu"
-      @keydown.esc.prevent="fecharMenu">
-      <button role="menuitem" type="button" @click="toggleContraste">
-        <img src="@/assets/icons/acessibilidade/contrasteAlto.svg" class="icone-menu" />
+    <div v-if="menuAberto" class="acessibilidade-menu">
+      <button @click="toggleContraste">
+        <img src="@/assets/icons/acessibilidade/contrasteAlto.svg" alt="Contraste" class="icone-menu" />
         Contraste alto
       </button>
-      <button role="menuitem" type="button" @click="aumentarFonte">
-        <img src="@/assets/icons/acessibilidade/aumentarFonte.svg" class="icone-menu" />
+      <button @click="aumentarFonte">
+        <img src="@/assets/icons/acessibilidade/aumentarFonte.svg" alt="Fonte" class="icone-menu" />
         Aumentar fonte
       </button>
-      <button role="menuitem" type="button" @click="toggleFonteDislexia">
-        <img src="@/assets/icons/acessibilidade/dislexia.svg" class="icone-menu"  />
+      <button @click="toggleFonteDislexia">
+        <img src="@/assets/icons/acessibilidade/dislexia.svg" alt="Dislexia" class="icone-menu" />
         Dislexia
       </button>
-      <button role="menuitem" type="button" @click="toggleEspacamentoLetras">
-        <img src="@/assets/icons/acessibilidade/espacamentoLinha.svg" class="icone-menu" />
+      <button @click="toggleEspacamentoLetras">
+        <img src="@/assets/icons/acessibilidade/espacamentoLinha.svg" alt="Letras" class="icone-menu" />
         Espaçamento entre letras
       </button>
-      <button role="menuitem" type="button" @click="toggleEspacamentoLinhas">
-        <img src="@/assets/icons/acessibilidade/espacamentoLetras.svg" class="icone-menu" />
+      <button @click="toggleEspacamentoLinhas">
+        <img src="@/assets/icons/acessibilidade/espacamentoLetras.svg" alt="Linhas" class="icone-menu" />
         Espaçamento entre linhas
       </button>
     </div>
   </div>
 </template>
+
 <script>
 export default {
   data() {
@@ -130,7 +128,7 @@ export default {
 .acessibilidade-container {
   position: fixed;
   right: 12px;
-  bottom: 460px;
+  bottom: 460px; 
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -139,7 +137,7 @@ export default {
 
 .acessibilidade-botao {
   box-sizing: border-box;
-  line-height: 0;
+  line-height: 0;          
   width: 40px;
   height: 40px;
   display: flex;
@@ -173,9 +171,9 @@ export default {
   right: 56px;
   top: auto;
   bottom: auto;
-  transform: translateY(-50%);
-  margin-top: -40px;
-
+  transform: translateY(-50%); 
+  margin-top: -40px; 
+  
   display: flex;
   flex-direction: column;
   padding: 24px;
@@ -291,7 +289,7 @@ export default {
   }
 
   .acessibilidade-menu button {
-    padding: 12px 10px !important;
+    padding: 12px 10px !important; 
     font-size: 16px;
     border-radius: 10px;
   }

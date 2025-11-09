@@ -6,7 +6,7 @@
       <ul class="navigation-rail">
         <li class="rail-item rail-toggle" @click="toggleSidebar">
           <div class="rail-content">
-            <img :src="isCollapsed ? menuCloseIcon : menuOpenIcon" class="rail-img-icon" />
+            <img :src="isCollapsed ? menuCloseIcon : menuOpenIcon" alt="Menu" class="rail-img-icon" />
           </div>
         </li>
         <li v-for="item in menuItems" :key="item.title"
@@ -17,7 +17,7 @@
                 <template #activator="{ props }">
                   <div v-bind="props">
                     <template v-if="item.imgSrc">
-                      <img :src="item.imgSrc" class="rail-img-icon" />
+                      <img :src="item.imgSrc" alt="" class="rail-img-icon" />
                     </template>
                     <template v-else>
                       <i :class="['rail-icon', item.icon]"></i>
@@ -29,7 +29,7 @@
             </template>
             <template v-else>
               <template v-if="item.imgSrc">
-                <img :src="item.imgSrc" class="rail-img-icon" />
+                <img :src="item.imgSrc" alt="" class="rail-img-icon" />
               </template>
               <template v-else>
                 <i :class="['rail-icon', item.icon]"></i>
@@ -39,6 +39,7 @@
           </div>
         </li>
       </ul>
+      <!-- Versão do sistema -->
       <div class="sidebar-version">
         v1.3.7
       </div>
