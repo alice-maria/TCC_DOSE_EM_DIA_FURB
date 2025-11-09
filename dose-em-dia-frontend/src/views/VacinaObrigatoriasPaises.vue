@@ -12,43 +12,49 @@
 
             <!-- Breadcrumbs -->
             <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs">
-                <template v-slot:item="{ item }">
-                    <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]"
-                        @click="item.to && navegar(item.to)" style="cursor: pointer;">
-                        <img src="@/assets/icons/home.svg" class="breadcrumb-home-img"
-                            aria-hidden="true" />
-                        {{ item.text }}
-                    </span>
+                <template #item="{ item }">
+                    <button class="breadcrumb-link" :class="{ 'breadcrumb-laranja': !item.to }"
+                        :aria-current="!item.to ? 'page' : null"
+                        :aria-label="item.to ? `Ir para ${item.text}` : `Página atual: ${item.text}`"
+                        :disabled="!item.to" @click="item.to && navegar(item.to)"
+                        @keydown.enter.prevent="item.to && navegar(item.to)">
+                        <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
+                        <span>{{ item.text }}</span>
+                    </button>
                 </template>
             </v-breadcrumbs>
 
             <!-- Navegação e Filtro -->
             <div class="navegacao-filtro">
-                <v-btn class="botao-round-laranja" @click="mostrarFiltro = !mostrarFiltro">
+                <v-btn class="botao-round-laranja" @click="mostrarFiltro = !mostrarFiltro"
+                    aria-pressed="mostrarFiltro ? 'true' : 'false'" aria-label="Mostrar ou ocultar filtro de países">
                     Filtro
                 </v-btn>
-
             </div>
 
             <!-- Filtro em linha completa -->
             <div v-if="mostrarFiltro" class="filtro">
                 <v-text-field v-model="filtro" placeholder="Pesquisar país" prepend-inner-icon="mdi-magnify" clearable
                     rounded variant="outlined" density="comfortable" hide-details
-                    class="campo-pesquisa campo-material-search" />
+                    class="campo-pesquisa campo-material-search" label="Pesquisar país" />
             </div>
 
             <!-- Lista de Países -->
             <div class="lista-paises rounded-xl px-3">
                 <v-list>
                     <template v-for="(pais, index) in paisesFiltrados" :key="pais.idPais">
-                        <v-list-item @click="redirecionarUrl(pais.url)" class="item-pais hover-sombra" lines="two">
+                        <v-list-item class="item-pais hover-sombra" lines="two" role="link"
+                            :aria-label="`Abrir informações de vacinação do país ${pais.nome} em nova aba`"
+                            @click="redirecionarUrl(pais.url)" @keydown.enter.prevent="redirecionarUrl(pais.url)"
+                            tabindex="0">
                             <v-list-item-content>
                                 <v-list-item-title class="titulo-pais">{{ pais.nome }}</v-list-item-title>
-                                <v-list-item-subtitle class="subtitulo-pais">Consulte as vacinas desse
-                                    país.</v-list-item-subtitle>
+                                <v-list-item-subtitle class="subtitulo-pais">
+                                    Consulte as vacinas desse país.
+                                </v-list-item-subtitle>
                             </v-list-item-content>
                             <template #append>
-                                <img src="@/assets/icons/seta.svg" alt="excluir" class="icones" />
+                                <img src="@/assets/icons/seta.svg" class="icones" />
                             </template>
                         </v-list-item>
                         <v-divider v-if="index < paisesFiltrados.length - 1"></v-divider>
@@ -56,7 +62,9 @@
                 </v-list>
             </div>
 
-            <p v-if="paisesFiltrados.length === 0" class="mensagem-nenhum-pais">Nenhum país encontrado.</p>
+            <p v-if="paisesFiltrados.length === 0" class="mensagem-nenhum-pais">
+                Nenhum país encontrado.
+            </p>
         </div>
     </v-container>
 </template>
@@ -74,9 +82,7 @@ export const api = axios.create({
 
 export default {
     name: "VacinaObrigatoriaPaises",
-    components: {
-        UsuarioMenu
-    },
+    components: { UsuarioMenu },
     data() {
         return {
             paises: [],
@@ -91,25 +97,25 @@ export default {
     },
     computed: {
         paisesFiltrados() {
-            return this.filtro.trim() === "" ? this.paises : this.paises.filter(pais => pais.nome.toLowerCase().includes(this.filtro.toLowerCase()));
+            const f = this.filtro.trim().toLowerCase();
+            return f === "" ? this.paises : this.paises.filter(p => (p.nome || "").toLowerCase().includes(f));
         }
     },
     mounted() {
         this.nomeUsuario = localStorage.getItem("usuarioNome") || "Usuário";
         this.carregarPaises();
     },
-
     methods: {
         async carregarPaises() {
             try {
                 const response = await api.get("/api/paises/listaPaises");
                 this.paises = Array.isArray(response.data) ? response.data : response.data.$values || [];
-            } catch (error) {
+            } catch {
                 this.paises = [];
             }
         },
         redirecionarUrl(url) {
-            if (url) window.open(url, "_blank");
+            if (url) window.open(url, "_blank", "noopener,noreferrer");
         },
         navegar(rota) {
             if (rota) this.$router.push(rota);
@@ -146,11 +152,9 @@ export default {
 .navegacao-filtro {
     display: flex;
     justify-content: flex-end;
-    /* Alinha botão à direita */
     padding: 0 1rem;
     margin-top: 0.5rem;
 }
-
 
 .navegacao {
     display: flex;
@@ -171,6 +175,11 @@ export default {
     transition: background-color 0.2s ease;
 }
 
+.botao-round-laranja:focus-visible {
+    outline: 2px solid #f97316;
+    outline-offset: 3px;
+}
+
 .lista-paises {
     margin-top: 16px;
 }
@@ -178,12 +187,12 @@ export default {
 .item-pais {
     align-items: flex-start;
     padding-block: 14px;
-    transition: background-color 0.3s, box-shadow 0.3s;
+    transition: background-color .3s, box-shadow .3s;
 }
 
 .hover-sombra {
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color .2s ease;
     min-height: 12vh;
 }
 
@@ -240,13 +249,31 @@ export default {
 
 .breadcrumb-link {
     color: #6b7280;
-    transition: color 0.2s;
+    transition: color .2s;
     font-size: 1.1rem;
+    background: none;
+    border: none;
+    padding: .25rem .5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    cursor: pointer;
 }
 
 .breadcrumb-link:hover {
     color: #f97316;
     text-decoration: underline;
+}
+
+.breadcrumb-link:focus-visible {
+    outline: 2px solid #f97316;
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+.breadcrumb-link[disabled] {
+    cursor: default;
+    text-decoration: none;
 }
 
 .breadcrumb-laranja {
