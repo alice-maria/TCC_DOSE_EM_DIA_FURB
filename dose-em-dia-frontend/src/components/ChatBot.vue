@@ -3,7 +3,7 @@
     <v-tooltip text="Fale com a Vitta" location="left" open-delay="150">
       <template #activator="{ props }">
         <button v-bind="props" class="chatbot-toggle" @click="alternarChat" ref="botao" aria-label="Abrir chatbot">
-          <img src="@/imagens/ChatBotVitta.png" alt="Abrir chatbot" />
+          <img src="@/imagens/ChatBotVitta.png" />
         </button>
       </template>
     </v-tooltip>
@@ -11,7 +11,7 @@
       <transition name="chat-fade">
         <div v-if="visivel">
           <button class="fechar-chat" @click="fecharChat" aria-label="Fechar chatbot">
-            <img src="@/assets/icons/Icone-fechar-chatbot.svg" alt="Fechar" />
+            <img src="@/assets/icons/Icone-fechar-chatbot.svg" />
           </button>
 
           <div v-if="estado === 'boasVindas' || estado === 'inicio'">

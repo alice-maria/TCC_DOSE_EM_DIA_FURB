@@ -2,7 +2,7 @@
   <v-menu v-model="menuAberto" location="bottom end" :offset="8" content-class="usuario-menu-content">
     <template #activator="{ props }">
       <div v-bind="props" class="usuario d-flex align-items-center gap-2" style="cursor: pointer;">
-        <img src="@/imagens/UserPhoto.png" alt="Ícone de usuário" class="icone-usuario" />
+        <img src="@/imagens/UserPhoto.png" class="icone-usuario" />
         <span class="saudacao">Olá, {{ nomeUsuario }}!</span>
       </div>
     </template>
@@ -10,14 +10,14 @@
     <v-list>
       <v-list-item @click="navegarEditarPerfil">
         <template #prepend>
-          <img src="@/assets/icons/perfil.svg" alt="Ícone de perfil" class="icone" />
+          <img src="@/assets/icons/perfil.svg" class="icone" />
         </template>
         <v-list-item-title>Editar informações</v-list-item-title>
       </v-list-item>
 
       <v-list-item @click="abrirDialogSair">
         <template #prepend>
-          <img src="@/assets/icons/sair.svg" alt="Ícone de sair" class="icone" />
+          <img src="@/assets/icons/sair.svg" class="icone" />
         </template>
         <v-list-item-title>Sair da conta</v-list-item-title>
       </v-list-item>

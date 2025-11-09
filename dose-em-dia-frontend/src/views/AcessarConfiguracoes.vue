@@ -298,6 +298,7 @@ export default {
 }
 
 .titulo {
+  font-size: 1.8rem;
   font-weight: bold;
   color: #f97316;
 }
