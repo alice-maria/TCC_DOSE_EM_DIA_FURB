@@ -11,16 +11,22 @@
             </div>
 
             <!-- Breadcrumbs -->
-            <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs">
-                <template #item="{ item }">
-                    <button class="breadcrumb-link" :class="{ 'breadcrumb-laranja': !item.to }"
-                        :aria-current="!item.to ? 'page' : null"
-                        :aria-label="item.to ? `Ir para ${item.text}` : `Página atual: ${item.text}`"
-                        :disabled="!item.to" @click="item.to && navegar(item.to)"
-                        @keydown.enter.prevent="item.to && navegar(item.to)">
+            <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs" aria-label="Breadcrumb">
+                <template #title="{ item, index }">
+                    <router-link v-if="item.to" :to="item.to" class="breadcrumb-link"
+                        :aria-label="`Ir para ${item.text}`">
                         <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
                         <span>{{ item.text }}</span>
-                    </button>
+                    </router-link>
+
+                    <span v-else class="breadcrumb-link breadcrumb-laranja" aria-current="page">
+                        <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
+                        <span>{{ item.text }}</span>
+                    </span>
+                </template>
+
+                <template #divider>
+                    <span class="v-breadcrumbs__divider" aria-hidden="true">/</span>
                 </template>
             </v-breadcrumbs>
 
