@@ -14,7 +14,7 @@
         <template v-slot:item="{ item }">
           <span v-if="item" :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]"
             @click="item.to && navegar(item.to)" style="cursor: pointer;">
-            <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" aria-hidden="true" />
+            <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>

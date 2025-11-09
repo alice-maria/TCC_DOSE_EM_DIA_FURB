@@ -3,7 +3,7 @@
         <div class="pagina-poliprivacidade">
             <div class="conteudo-politica">
                 <div class="logo-container">
-                    <img id="topo" src="@/imagens/logo.png" alt="Logo" class="logo" />
+                    <img id="topo" src="@/imagens/logo.png" class="logo" />
                 </div>
 
                 <h4 class="titulo-politica">POLÍTICA DE PRIVACIDADE DO DOSE EM DIA</h4>
@@ -219,7 +219,7 @@
                 </p>
             </div>
             <div class="voltar-topo" @click="voltarAoTopo">
-                <img src="@/assets/icons/voltar-topo.svg" alt="Voltar ao topo" class="icone-voltar-topo" />
+                <img src="@/assets/icons/voltar-topo.svg" class="icone-voltar-topo" />
             </div>
         </div>
     </v-container>

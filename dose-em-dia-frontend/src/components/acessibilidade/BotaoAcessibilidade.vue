@@ -2,7 +2,7 @@
   <div class="acessibilidade-container" :class="{ 'menu-aberto': menuAberto }">
     <div class="acessibilidade-wrap">
       <button class="acessibilidade-botao" @click="onAcessClick">
-        <img :src="iconeAcess" alt="Acessibilidade" class="icone" />
+        <img :src="iconeAcess" class="icone" />
       </button>
 
       <div class="acessibilidade-tooltip" role="tooltip">
@@ -15,23 +15,23 @@
 
     <div v-if="menuAberto" class="acessibilidade-menu">
       <button @click="toggleContraste">
-        <img src="@/assets/icons/acessibilidade/contrasteAlto.svg" alt="Contraste" class="icone-menu" />
+        <img src="@/assets/icons/acessibilidade/contrasteAlto.svg" class="icone-menu" />
         Contraste alto
       </button>
       <button @click="aumentarFonte">
-        <img src="@/assets/icons/acessibilidade/aumentarFonte.svg" alt="Fonte" class="icone-menu" />
+        <img src="@/assets/icons/acessibilidade/aumentarFonte.svg" class="icone-menu" />
         Aumentar fonte
       </button>
       <button @click="toggleFonteDislexia">
-        <img src="@/assets/icons/acessibilidade/dislexia.svg" alt="Dislexia" class="icone-menu" />
+        <img src="@/assets/icons/acessibilidade/dislexia.svg" class="icone-menu" />
         Dislexia
       </button>
       <button @click="toggleEspacamentoLetras">
-        <img src="@/assets/icons/acessibilidade/espacamentoLinha.svg" alt="Letras" class="icone-menu" />
+        <img src="@/assets/icons/acessibilidade/espacamentoLinha.svg" class="icone-menu" />
         Espaçamento entre letras
       </button>
       <button @click="toggleEspacamentoLinhas">
-        <img src="@/assets/icons/acessibilidade/espacamentoLetras.svg" alt="Linhas" class="icone-menu" />
+        <img src="@/assets/icons/acessibilidade/espacamentoLetras.svg" class="icone-menu" />
         Espaçamento entre linhas
       </button>
     </div>
