@@ -18,7 +18,7 @@
                         :aria-label="item.to ? `Ir para ${item.text}` : `Página atual: ${item.text}`"
                         :disabled="!item.to" @click="item.to && navegar(item.to)"
                         @keydown.enter.prevent="item.to && navegar(item.to)">
-                        <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
+                        <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
                         <span>{{ item.text }}</span>
                     </button>
                 </template>

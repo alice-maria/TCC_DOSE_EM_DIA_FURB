@@ -14,7 +14,7 @@
         <template v-slot:item="{ item }">
           <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
             style="cursor: pointer;">
-            <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
+            <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>
@@ -298,8 +298,9 @@ export default {
 }
 
 .titulo {
-  font-weight: bold;
-  color: #f97316;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #f97316;
 }
 
 .usuario {
