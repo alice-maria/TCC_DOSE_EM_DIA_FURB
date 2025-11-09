@@ -20,12 +20,13 @@
         </template>
       </v-breadcrumbs>
 
-      <!-- Nenhuma notificação -->
+      <v-alert v-if="erroMsg" type="warning" variant="tonal" border="start" class="mx-4 my-2" role="status"
+        aria-live="polite">
+        {{ erroMsg }}
+      </v-alert>
       <div v-if="Array.isArray(notificacoes) && notificacoes.length === 0" class="mensagem-nenhuma-notificacao">
         Nenhuma notificação encontrada.
       </div>
-
-      <!-- Lista -->
       <div v-else-if="Array.isArray(notificacoes) && notificacoes.length > 0" class="d-flex flex-column gap-4">
         <v-card v-for="(notificacao, i) in notificacoes" :key="notificacao?.idNotificacao ?? `n-${i}`"
           class="outlined-card" variant="outlined" rounded="lg">
@@ -44,7 +45,6 @@
             Enviado em {{ formatarData(notificacao?.dataEnvio) }}
           </div>
 
-          <!-- Aviso para verificar caixa de spam -->
           <div class="text-caption aviso-spam">
             Caso não tenha recebido o e-mail, verifique sua caixa de spam ou lixo eletrônico.
           </div>
@@ -72,6 +72,7 @@ export default {
     return {
       notificacoes: [],
       nomeUsuario: localStorage.getItem("usuarioNome") || "Usuário",
+      erroMsg: "",
       breadcrumbs: [
         { text: "Início", to: "/home", icon: "mdi-home" },
         { text: "Notificações" },
@@ -136,9 +137,10 @@ export default {
     async carregarNotificacoes() {
       const cpf = localStorage.getItem("usuarioCpf");
       if (!cpf) {
-        alert("Usuário não identificado. Faça login novamente.");
+        this.erroMsg = "Sessão não identificada. Acesse sua conta para ver o histórico.";
         return;
       }
+
       try {
         const { data } = await api.get(
           `/api/notificacoes/usuario/${cpf}/historico`
@@ -146,7 +148,7 @@ export default {
         this.notificacoes = Array.isArray(data) ? data : [];
       } catch (error) {
         console.error("Erro ao buscar notificações:", error);
-        alert("Erro ao carregar notificações.");
+        this.erroMsg = "Não foi possível carregar as notificações no momento.";
       }
     },
 
