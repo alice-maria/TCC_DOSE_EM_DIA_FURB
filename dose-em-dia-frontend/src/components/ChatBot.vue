@@ -3,7 +3,7 @@
     <v-tooltip text="Fale com a Vitta" location="left" open-delay="150">
       <template #activator="{ props }">
         <button v-bind="props" class="chatbot-toggle" @click="alternarChat" ref="botao" aria-label="Abrir chatbot">
-          <img src="@/imagens/ChatBotVitta.png" />
+          <img src="@/imagens/ChatBotVitta.png" alt="" aria-hidden="true" />
         </button>
       </template>
     </v-tooltip>
