@@ -1,38 +1,45 @@
 <template>
   <v-menu v-model="menuAberto" location="bottom end" :offset="8" content-class="usuario-menu-content">
     <template #activator="{ props }">
-      <div v-bind="props" class="usuario d-flex align-items-center gap-2" style="cursor: pointer;">
-        <img src="@/imagens/UserPhoto.png" class="icone-usuario" />
+      <button v-bind="props" class="usuario d-flex align-items-center gap-2"
+        :aria-label="`Abrir menu do usuário: ${nomeUsuario}`" aria-haspopup="menu"
+        :aria-expanded="menuAberto.toString()" id="botao-menu-usuario">
+        <img src="@/imagens/UserPhoto.png" class="icone-usuario" :alt="`Foto do usuário: ${nomeUsuario}`" />
         <span class="saudacao">Olá, {{ nomeUsuario }}!</span>
-      </div>
+      </button>
     </template>
 
-    <v-list>
+    <!-- Lista de opções -->
+    <v-list id="menu-usuario" aria-labelledby="botao-menu-usuario">
       <v-list-item @click="navegarEditarPerfil">
         <template #prepend>
-          <img src="@/assets/icons/perfil.svg" class="icone" />
+          <img src="@/assets/icons/perfil.svg" class="icone" alt="" aria-hidden="true" />
         </template>
         <v-list-item-title>Editar informações</v-list-item-title>
       </v-list-item>
 
       <v-list-item @click="abrirDialogSair">
         <template #prepend>
-          <img src="@/assets/icons/sair.svg" class="icone" />
+          <img src="@/assets/icons/sair.svg" class="icone" alt="" aria-hidden="true" />
         </template>
         <v-list-item-title>Sair da conta</v-list-item-title>
       </v-list-item>
     </v-list>
   </v-menu>
 
-  <!-- Diálogo de confirmação (fora do v-menu) -->
+  <!-- Diálogo de confirmação -->
   <v-dialog v-model="dialogSair" max-width="360" persistent>
     <v-card class="popup-sair">
       <v-card-text class="popup-sair__texto">
         Você confirma a saída da conta?
       </v-card-text>
       <v-card-actions class="popup-sair__botoes">
-        <v-btn class="popup-sair__cancelar" variant="flat" @click="dialogSair = false">Cancelar</v-btn>
-        <v-btn class="popup-sair__confirmar" variant="flat" @click="confirmarSaida">Confirmar</v-btn>
+        <v-btn class="popup-sair__cancelar" variant="flat" @click="dialogSair = false">
+          Cancelar
+        </v-btn>
+        <v-btn class="popup-sair__confirmar" variant="flat" @click="confirmarSaida">
+          Confirmar
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -40,10 +47,10 @@
 
 <script>
 export default {
-  name: 'UsuarioMenu',
+  name: "UsuarioMenu",
   data() {
     return {
-      nomeUsuario: localStorage.getItem('usuarioNome') || 'Usuário',
+      nomeUsuario: localStorage.getItem("usuarioNome") || "Usuário",
       menuAberto: false,
       dialogSair: false,
     };
@@ -51,20 +58,19 @@ export default {
   methods: {
     navegarEditarPerfil() {
       this.menuAberto = false;
-      this.$router.push('/editar-perfil');
+      this.$router.push("/editar-perfil");
     },
     abrirDialogSair() {
-      this.menuAberto = false;        
+      this.menuAberto = false;
       this.dialogSair = true;
     },
     confirmarSaida() {
-      // limpeza do estado local
-      localStorage.removeItem('token');
-      localStorage.removeItem('usuarioNome');
-      localStorage.removeItem('usuarioCpf');
+      localStorage.removeItem("token");
+      localStorage.removeItem("usuarioNome");
+      localStorage.removeItem("usuarioCpf");
 
       this.dialogSair = false;
-      this.$router.push('/');
+      this.$router.push("/");
     },
   },
 };
@@ -85,6 +91,22 @@ export default {
 .icone {
   width: 20px;
   height: 20px;
+}
+
+.usuario {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.usuario:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 
 .popup-sair {
@@ -136,24 +158,8 @@ export default {
     height: 28px;
   }
 
-  .usuario {
-    min-width: 0;
-    max-width: 80vw;
-    gap: 6px;
-    align-items: center;
-  }
-
   .saudacao {
     display: none !important;
-  }
-
-  .v-dialog>.v-overlay__content {
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  .v-dialog {
-    align-items: center !important;
   }
 
   .popup-sair {

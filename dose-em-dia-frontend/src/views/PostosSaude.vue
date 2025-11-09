@@ -21,10 +21,11 @@
       </v-breadcrumbs>
 
       <!-- Conteúdo -->
-      <div class="conteudo">
-        <div class="lista px-6 pb-8">
-          <!-- Overlay de carregamento -->
-          <v-overlay v-model="carregando" :persistent="true" class="d-flex align-center justify-center">
+      <main class="conteudo" id="conteudo-principal" tabindex="-1">
+        <div class="lista px-6 pb-8" :aria-busy="carregando ? 'true' : 'false'">
+          <!-- Overlay de carregamento (área viva e status) -->
+          <v-overlay v-model="carregando" :persistent="true" class="d-flex align-center justify-center" role="status"
+            aria-live="polite">
             <div class="loading-card">
               <v-progress-circular indeterminate size="36" width="4" />
               <div class="mt-3 text-center">
@@ -51,6 +52,7 @@
               </div>
             </div>
           </v-card>
+
           <p v-if="!carregando && postos.length === 0 && !erro" class="text-center mt-4 text-gray-600">
             Nenhum posto de vacinação encontrado.
           </p>
@@ -58,7 +60,7 @@
             {{ erro }}
           </p>
         </div>
-      </div>
+      </main>
     </div>
   </v-container>
 </template>
