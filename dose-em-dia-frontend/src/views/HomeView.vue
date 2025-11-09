@@ -4,7 +4,7 @@
       <!-- Cabeçalho -->
       <div class="header d-flex justify-content-between align-items-center mb-3">
         <div class="logo-container" @click="$router.push('/home')" style="cursor: pointer;">
-          <img src="@/imagens/logo.png" alt="Dose em Dia" class="logo-img" />
+          <img src="@/imagens/logo.png" class="logo-img" />
           <h1 class="sr-only">Início — Dose em Dia</h1>
           <h3 class="mensagem-boas-vindas fw-bold" aria-hidden="true">Seja bem-vindo(a)!</h3>
         </div>
@@ -23,7 +23,7 @@
       </v-breadcrumbs>
 
       <div class="aviso-vacinas">
-        <img src="@/assets/icons/aviso.svg" alt="Ícone de aviso" class="me-3" style="width: 24px; height: 24px;" />
+        <img src="@/assets/icons/aviso.svg" class="me-3" style="width: 24px; height: 24px;" />
         As vacinas exibidas são fictícias e foram geradas automaticamente pelo sistema. Não substituem documentos
         oficiais.
       </div>
@@ -119,7 +119,7 @@ const dtfBR = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo' }
 const baseURL = process.env.VUE_APP_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
 
 export const api = axios.create({
-  baseURL: baseURL.replace(/\/+$/, ""), // remove barra(s) finais
+  baseURL: baseURL.replace(/\/+$/, ""), 
   timeout: 20000,
 });
 
