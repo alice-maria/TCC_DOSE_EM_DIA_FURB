@@ -5,7 +5,7 @@
       <div class="header">
         <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
         <div class="usuario">
-          <UsuarioMenu />
+         <UsuarioMenu />
         </div>
       </div>
 
@@ -14,7 +14,7 @@
         <template v-slot:item="{ item }">
           <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
             style="cursor: pointer;">
-            <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
+            <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>
@@ -44,7 +44,7 @@
             <v-list-item-subtitle>Acesse e atualize seus dados pessoais e de perfil.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <img src="@/assets/icons/seta.svg" class="icones" />
+            <img src="@/assets/icons/seta.svg" alt="infosCadastrais" class="icones" />
           </template>
         </v-list-item>
 
@@ -57,7 +57,7 @@
             <v-list-item-subtitle>Altere aqui a sua senha.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <img src="@/assets/icons/seta.svg" class="icones" />
+            <img src="@/assets/icons/seta.svg" alt="seguranca" class="icones" />
           </template>
         </v-list-item>
 
@@ -70,7 +70,7 @@
             <v-list-item-subtitle>Confira as regras de privacidade e uso dos seus dados.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <img src="@/assets/icons/seta.svg" class="icones" />
+            <img src="@/assets/icons/seta.svg" alt="politicaPrivacidade" class="icones" />
           </template>
         </v-list-item>
 
@@ -83,7 +83,7 @@
             <v-list-item-subtitle>Desconecte-se da sua conta atual.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <img src="@/assets/icons/sair.svg" class="icones" />
+            <img src="@/assets/icons/sair.svg" alt="sair" class="icones" />
           </template>
         </v-list-item>
 
@@ -96,7 +96,7 @@
             <v-list-item-subtitle>Exclua permanentemente sua conta e todos os seus dados.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <img src="@/assets/icons/seta.svg" class="icones" />
+            <img src="@/assets/icons/seta.svg" alt="excluir" class="icones" />
           </template>
         </v-list-item>
 
@@ -180,7 +180,7 @@ import UsuarioMenu from '@/views/UsuarioMenu.vue';
 const baseURL = process.env.VUE_APP_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
 
 export const api = axios.create({
-  baseURL: baseURL.replace(/\/+$/, ""),
+  baseURL: baseURL.replace(/\/+$/, ""), 
   timeout: 20000,
 });
 
@@ -199,7 +199,7 @@ export default {
       notificacoesAtivas: true,
       dialogConfirmarExclusaoFinal: false,
       dialogContaExcluida: false,
-      mostrarErro: false,
+      mostrarErro: false, 
       erro: "",
       breadcrumbs: [
         { text: "Início", to: "/home", icon: "mdi-home" },
@@ -298,7 +298,6 @@ export default {
 }
 
 .titulo {
-  font-size: 1.8rem;
   font-weight: bold;
   color: #f97316;
 }
