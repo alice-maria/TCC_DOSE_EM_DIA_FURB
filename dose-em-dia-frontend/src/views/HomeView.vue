@@ -4,8 +4,9 @@
       <!-- Cabeçalho -->
       <div class="header d-flex justify-content-between align-items-center mb-3">
         <div class="logo-container" @click="$router.push('/home')" style="cursor: pointer;">
-          <img src="@/imagens/logo.png" alt="Logo Dose em Dia" class="logo-img" />
-          <h3 class="mensagem-boas-vindas fw-bold">Seja bem-vindo(a)!</h3>
+          <img src="@/imagens/logo.png" alt="Dose em Dia" class="logo-img" />
+          <h1 class="sr-only">Início — Dose em Dia</h1>
+          <h3 class="mensagem-boas-vindas fw-bold" aria-hidden="true">Seja bem-vindo(a)!</h3>
         </div>
         <UsuarioMenu />
       </div>
@@ -15,7 +16,7 @@
         <template v-slot:item="{ item }">
           <span :class="['breadcrumb-laranja', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
             style="cursor: pointer;">
-            <img v-if="index === 0" src="@/assets/icons/home.svg" class="breadcrumb-home-img" aria-hidden="true" />
+            <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" aria-hidden="true" />
             {{ item.text }}
           </span>
         </template>
