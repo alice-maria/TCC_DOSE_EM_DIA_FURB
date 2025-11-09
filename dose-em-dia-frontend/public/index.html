@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="pt-BR" dir="ltr">
+
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,14 +11,42 @@
   <title>
     <%= htmlWebpackPlugin.options.title %>
   </title>
+
+  <style>
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px 12px;
+      z-index: 1000;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+
+    .skip-link:focus {
+      top: 0;
+      outline: 2px solid #000;
+      outline-offset: 2px;
+    }
+  </style>
 </head>
+
 <body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo principal</a>
+
   <noscript>
-    <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled.
-        Please enable it to continue.</strong>
+    <strong>
+      Desculpe, mas <%= htmlWebpackPlugin.options.title %> não funciona corretamente sem o JavaScript habilitado.
+        Ative o JavaScript para continuar.
+    </strong>
   </noscript>
-  <div id="app"></div>
-  <!-- VLibras Acessibilidade -->
+
+  <main id="conteudo" tabindex="-1">
+    <div id="app"></div>
+  </main>
+
   <div vw class="enabled">
     <div vw-access-button class="active"></div>
     <div vw-plugin-wrapper>
@@ -29,4 +58,5 @@
     new window.VLibras.Widget('https://vlibras.gov.br/app');
   </script>
 </body>
+
 </html>
