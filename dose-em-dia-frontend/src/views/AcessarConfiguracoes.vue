@@ -5,7 +5,7 @@
       <div class="header">
         <h1 class="titulo" @click="$router.push('/home')">Dose em dia</h1>
         <div class="usuario">
-         <UsuarioMenu />
+          <UsuarioMenu />
         </div>
       </div>
 
@@ -24,14 +24,19 @@
         <!-- Notificações -->
         <v-list-item class="item-config hoverable" lines="two">
           <v-list-item-content>
-            <v-list-item-title class="secao-titulo">Notificações</v-list-item-title>
-            <v-list-item-subtitle>
+            <v-list-item-title id="notif-label" class="secao-titulo">
+              Notificações
+            </v-list-item-title>
+
+            <v-list-item-subtitle id="notif-desc">
               Gerencie os avisos que você recebe por e-mail sobre suas vacinas.
             </v-list-item-subtitle>
           </v-list-item-content>
+
           <template #append>
             <v-switch v-model="notificacoesAtivas" color="orange" inset hide-details class="switch-material"
-              :ripple="false" />
+              :id="'notif-switch'" :aria-labelledby="'notif-label'" :aria-describedby="'notif-desc'"
+              :aria-checked="String(!!notificacoesAtivas)" :ripple="false" />
           </template>
         </v-list-item>
 
@@ -180,7 +185,7 @@ import UsuarioMenu from '@/views/UsuarioMenu.vue';
 const baseURL = process.env.VUE_APP_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
 
 export const api = axios.create({
-  baseURL: baseURL.replace(/\/+$/, ""), 
+  baseURL: baseURL.replace(/\/+$/, ""),
   timeout: 20000,
 });
 
@@ -199,7 +204,7 @@ export default {
       notificacoesAtivas: true,
       dialogConfirmarExclusaoFinal: false,
       dialogContaExcluida: false,
-      mostrarErro: false, 
+      mostrarErro: false,
       erro: "",
       breadcrumbs: [
         { text: "Início", to: "/home", icon: "mdi-home" },
@@ -298,9 +303,9 @@ export default {
 }
 
 .titulo {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #f97316;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #f97316;
 }
 
 .usuario {

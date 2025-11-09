@@ -36,10 +36,12 @@
         </p>
 
         <!-- Miniatura do comprovante -->
-        <div class="preview-comprovante">
-          <img src="@/assets/exemplo-comprovante.png" />
-          <p class="legenda-preview">Exemplo de como seu comprovante será gerado em PDF.</p>
-        </div>
+        <figure class="preview-comprovante">
+          <img src="@/assets/exemplo-comprovante.png" role="presentation" aria-describedby="legenda-preview" />
+          <figcaption id="legenda-preview" class="legenda-preview">
+            Exemplo de como seu comprovante será gerado em PDF.
+          </figcaption>
+        </figure>
 
         <v-btn class="botao-material" color="#f97316" @click="baixarComprovante" :loading="carregando"
           :disabled="carregando">Baixar Comprovante</v-btn>
