@@ -41,9 +41,9 @@
 
             <!-- Lista de Países -->
             <div class="lista-paises rounded-xl px-3">
-                <v-list>
+                <v-list role="list">
                     <template v-for="(pais, index) in paisesFiltrados" :key="pais.idPais">
-                        <v-list-item class="item-pais hover-sombra" lines="two" role="link"
+                        <v-list-item role="listitem" class="item-pais hover-sombra" lines="two"
                             :aria-label="`Abrir informações de vacinação do país ${pais.nome} em nova aba`"
                             @click="redirecionarUrl(pais.url)" @keydown.enter.prevent="redirecionarUrl(pais.url)"
                             tabindex="0">
@@ -54,7 +54,7 @@
                                 </v-list-item-subtitle>
                             </v-list-item-content>
                             <template #append>
-                                <img src="@/assets/icons/seta.svg" class="icones" />
+                                <img src="@/assets/icons/seta.svg" class="icones" alt="" aria-hidden="true" />
                             </template>
                         </v-list-item>
                         <v-divider v-if="index < paisesFiltrados.length - 1"></v-divider>
