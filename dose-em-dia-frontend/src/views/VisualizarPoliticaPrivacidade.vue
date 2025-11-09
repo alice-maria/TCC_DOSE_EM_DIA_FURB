@@ -16,8 +16,8 @@
                         'breadcrumb-link',
                         index === breadcrumbs.length - 1 ? 'breadcrumb-laranja' : ''
                     ]" @click="item.to && navegar(item.to)" style="cursor: pointer;">
-                        <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="breadcrumbs"
-                            class="breadcrumb-home-img" />
+                        <img v-if="index === 0" src="@/assets/icons/home.svg" class="breadcrumb-home-img"
+                            aria-hidden="true" />
                         {{ item.text }}
                     </span>
                 </template>

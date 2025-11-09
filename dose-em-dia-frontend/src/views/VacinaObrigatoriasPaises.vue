@@ -15,8 +15,8 @@
                 <template v-slot:item="{ item }">
                     <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]"
                         @click="item.to && navegar(item.to)" style="cursor: pointer;">
-                        <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="breadcrumbs"
-                            class="breadcrumb-home-img" />
+                        <img v-if="index === 0" src="@/assets/icons/home.svg" class="breadcrumb-home-img"
+                            aria-hidden="true" />
                         {{ item.text }}
                     </span>
                 </template>
@@ -68,8 +68,8 @@ import UsuarioMenu from '@/views/UsuarioMenu.vue';
 const baseURL = process.env.VUE_APP_API_BASE_URL || "https://doseemdiabackend-production.up.railway.app";
 
 export const api = axios.create({
-  baseURL: baseURL.replace(/\/+$/, ""),
-  timeout: 20000,
+    baseURL: baseURL.replace(/\/+$/, ""),
+    timeout: 20000,
 });
 
 export default {

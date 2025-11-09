@@ -14,7 +14,7 @@
         <template #item="{ item }">
           <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
             style="cursor: pointer;">
-            <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" alt="breadcrumbs" class="breadcrumb-home-img" />
+            <img v-if="index === 0" src="@/assets/icons/home.svg" class="breadcrumb-home-img" aria-hidden="true" />
             {{ item.text }}
           </span>
         </template>
@@ -39,8 +39,8 @@
             </div>
           </v-overlay>
 
-          <v-card v-for="posto in postos" :key="posto.nome + posto.enderecoCompleto"
-            class="m3-card mb-3" variant="elevated" elevation="1" :ripple="true">
+          <v-card v-for="posto in postos" :key="posto.nome + posto.enderecoCompleto" class="m3-card mb-3"
+            variant="elevated" elevation="1" :ripple="true">
             <div class="card-conteudo">
               <div class="texto">
                 <v-card-title class="m3-card__title">{{ posto.nome }}</v-card-title>
@@ -89,7 +89,7 @@ const carregando = ref(false)
 const erro = ref('')
 const progresso = ref(0)
 let timer = null
-let controller = null 
+let controller = null
 
 function navegar(to) {
   router.push(to)
