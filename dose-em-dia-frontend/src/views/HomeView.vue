@@ -144,6 +144,8 @@ export default {
   },
 
   mounted() {
+    document.documentElement.setAttribute('lang', 'pt-BR');
+    document.documentElement.setAttribute('xml:lang', 'pt-BR');
     this.nomeUsuario = localStorage.getItem('usuarioNome') || 'Usuário';
     this.carregarVacinas();
   },
