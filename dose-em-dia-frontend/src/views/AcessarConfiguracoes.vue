@@ -14,7 +14,7 @@
         <template v-slot:item="{ item }">
           <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
             style="cursor: pointer;">
-            <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" aria-hidden="true" />
+            <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>
@@ -44,7 +44,7 @@
             <v-list-item-subtitle>Acesse e atualize seus dados pessoais e de perfil.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <img src="@/assets/icons/seta.svg" alt="infosCadastrais" class="icones" />
+            <img src="@/assets/icons/seta.svg" class="icones" />
           </template>
         </v-list-item>
 
@@ -57,7 +57,7 @@
             <v-list-item-subtitle>Altere aqui a sua senha.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <img src="@/assets/icons/seta.svg" alt="seguranca" class="icones" />
+            <img src="@/assets/icons/seta.svg" class="icones" />
           </template>
         </v-list-item>
 
@@ -70,7 +70,7 @@
             <v-list-item-subtitle>Confira as regras de privacidade e uso dos seus dados.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <img src="@/assets/icons/seta.svg" alt="politicaPrivacidade" class="icones" />
+            <img src="@/assets/icons/seta.svg" class="icones" />
           </template>
         </v-list-item>
 
@@ -83,7 +83,7 @@
             <v-list-item-subtitle>Desconecte-se da sua conta atual.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <img src="@/assets/icons/sair.svg" alt="sair" class="icones" />
+            <img src="@/assets/icons/sair.svg" class="icones" />
           </template>
         </v-list-item>
 
@@ -96,7 +96,7 @@
             <v-list-item-subtitle>Exclua permanentemente sua conta e todos os seus dados.</v-list-item-subtitle>
           </v-list-item-content>
           <template #append>
-            <img src="@/assets/icons/seta.svg" alt="excluir" class="icones" />
+            <img src="@/assets/icons/seta.svg" class="icones" />
           </template>
         </v-list-item>
 

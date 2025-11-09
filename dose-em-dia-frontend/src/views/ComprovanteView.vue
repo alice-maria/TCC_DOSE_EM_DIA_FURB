@@ -14,14 +14,14 @@
         <template v-slot:item="{ item }">
           <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
             style="cursor: pointer;">
-            <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" aria-hidden="true" />
+            <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>
       </v-breadcrumbs>
 
       <div class="aviso-comprovante">
-        <img src="@/assets/icons/aviso.svg" alt="Ícone de aviso" class="me-3" style="width: 24px; height: 24px;" />
+        <img src="@/assets/icons/aviso.svg" class="me-3" style="width: 24px; height: 24px;" />
         No certificado de vacinação você terá acesso apenas às vacinas que já foram aplicadas.
       </div>
 
@@ -37,7 +37,7 @@
 
         <!-- Miniatura do comprovante -->
         <div class="preview-comprovante">
-          <img src="@/assets/exemplo-comprovante.png" alt="Exemplo de comprovante de vacinação" />
+          <img src="@/assets/exemplo-comprovante.png" />
           <p class="legenda-preview">Exemplo de como seu comprovante será gerado em PDF.</p>
         </div>
 
