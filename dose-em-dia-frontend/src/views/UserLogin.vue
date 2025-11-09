@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="login-container pa-0 fill-height">
+  <v-container id="conteudo" fluid class="login-container pa-0 fill-height">
     <v-row no-gutters class="align-center justify-center">
       <!-- Coluna Esquerda -->
       <v-col cols="12" md="8" lg="6" xl="4" class="coluna-esquerda">
@@ -36,7 +36,9 @@
             </template>
             <template #append-inner>
               <img :src="mostrarSenha ? iconeOlhoAberto : iconeOlhoFechado" class="icone-olho-custom"
-                @click.stop="mostrarSenha = !mostrarSenha" />
+                :alt="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'"
+                :aria-label="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'"
+                :title="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'" @click.stop="mostrarSenha = !mostrarSenha" />
             </template>
           </v-text-field>
 
