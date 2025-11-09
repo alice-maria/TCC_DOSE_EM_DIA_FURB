@@ -1,15 +1,15 @@
 <template>
   <div class="pagina">
     <header class="header" role="banner">
-      <a class="logo-container" href="/" aria-label="Ir para a página inicial" @click.prevent="$router.push('/')">
+      <div class="logo-container" role="link" tabindex="0" aria-label="Ir para a página inicial"
+        @click="$router.push('/')" @keydown.enter="$router.push('/')">
         <img src="@/imagens/logo.png" alt="Logo Dose em Dia" class="logo-img" />
         <div class="header-texts">
           <h1 class="titulo-principal">Crie sua conta</h1>
           <p class="subtitulo">Mantenha sua vacinação em dia!</p>
         </div>
-      </a>
+      </div>
     </header>
-
     <div class="container-laranja">
       <div class="formulario-caixa">
         <v-progress-linear :model-value="percentualPreenchido" color="#b2443a" height="6" rounded class="mb-6" />
