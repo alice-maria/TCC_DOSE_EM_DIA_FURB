@@ -11,16 +11,16 @@
             </div>
 
             <!-- Breadcrumbs -->
-            <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs" aria-label="Breadcrumb">
+            <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs" aria-label="Trilha de navegação">
                 <template #title="{ item, index }">
-                    <router-link v-if="item.to" :to="item.to" class="breadcrumb-link"
+                    <router-link v-if="item.to" :to="item.to" class="breadcrumb-link d-flex align-center"
                         :aria-label="`Ir para ${item.text}`">
-                        <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
+                        <img src="@/assets/icons/home.svg" class="breadcrumb-home-img"/>
                         <span>{{ item.text }}</span>
                     </router-link>
 
-                    <span v-else class="breadcrumb-link breadcrumb-laranja" aria-current="page">
-                        <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
+                    <span v-else class="breadcrumb-link breadcrumb-laranja d-flex align-center" aria-current="page">
+                        <img src="@/assets/icons/home.svg" class="breadcrumb-home-img"/>
                         <span>{{ item.text }}</span>
                     </span>
                 </template>
