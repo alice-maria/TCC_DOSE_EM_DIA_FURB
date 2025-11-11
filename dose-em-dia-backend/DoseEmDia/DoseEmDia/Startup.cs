@@ -89,16 +89,18 @@ namespace DoseEmDia
             {
                 options.AddPolicy("Default", builder =>
                 {
-                    builder
-                        .WithOrigins(
-                            "https://dose-em-dia-front.up.railway.app", 
-                            "http://localhost:5173", "http://127.0.0.1:5173", "https://doseemdiabackend-production.up.railway.app"
-                        )
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials(); 
+                    var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")
+    ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? Array.Empty<string>();
+
+                    builder.WithOrigins(allowedOrigins)
+                           .AllowAnyHeader()
+                           .AllowAnyMethod()
+                           .AllowCredentials(); 
+
                 });
             });
+
 
 
             services.Configure<ForwardedHeadersOptions>(opts =>
