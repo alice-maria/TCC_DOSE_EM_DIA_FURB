@@ -89,19 +89,12 @@ namespace DoseEmDia
             {
                 options.AddPolicy("Default", builder =>
                 {
-                    var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")
-    ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-    ?? Array.Empty<string>();
-
-                    builder.WithOrigins(allowedOrigins)
-                           .AllowAnyHeader()
-                           .AllowAnyMethod()
-                           .AllowCredentials(); 
-
+                    builder
+                        .AllowAnyOrigin()    // <-- libera tudo
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                 });
             });
-
-
 
             services.Configure<ForwardedHeadersOptions>(opts =>
             {

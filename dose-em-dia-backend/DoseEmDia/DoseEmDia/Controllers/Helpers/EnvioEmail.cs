@@ -14,7 +14,7 @@ namespace DoseEmDia.Helpers
 {
     public sealed class EmailSettings
     {
-        public string FromEmail { get; set; } = "nao-responder@doseemdia.com.br";
+        public string FromEmail { get; set; } = "notificacoesdoseemdia@gmail.com";
         public string FromName { get; set; } = "Dose em Dia";
         public bool ClickTrackingEnabled { get; set; } = true;
         public bool OpenTrackingEnabled { get; set; } = true;
