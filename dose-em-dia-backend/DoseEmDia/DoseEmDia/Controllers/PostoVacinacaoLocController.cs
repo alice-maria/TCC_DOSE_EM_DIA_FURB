@@ -25,7 +25,7 @@ namespace DoseEmDia.Api.Controllers
             if (string.IsNullOrWhiteSpace(endereco))
             {
                 if (!usuarioId.HasValue)
-                    return BadRequest("Informe 'endereco' ou 'usuarioId'.");
+                    return BadRequest("Id não identificado.");
 
                 var usuario = await _db.Usuario
                     .Include(u => u.Endereco)
@@ -91,7 +91,7 @@ namespace DoseEmDia.Api.Controllers
                 if (string.IsNullOrWhiteSpace(endereco))
                 {
                     if (string.IsNullOrWhiteSpace(cep))
-                        return BadRequest("Não foi possível montar o endereço do usuário. Informe 'endereco' manualmente.");
+                        return BadRequest("Não foi possível montar o endereço do usuário.");
 
                     endereco = cep;
                 }

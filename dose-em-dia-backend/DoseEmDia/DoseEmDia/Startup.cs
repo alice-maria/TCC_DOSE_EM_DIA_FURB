@@ -24,8 +24,6 @@ namespace DoseEmDia
                     options.JsonSerializerOptions.WriteIndented = true;
                 });
 
-            // Serviços de domínio
-
             services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
             services.AddSingleton<ISendGridClient>(sp =>
             {
@@ -81,30 +79,34 @@ namespace DoseEmDia
                     options.EnableSensitiveDataLogging();
             });
 
-            // --------- Swagger ----------
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Dose em Dia API", Version = "v1" });
             });
 
-            // --------- CORS ----------
             services.AddCors(options =>
             {
                 options.AddPolicy("Default", builder =>
                 {
                     var allowed = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
-                    if (!string.IsNullOrWhiteSpace(allowed))
-                    {
-                        var origins = allowed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                        builder.WithOrigins(origins).AllowAnyMethod().AllowAnyHeader();
-                    }
-                    else
-                    {
-                        builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-                    }
+                    string[] origins =
+                        !string.IsNullOrWhiteSpace(allowed)
+                        ? allowed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        : new[]
+                        {
+                             "https://dose-em-dia.up.railway.app",
+                             "http://localhost:5173",             
+                             "http://localhost:8080"              
+                        };
+
+                    builder
+                        .WithOrigins(origins)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                 });
             });
+
 
             services.Configure<ForwardedHeadersOptions>(opts =>
             {
@@ -128,7 +130,7 @@ namespace DoseEmDia
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Dose em Dia API v1");
                     if (env.IsDevelopment())
-                        c.RoutePrefix = string.Empty; 
+                        c.RoutePrefix = string.Empty;
                 });
             }
 

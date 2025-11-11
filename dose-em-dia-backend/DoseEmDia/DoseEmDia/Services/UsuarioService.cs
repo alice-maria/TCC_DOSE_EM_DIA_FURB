@@ -25,6 +25,37 @@ public class UsuarioService
         _logger = logger;
     }
 
+    private static readonly Dictionary<string, string> _ufParaNome = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["AC"] = "Acre",
+        ["AL"] = "Alagoas",
+        ["AP"] = "Amapá",
+        ["AM"] = "Amazonas",
+        ["BA"] = "Bahia",
+        ["CE"] = "Ceará",
+        ["DF"] = "Distrito Federal",
+        ["ES"] = "Espírito Santo",
+        ["GO"] = "Goiás",
+        ["MA"] = "Maranhão",
+        ["MT"] = "Mato Grosso",
+        ["MS"] = "Mato Grosso do Sul",
+        ["MG"] = "Minas Gerais",
+        ["PA"] = "Pará",
+        ["PB"] = "Paraíba",
+        ["PR"] = "Paraná",
+        ["PE"] = "Pernambuco",
+        ["PI"] = "Piauí",
+        ["RJ"] = "Rio de Janeiro",
+        ["RN"] = "Rio Grande do Norte",
+        ["RS"] = "Rio Grande do Sul",
+        ["RO"] = "Rondônia",
+        ["RR"] = "Roraima",
+        ["SC"] = "Santa Catarina",
+        ["SP"] = "São Paulo",
+        ["SE"] = "Sergipe",
+        ["TO"] = "Tocantins"
+    };
+
     public async Task<Usuario?> BuscarPorCpf(string cpf)
     {
         return await _context.Usuario
@@ -86,7 +117,7 @@ public class UsuarioService
                 if (emailExiste)
                     throw new UsuarioException.EmailJaCadastradoException(email);
 
-                var endereco = await CriarEnderecoAsync(
+                var endereco = await CriarEndereco(
                     paisNome, ufEstado, estadoNomeExtenso, cidadeNome,
                     cepCodigo, logradouro, numero, bairro, ct);
 
@@ -406,7 +437,7 @@ public class UsuarioService
                                 }
                                 else
                                 {
-                                    cidadeAlvo = await EnsureCidadeAsync(req.CidadeNome!.Trim(), req.Uf!.Trim(), ct);
+                                    cidadeAlvo = await AtualizarCidade(req.CidadeNome!.Trim(), req.Uf!.Trim(), ct);
                                 }
                             }
 
@@ -499,7 +530,7 @@ public class UsuarioService
         await _context.SaveChangesAsync();
     }
 
-    private async Task<Endereco> CriarEnderecoAsync(string paisNome, string ufEstado, string estadoNomeExtenso, string cidadeNome, string cepCodigo, string logradouro, string numero, string? bairro, CancellationToken ct = default)
+    private async Task<Endereco> CriarEndereco(string paisNome, string ufEstado, string estadoNomeExtenso, string cidadeNome, string cepCodigo, string logradouro, string numero, string? bairro, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(paisNome))
             throw new ArgumentException("País é obrigatório.", nameof(paisNome));
@@ -543,7 +574,7 @@ public class UsuarioService
             _context.Cidade.Add(cidade);
         }
 
-        var cep = await EnsureCepAsync(cepCodigo, cidade, bairro, ct);
+        var cep = await AtualizarCep(cepCodigo, cidade, bairro, ct);
 
         var end = new Endereco
         {
@@ -566,7 +597,7 @@ public class UsuarioService
         return cod;
     }
 
-    private async Task<Cep> EnsureCepAsync(string cepCodigo, Cidade cidade, string? bairro, CancellationToken ct)
+    private async Task<Cep> AtualizarCep(string cepCodigo, Cidade cidade, string? bairro, CancellationToken ct)
     {
         var tracked = _context.ChangeTracker.Entries<Cep>()
             .FirstOrDefault(e => e.Entity.Codigo == cepCodigo)?.Entity;
@@ -598,7 +629,7 @@ public class UsuarioService
         _context.Cep.Add(novo);
         return novo;
     }
-    private async Task<Cidade> EnsureCidadeAsync(string cidadeNome, string uf, CancellationToken ct = default)
+    private async Task<Cidade> AtualizarCidade(string cidadeNome, string uf, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(cidadeNome))
             throw new ArgumentException("Cidade é obrigatória.", nameof(cidadeNome));
@@ -640,37 +671,6 @@ public class UsuarioService
 
         return cidade; 
     }
-
-    private static readonly Dictionary<string, string> _ufParaNome = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["AC"] = "Acre",
-        ["AL"] = "Alagoas",
-        ["AP"] = "Amapá",
-        ["AM"] = "Amazonas",
-        ["BA"] = "Bahia",
-        ["CE"] = "Ceará",
-        ["DF"] = "Distrito Federal",
-        ["ES"] = "Espírito Santo",
-        ["GO"] = "Goiás",
-        ["MA"] = "Maranhão",
-        ["MT"] = "Mato Grosso",
-        ["MS"] = "Mato Grosso do Sul",
-        ["MG"] = "Minas Gerais",
-        ["PA"] = "Pará",
-        ["PB"] = "Paraíba",
-        ["PR"] = "Paraná",
-        ["PE"] = "Pernambuco",
-        ["PI"] = "Piauí",
-        ["RJ"] = "Rio de Janeiro",
-        ["RN"] = "Rio Grande do Norte",
-        ["RS"] = "Rio Grande do Sul",
-        ["RO"] = "Rondônia",
-        ["RR"] = "Roraima",
-        ["SC"] = "Santa Catarina",
-        ["SP"] = "São Paulo",
-        ["SE"] = "Sergipe",
-        ["TO"] = "Tocantins"
-    };
 
     private static (string Uf, string NomeExtenso) ResolverEstado(string estadoUf)
     {

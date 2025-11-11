@@ -164,7 +164,7 @@ namespace DoseEmDia.Helpers
                     msg.AddAttachment(new Attachment
                     {
                         Content = Convert.ToBase64String(bytes),
-                        Type = GetMimeType(caminhoImagem), // ex: "image/jpeg"
+                        Type = GetMimeType(caminhoImagem), 
                         Filename = Path.GetFileName(caminhoImagem),
                         Disposition = "inline",
                         ContentId = contentId
