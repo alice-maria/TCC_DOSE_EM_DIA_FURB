@@ -92,7 +92,7 @@ namespace DoseEmDia
                     builder
                         .WithOrigins(
                             "https://dose-em-dia-front.up.railway.app", 
-                            "http://localhost:5173", "http://127.0.0.1:5173"
+                            "http://localhost:5173", "http://127.0.0.1:5173", "https://doseemdiabackend-production.up.railway.app"
                         )
                         .AllowAnyHeader()
                         .AllowAnyMethod()
