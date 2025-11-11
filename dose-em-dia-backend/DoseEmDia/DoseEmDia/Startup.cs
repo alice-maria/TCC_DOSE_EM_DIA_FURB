@@ -89,21 +89,14 @@ namespace DoseEmDia
             {
                 options.AddPolicy("Default", builder =>
                 {
-                    var allowed = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
-                    string[] origins =
-                        !string.IsNullOrWhiteSpace(allowed)
-                        ? allowed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        : new[]
-                        {
-                             "https://dose-em-dia.up.railway.app",
-                             "http://localhost:5173",             
-                             "http://localhost:8080"              
-                        };
-
                     builder
-                        .WithOrigins(origins)
+                        .WithOrigins(
+                            "https://dose-em-dia-front.up.railway.app", 
+                            "http://localhost:5173", "http://127.0.0.1:5173"
+                        )
                         .AllowAnyHeader()
-                        .AllowAnyMethod();
+                        .AllowAnyMethod()
+                        .AllowCredentials(); 
                 });
             });
 
@@ -136,6 +129,7 @@ namespace DoseEmDia
 
             app.UseRouting();
             app.UseCors("Default");
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
