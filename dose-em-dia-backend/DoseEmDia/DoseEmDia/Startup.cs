@@ -90,7 +90,7 @@ namespace DoseEmDia
                 options.AddPolicy("Default", builder =>
                 {
                     builder
-                        .AllowAnyOrigin()    // <-- libera tudo
+                        .AllowAnyOrigin()    
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });

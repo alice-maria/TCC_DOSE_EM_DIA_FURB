@@ -301,7 +301,7 @@ namespace DoseEmDia.Helpers
             var atrasadas = await _db.Vacina
                 .AsNoTracking()
                 .Where(v => v.UsuarioId == usuarioId && v.Status == StatusVacina.EmAtraso)
-                .Select(v => new { v.Nome, v.DataAplicacao, v.NumeroLote })
+                .Select(v => new { v.Nome, v.DataAplicacao })
                 .OrderBy(v => v.DataAplicacao)
                 .ToListAsync(ct);
 
@@ -311,7 +311,7 @@ namespace DoseEmDia.Helpers
                 tituloTopo: "Vacinas Vencidas — Dose em Dia",
                 introducao: $"Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, identificamos vacina(s) com status <strong>vencida</strong> no seu cadastro:",
                 tituloSecao: "Vencidas",
-                itens: atrasadas.Select(x => (x.Nome, x.DataAplicacao, x.NumeroLote))
+                itens: atrasadas.Select(x => (x.Nome, x.DataAplicacao))
             );
 
             var assunto = "Vacinas vencidas — Dose em Dia";
@@ -330,7 +330,7 @@ namespace DoseEmDia.Helpers
                 });
                 await _db.SaveChangesAsync(ct);
             }
-            catch { /* não interrompe o fluxo se falhar o log */ }
+            catch { /* */ }
         }
 
         public async Task EnviarVacinasAVencerAsync(int usuarioId, CancellationToken ct = default)
@@ -348,7 +348,7 @@ namespace DoseEmDia.Helpers
             var aVencer = await _db.Vacina
                 .AsNoTracking()
                 .Where(v => v.UsuarioId == usuarioId && v.Status == StatusVacina.AVencer)
-                .Select(v => new { v.Nome, v.DataAplicacao, v.NumeroLote })
+                .Select(v => new { v.Nome, v.DataAplicacao })
                 .OrderBy(v => v.DataAplicacao)
                 .ToListAsync(ct);
 
@@ -358,7 +358,7 @@ namespace DoseEmDia.Helpers
                 tituloTopo: "Vacinas a Vencer — Dose em Dia",
                 introducao: $"Olá{(string.IsNullOrWhiteSpace(usuario.Nome) ? "" : $", {WebUtility.HtmlEncode(usuario.Nome)}")}, identificamos vacina(s) com status <strong>a vencer</strong> no seu cadastro:",
                 tituloSecao: "A vencer",
-                itens: aVencer.Select(x => (Nome: x.Nome, Áplicacao: x.DataAplicacao, Lote: x.NumeroLote))
+                itens: aVencer.Select(x => (Nome: x.Nome, Áplicacao: x.DataAplicacao))
             );
 
             var assunto = "Vacinas a vencer — Dose em Dia";
@@ -377,7 +377,7 @@ namespace DoseEmDia.Helpers
                 });
                 await _db.SaveChangesAsync(ct);
             }
-            catch { /* não interrompe o fluxo se falhar o log */ }
+            catch { /* */ }
         }
 
         public async Task EnviarResumoVacinasPorStatusAsync(int usuarioId, CancellationToken ct = default)
@@ -483,10 +483,10 @@ namespace DoseEmDia.Helpers
                 });
                 await _db.SaveChangesAsync(ct);
             }
-            catch { /* não interrompe o fluxo se falhar o log */ }
+            catch { /* */ }
         }
 
-        private static string MontarEmailTabela(string tituloTopo, string introducao, string tituloSecao, IEnumerable<(string Nome, DateTime Aplicacao, int Lote)> itens)
+        private static string MontarEmailTabela(string tituloTopo, string introducao, string tituloSecao, IEnumerable<(string Nome, DateTime Aplicacao)> itens)
         {
             string MontarSecao()
             {
@@ -498,7 +498,6 @@ namespace DoseEmDia.Helpers
                       <tr>
                         <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Vacina</th>
                         <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Data aplicação</th>
-                        <th align='left' style='padding:8px;border-bottom:1px solid #eee'>Lote</th>
                       </tr>
                     </thead>
                     <tbody>");
@@ -508,7 +507,6 @@ namespace DoseEmDia.Helpers
                       <tr>
                         <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(it.Nome)}</td>
                         <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{it.Aplicacao:dd/MM/yyyy}</td>
-                        <td style='padding:8px;border-bottom:1px solid #f4f4f4'>{WebUtility.HtmlEncode(it.Lote.ToString())}</td>
                       </tr>");
                 }
                 sb.AppendLine("</tbody></table>");

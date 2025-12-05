@@ -10,13 +10,11 @@
       </div>
 
       <!-- Breadcrumbs -->
-      <v-breadcrumbs :items="breadcrumbs" class="meus-breadcrumbs px-6">
-        <template v-slot:item="{ item, index }">
-          <span :class="[
-            'breadcrumb-link',
-            index === breadcrumbs.length - 1 ? 'breadcrumb-laranja' : ''
-          ]" @click="item.to && navegar(item.to)" style="cursor: pointer;">
-            <img src="@/assets/icons/home.svg" class="breadcrumb-home-img" aria-hidden="true" />
+      <v-breadcrumbs class="meus-breadcrumbs px-6" :items="breadcrumbs">
+        <template #item="{ item }">
+          <span :class="['breadcrumb-link', { 'breadcrumb-laranja': !item.to }]" @click="item.to && navegar(item.to)"
+            style="cursor: pointer;">
+            <img v-if="item.icon === 'mdi-home'" src="@/assets/icons/home.svg" class="breadcrumb-home-img" />
             {{ item.text }}
           </span>
         </template>

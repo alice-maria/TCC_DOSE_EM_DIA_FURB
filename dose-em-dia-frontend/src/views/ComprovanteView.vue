@@ -146,7 +146,6 @@ export default {
           }
         });
 
-        // Gera nome do arquivo localmente
         const cpfLimpo = usuarioCPF.replace(/\D/g, '');
         const dataAgora = new Date();
         const dataFormatada = dataAgora.toISOString().slice(0, 10).replace(/-/g, ''); // yyyyMMdd
