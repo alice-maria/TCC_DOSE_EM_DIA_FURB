@@ -388,6 +388,12 @@ export default {
 
         const endMudou = cepMudou || logMudou || numMudou || baiMudou || cidMudou || ufMudou;
 
+        if (cepMudou && !isValidCEP(formEnd.cep)) {
+          this.erro = "CEP inválido.";
+          this.mostrarErro = true;
+          return;
+        }
+
         if (endMudou) {
           const cepParaEnviar = isValidCEP(formEnd.cep) ? formCep8 : origCep8;
           const cidadeParaEnviar = isValidCidade(formEnd.cidade) ? formEnd.cidade : origEnd.cidade;
