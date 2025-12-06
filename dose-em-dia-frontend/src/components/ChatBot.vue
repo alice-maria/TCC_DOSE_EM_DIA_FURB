@@ -166,7 +166,6 @@
             <div v-else-if="subEstadoSuporte === 'ajuda'">
               <div class="mensagem bot">
                 <p><strong>Informações de contato:</strong></p>
-                <p>SAC: 0800 123 4567</p>
                 <p>E-mail: notificadoseemdia@gmail.com</p>
                 <p>Atendimento: Seg a Sex, 08h às 18h</p>
               </div>
