@@ -27,11 +27,11 @@
         Dislexia
       </button>
       <button @click="toggleEspacamentoLetras">
-        <img src="@/assets/icons/acessibilidade/espacamentoLinha.svg" alt="Letras" class="icone-menu" />
+        <img src="@/assets/icons/acessibilidade/espacamentoLetras.svg" alt="Letras" class="icone-menu" />
         Espaçamento entre letras
       </button>
       <button @click="toggleEspacamentoLinhas">
-        <img src="@/assets/icons/acessibilidade/espacamentoLetras.svg" alt="Linhas" class="icone-menu" />
+        <img src="@/assets/icons/acessibilidade/espacamentoLinha.svg" alt="Linhas" class="icone-menu" />
         Espaçamento entre linhas
       </button>
     </div>

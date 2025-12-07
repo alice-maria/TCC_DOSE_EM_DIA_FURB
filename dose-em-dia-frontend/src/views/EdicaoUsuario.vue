@@ -340,17 +340,17 @@ export default {
 
         if (trim(this.form.nome) !== trim(this.usuario?.nome)) {
           if (isValidNome(this.form.nome)) payload.nome = trim(this.form.nome);
-          else avisos.push("Nome não aplicado (mínimo 2 caracteres).");
+          else avisos.push("Nome inválido (Mínimo 2 caracteres).");
         }
 
         if (trim(this.form.email).toLowerCase() !== trim(this.usuario?.email).toLowerCase()) {
           if (isValidEmail(this.form.email)) payload.email = trim(this.form.email);
-          else avisos.push("E-mail não aplicado (formato inválido).");
+          else avisos.push("E-mail inválido (Formato incorreto).");
         }
 
         if (soDigitos(this.form.telefone) !== soDigitos(this.usuario?.telefone)) {
           if (isValidTelefone(this.form.telefone)) payload.telefone = soDigitos(this.form.telefone);
-          else avisos.push("Telefone não aplicado (use 10 ou 11 dígitos).");
+          else avisos.push("Telefone inválido (Use 11 dígitos).");
         }
 
         if (trim(this.form.sexo) !== trim(this.usuario?.sexo)) {
@@ -410,7 +410,7 @@ export default {
             uf: (ufParaEnviar || "").toUpperCase()
           };
 
-          if (!isValidCEP(endPayload.cep)) avisos.push("CEP inválido (use 8 dígitos).");
+          if (!isValidCEP(endPayload.cep)) avisos.push("CEP inválido (Use 8 dígitos).");
           if (!endPayload.numero) avisos.push("Número do endereço não informado.");
 
           if (avisos.length === 0) {
@@ -474,14 +474,14 @@ export default {
       this.estadoPreview = "";
 
       if (!cep8 || cep8.length !== 8) {
-        this.cepErro = "CEP inválido. Use 8 dígitos.";
+        this.cepErro = "CEP inválido (use 8 dígitos).";
         return;
       }
 
       this.buscandoCep = true;
       try {
         const { data } = await axios.get(`https://viacep.com.br/ws/${cep8}/json/`);
-        if (data?.erro) throw new Error("CEP não encontrado");
+        if (data?.erro) throw new Error("CEP não encontrado.");
 
         this.form.endereco.logradouro = data.logradouro || this.form.endereco.logradouro || "";
         this.form.endereco.bairro = data.bairro || this.form.endereco.bairro || "";
