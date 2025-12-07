@@ -186,7 +186,7 @@
     <v-card>
       <v-alert type="error" color="red-darken-2" icon="mdi-alert-circle" class="pa-5" border="start" elevation="2"
         title="Erro ao salvar">
-        {{ mensagem }}
+        {{ erro }}
       </v-alert>
       <v-card-actions class="justify-end">
         <v-btn color="red-darken-2" variant="flat" @click="mostrarErro = false">OK</v-btn>
